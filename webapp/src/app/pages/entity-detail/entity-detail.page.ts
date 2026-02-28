@@ -7,6 +7,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
@@ -25,7 +26,8 @@ import { generateEntityKey } from '../../services/entity-key.util';
         NzInputModule,
         NzFormModule,
         NzCardModule,
-        NzSelectModule
+        NzSelectModule,
+        NzModalModule
     ],
     templateUrl: './entity-detail.page.html',
     styleUrl: './entity-detail.page.less'
@@ -46,6 +48,7 @@ export class EntityDetailPageComponent implements OnInit {
     });
 
     isEditMode = signal(false);
+    isDeleteConfirmModalOpen = signal(false);
 
     // Working copy of data during edit. Initialized when edit mode is entered.
     editData = signal<Record<string, string>>({});
@@ -110,6 +113,24 @@ export class EntityDetailPageComponent implements OnInit {
         if (!record) return;
         this.entityRecordService.updateRecord(record.id, this.editData());
         this.isEditMode.set(false);
+    }
+
+    onClickDelete(): void {
+        this.isDeleteConfirmModalOpen.set(true);
+    }
+
+    onConfirmDelete(): void {
+        const record = this.record$();
+        const entity = this.entity$();
+        if (!record || !entity) return;
+
+        this.entityRecordService.deleteRecord(record.id);
+        this.isDeleteConfirmModalOpen.set(false);
+        this.router.navigate(['/entity', generateEntityKey(entity.name)]);
+    }
+
+    onCancelDelete(): void {
+        this.isDeleteConfirmModalOpen.set(false);
     }
 
     getReferencedRecordOptions(field: EntityField): { label: string; value: string }[] {

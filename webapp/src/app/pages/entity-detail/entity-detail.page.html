@@ -9,6 +9,7 @@
       <div class="detail-actions">
         <ng-container *ngIf="!isEditMode()">
           <button nz-button nzType="primary" (click)="onClickEdit()">Edit</button>
+          <button nz-button nzDanger nzType="text" (click)="onClickDelete()">Delete</button>
         </ng-container>
         <ng-container *ngIf="isEditMode()">
           <button nz-button nzType="default" (click)="onClickCancelEdit()">Cancel</button>
@@ -113,4 +114,20 @@
       </ng-container>
     </nz-card>
   </div>
+
+  <!-- Delete Confirmation Modal -->
+  <nz-modal
+    [(nzVisible)]="isDeleteConfirmModalOpen"
+    nzTitle="Delete Record"
+    nzOkText="Delete"
+    nzOkType="primary"
+    nzOkDanger
+    nzCancelText="Cancel"
+    (nzOnOk)="onConfirmDelete()"
+    (nzOnCancel)="onCancelDelete()">
+    <ng-container *nzModalContent>
+      <p>Are you sure you want to delete this {{ entity$()?.name }}?</p>
+      <p style="color: #8c8c8c; font-size: 12px;">This action cannot be undone.</p>
+    </ng-container>
+  </nz-modal>
 </div>
