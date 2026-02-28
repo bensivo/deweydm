@@ -26,7 +26,7 @@
     <nz-table
       #recordTable
       [nzData]="filteredAndSortedRecords$()"
-      [nzShowPagination]="filteredAndSortedRecords$().length > 20"
+      [nzShowPagination]="filteredAndSortedRecords$().length > 10"
       nzSize="small"
       class="records-table">
       <thead>
