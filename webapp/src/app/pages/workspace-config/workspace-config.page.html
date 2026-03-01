@@ -2,6 +2,17 @@
   <h1>Configuration</h1>
   <p>Manage workspace entities, fields, and relationships</p>
 
+  <!-- Load Template Section -->
+  <nz-card class="template-section">
+    <div class="section-header">
+      <h2>Quick Start</h2>
+      <button nz-button nzType="primary" (click)="onClickLoadTemplateButton()">
+        Load Template
+      </button>
+    </div>
+    <p class="section-description">Start with a pre-configured template for Project Tracking, CRM, or Product Ideation</p>
+  </nz-card>
+
   <!-- Entities Section -->
   <nz-card class="entities-section">
     <div class="section-header">
@@ -70,6 +81,46 @@
           <label>URL Key</label>
           <div class="key-value">/config/entity/<strong>{{ getEntityKeyPreview() }}</strong></div>
         </div>
+      </div>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Template Selection Modal -->
+  <nz-modal
+    [(nzVisible)]="showTemplateSelectionModal"
+    nzTitle="Select Template"
+    nzOkText="Next"
+    nzCancelText="Cancel"
+    (nzOnOk)="onClickConfirmTemplateSelection()"
+    (nzOnCancel)="onClickCancelTemplateSelection()">
+    <ng-container *nzModalContent>
+      <nz-radio-group [(ngModel)]="selectedTemplate" name="templateSelection">
+        <div *ngFor="let template of availableTemplates()" class="template-option">
+          <label nz-radio [nzValue]="template.id">
+            <div class="template-label">
+              <h3>{{ template.name }}</h3>
+              <p>{{ template.description }}</p>
+            </div>
+          </label>
+        </div>
+      </nz-radio-group>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Template Confirmation Modal -->
+  <nz-modal
+    [(nzVisible)]="showTemplateConfirmModal"
+    nzTitle="Load Template"
+    nzOkText="Load"
+    nzOkType="primary"
+    nzOkDanger
+    nzCancelText="Cancel"
+    (nzOnOk)="onClickConfirmTemplateLoad()"
+    (nzOnCancel)="onClickCancelTemplateConfirm()">
+    <ng-container *nzModalContent>
+      <div class="confirmation-content">
+        <p><strong>Warning:</strong> Loading a template will replace all existing entities and data.</p>
+        <p>This action cannot be undone. Make sure you have backed up any important data.</p>
       </div>
     </ng-container>
   </nz-modal>

@@ -10,4 +10,4 @@ Features in order:
 - feature: Add helpertext/descriptions to fields, for inputs
 - feature: Split panel view, instead of just a table
 - tweak: Make table columns resizable
-- feature: in the entity-list page, if showign a backlink type, let the user expand the list somehow to see all of them? 
+- feature: in the entity-list page, if showign a backlink type, let the user expand the list somehow to see all of them?

@@ -1,10 +1,9 @@
 import { effect, Injectable, signal } from '@angular/core';
 import { Entity } from '../models/entity.model';
-import { MOCK_ENTITIES } from './mock-data';
 
 @Injectable({ providedIn: 'root' })
 export class EntityStore {
-  private entitiesSignal = signal<Entity[]>(MOCK_ENTITIES);
+  private entitiesSignal = signal<Entity[]>([]);
   public entities$ = this.entitiesSignal.asReadonly();
 
   constructor() {
