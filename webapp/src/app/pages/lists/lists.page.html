@@ -1,0 +1,56 @@
+<div class="lists-container">
+    <div *ngIf="list$()" class="list-page">
+        <div class="lists-header">
+            <h1>{{ list$()!.name }}</h1>
+            <div class="header-actions">
+                <button nz-button nzSize="large" nzType="primary" (click)="onClickAddItemsButton()">Add Items</button>
+                <button nz-button nzSize="large" (click)="onClickBackButton()">Back</button>
+            </div>
+        </div>
+
+        <div class="lists-toolbar">
+            <button nz-button nzSize="large" (click)="onClickColumnsButton()">Columns</button>
+        </div>
+
+        <div class="lists-content">
+            <app-sortable-list
+                [items]="items$()"
+                [itemTemplate]="itemTemplate"
+                (onItemsChanged)="onItemsChanged($event)">
+            </app-sortable-list>
+
+            <ng-template #itemTemplate let-item>
+                <div class="list-item-content">
+                    <app-entity-reference [recordId]="item.id"
+                        class="item-display-name"
+                        (click)="$event.stopPropagation()">
+                    </app-entity-reference>
+                    <div class="item-columns" *ngIf="selectedColumnIds().length > 0">
+                        <span class="column-value" *ngFor="let fieldId of selectedColumnIds()">
+                            {{ getFieldValue(item, fieldId) }}
+                        </span>
+                    </div>
+                </div>
+            </ng-template>
+        </div>
+
+        <!-- Column Selection Modal -->
+        <nz-modal
+            [(nzVisible)]="isColumnModalOpen"
+            nzTitle="Select Columns"
+            (nzOnOk)="onConfirmColumns()"
+            (nzOnCancel)="onCancelColumns()">
+            <ng-container *nzModalContent>
+                <div class="column-checkbox-list">
+                    <div *ngFor="let field of availableFields$()" class="column-checkbox-item">
+                        <label nz-checkbox
+                            [nzChecked]="isPendingFieldSelected(field.id)"
+                            (nzCheckedChange)="onTogglePendingColumn(field.id)">
+                            {{ field.name }}
+                        </label>
+                    </div>
+                </div>
+            </ng-container>
+        </nz-modal>
+    </div>
+</div>

@@ -49,19 +49,17 @@
           (click)="onClickRecordRow(record.id)">
           <td *ngFor="let field of visibleFields$()">
             <!-- Reference field: single link -->
-            <a *ngIf="isReferenceField(field) && record.data[field.id]"
-              [routerLink]="['/entity', getReferencedEntityRouteKey(field), record.data[field.id]]"
+            <app-entity-reference *ngIf="isReferenceField(field) && record.data[field.id]"
+              [recordId]="record.data[field.id]"
               (click)="$event.stopPropagation()">
-              {{ getFieldDisplayValue(field, record) }}
-            </a>
+            </app-entity-reference>
             <!-- Reference-list field: multiple links -->
             <div *ngIf="isReferenceListField(field) && record.data[field.id]" class="reference-list-items">
-              <a *ngFor="let item of getRefListItems(field, record)"
-                [routerLink]="['/entity', item.routeKey, item.id]"
-                (click)="$event.stopPropagation()"
-                class="reference-list-item">
-                {{ item.label }}
-              </a>
+              <app-entity-reference *ngFor="let item of getRefListItems(field, record)"
+                [recordId]="item.id"
+                class="reference-list-item"
+                (click)="$event.stopPropagation()">
+              </app-entity-reference>
             </div>
             <!-- All other fields: plain text -->
             <span *ngIf="!isReferenceField(field) && !isReferenceListField(field)">

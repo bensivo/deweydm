@@ -26,28 +26,25 @@
           <!-- View mode -->
           <ng-container *ngIf="!isEditMode()">
             <!-- Reference field: show as link -->
-            <a *ngIf="field.type === 'reference' && getFieldValue(field.id)"
-              [routerLink]="['/entity', getReferencedEntityRouteKey(field), getFieldValue(field.id)]">
-              {{ getReferencedRecordDisplayName(field, getFieldValue(field.id)) }}
-            </a>
+            <app-entity-reference *ngIf="field.type === 'reference' && getFieldValue(field.id)"
+              [recordId]="getFieldValue(field.id)">
+            </app-entity-reference>
             <span *ngIf="field.type === 'reference' && !getFieldValue(field.id)">—</span>
             <!-- Backlink field: show as list of links -->
             <div *ngIf="field.type === 'backlink'" class="backlink-list">
               <div *ngIf="getBacklinkedRecords(field).length === 0" class="empty-backlinks">No linked records</div>
-              <a *ngFor="let backlinkRecord of getBacklinkedRecords(field)"
-                [routerLink]="['/entity', getBacklinkSourceEntityRouteKey(field), backlinkRecord.id]"
+              <app-entity-reference *ngFor="let backlinkRecord of getBacklinkedRecords(field)"
+                [recordId]="backlinkRecord.id"
                 class="backlink-item">
-                {{ entityRecordService.getRecordDisplayName(field.backlinkSourceEntityId!, backlinkRecord.id) }}
-              </a>
+              </app-entity-reference>
             </div>
             <!-- Reference list field: show as list of links -->
             <div *ngIf="field.type === 'reference-list'" class="backlink-list">
               <div *ngIf="getRefListViewItems(field).length === 0" class="empty-backlinks">—</div>
-              <a *ngFor="let item of getRefListViewItems(field)"
-                [routerLink]="['/entity', item.routeKey, item.id]"
+              <app-entity-reference *ngFor="let item of getRefListViewItems(field)"
+                [recordId]="item.id"
                 class="backlink-item">
-                {{ item.label }}
-              </a>
+              </app-entity-reference>
             </div>
             <!-- Basic fields: show as text -->
             <span *ngIf="field.type === 'short-text' || field.type === 'long-text' || field.type === 'number' || field.type === 'option'">

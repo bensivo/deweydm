@@ -15,6 +15,7 @@ import { EntityStore } from '../../store/entity.store';
 import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
 import { generateEntityKey } from '../../services/entity-key.util';
+import { EntityReferenceComponent } from '../../components/entity-reference/entity-reference.component';
 
 @Component({
     selector: 'app-entity-detail-page',
@@ -27,7 +28,8 @@ import { generateEntityKey } from '../../services/entity-key.util';
         NzFormModule,
         NzCardModule,
         NzSelectModule,
-        NzModalModule
+        NzModalModule,
+        EntityReferenceComponent
     ],
     templateUrl: './entity-detail.page.html',
     styleUrl: './entity-detail.page.less'

@@ -6,6 +6,8 @@ import { EntityListPageComponent } from './pages/entity-list/entity-list.page';
 import { EntityCreatePageComponent } from './pages/entity-create/entity-create.page';
 import { EntityDetailPageComponent } from './pages/entity-detail/entity-detail.page';
 import { EntityBulkCreatePageComponent } from './pages/entity-bulk-create/entity-bulk-create.page';
+import { ListsPageComponent } from './pages/lists/lists.page';
+import { ListsAddItemsPageComponent } from './pages/lists-add-items/lists-add-items.page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -15,5 +17,7 @@ export const routes: Routes = [
   { path: 'entity-create/:key', component: EntityCreatePageComponent },
   { path: 'entity-bulk-create/:key', component: EntityBulkCreatePageComponent },
   { path: 'entity/:key/:id', component: EntityDetailPageComponent },
-  { path: 'entity/:key', component: EntityListPageComponent }
+  { path: 'entity/:key', component: EntityListPageComponent },
+  { path: 'lists/:id/add-items', component: ListsAddItemsPageComponent },
+  { path: 'lists/:id', component: ListsPageComponent }
 ];
