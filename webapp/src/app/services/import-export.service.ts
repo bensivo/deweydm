@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Entity } from '../models/entity.model';
 import { EntityRecord } from '../models/entity-record.model';
+import { List } from '../models/list.model';
 
 export interface ExportData {
     version: string;
     exportedAt: string;
     entities: Entity[];
     records: EntityRecord[];
+    lists: List[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -14,14 +16,15 @@ export class ImportExportService {
     private readonly VERSION = '1.0';
 
     /**
-     * Export all entities and records as JSON
+     * Export all entities, records, and lists as JSON
      */
-    exportToJson(entities: Entity[], records: EntityRecord[]): ExportData {
+    exportToJson(entities: Entity[], records: EntityRecord[], lists: List[] = []): ExportData {
         return {
             version: this.VERSION,
             exportedAt: new Date().toISOString(),
             entities,
-            records
+            records,
+            lists
         };
     }
 
@@ -61,6 +64,10 @@ export class ImportExportService {
         }
         if (!data.records || !Array.isArray(data.records)) {
             throw new Error('Import data missing records array');
+        }
+        // Lists are optional for backwards compatibility
+        if (data.lists && !Array.isArray(data.lists)) {
+            throw new Error('Invalid lists array in import data');
         }
     }
 }

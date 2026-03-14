@@ -110,14 +110,6 @@ export class ListsPageComponent implements OnInit {
         });
     }
 
-    onClickAddItemsButton(): void {
-        this.router.navigate(['/lists', this.listIdSignal(), 'add-items']);
-    }
-
-    onClickBackButton(): void {
-        this.router.navigate(['/']);
-    }
-
     /**
      * Handle reordering of list items via SortableJS
      *

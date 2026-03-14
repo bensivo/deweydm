@@ -15,6 +15,8 @@ import { TemplateService, TemplateType } from '../../services/template.service';
 import { EntityStore } from '../../store/entity.store';
 import { EntityRecordStore } from '../../store/entity-record.store';
 import { ImportExportService } from '../../services/import-export.service';
+import { ListService } from '../../services/list.service';
+import { ListsStore } from '../../store/lists.store';
 
 @Component({
   selector: 'app-workspace-config-page',
@@ -49,13 +51,19 @@ export class WorkspaceConfigPageComponent {
     private templateService: TemplateService,
     private entityStore: EntityStore,
     private entityRecordStore: EntityRecordStore,
-    private importExportService: ImportExportService
+    private importExportService: ImportExportService,
+    private listService: ListService,
+    private listsStore: ListsStore
   ) {
     this.availableTemplates.set(this.templateService.getAvailableTemplates());
   }
 
   get entities$() {
     return this.entityService.entities$;
+  }
+
+  get lists$() {
+    return this.listService.lists$;
   }
 
   onClickAddEntityButton(): void {
@@ -115,6 +123,9 @@ export class WorkspaceConfigPageComponent {
     this.entityRecordStore.getAll().forEach(record => {
       this.entityRecordStore.remove(record.id);
     });
+    this.listsStore.getAll().forEach(list => {
+      this.listsStore.remove(list.id);
+    });
 
     // Load template data
     template.entities.forEach(entity => {
@@ -123,6 +134,10 @@ export class WorkspaceConfigPageComponent {
 
     template.records.forEach(record => {
       this.entityRecordStore.add(record);
+    });
+
+    template.lists.forEach(list => {
+      this.listsStore.add(list);
     });
 
     this.showTemplateConfirmModal.set(false);
@@ -135,7 +150,8 @@ export class WorkspaceConfigPageComponent {
   onClickExportButton(): void {
     const entities = this.entityStore.getAll();
     const records = this.entityRecordStore.getAll();
-    const exportData = this.importExportService.exportToJson(entities, records);
+    const lists = this.listsStore.getAll();
+    const exportData = this.importExportService.exportToJson(entities, records, lists);
     const timestamp = new Date().toISOString().split('T')[0];
     this.importExportService.downloadExport(exportData, `dewey-dm-export-${timestamp}.json`);
   }
@@ -160,6 +176,9 @@ export class WorkspaceConfigPageComponent {
           this.entityRecordStore.getAll().forEach(record => {
             this.entityRecordStore.remove(record.id);
           });
+          this.listsStore.getAll().forEach(list => {
+            this.listsStore.remove(list.id);
+          });
 
           // Load imported data
           importData.entities.forEach(entity => {
@@ -168,6 +187,10 @@ export class WorkspaceConfigPageComponent {
 
           importData.records.forEach(record => {
             this.entityRecordStore.add(record);
+          });
+
+          (importData.lists || []).forEach(list => {
+            this.listsStore.add(list);
           });
 
           alert('Data imported successfully!');
@@ -179,4 +202,50 @@ export class WorkspaceConfigPageComponent {
     };
     input.click();
   }
+
+  showCreateListModal = signal(false);
+  showRenameListModal = signal(false);
+  newListName = '';
+  renameListId = '';
+  renameListName = '';
+
+  onClickAddListButton(): void {
+    this.newListName = '';
+    this.showCreateListModal.set(true);
+  }
+
+  onClickCreateListButton(): void {
+    if (!this.newListName) {
+      return;
+    }
+    this.listService.createList(this.newListName);
+    this.showCreateListModal.set(false);
+  }
+
+  onClickRenameListButton(listId: string, currentName: string): void {
+    this.renameListId = listId;
+    this.renameListName = currentName;
+    this.showRenameListModal.set(true);
+  }
+
+  onClickConfirmRenameListButton(): void {
+    if (!this.renameListName.trim()) {
+      return;
+    }
+    this.listService.renameList(this.renameListId, this.renameListName.trim());
+    this.showRenameListModal.set(false);
+  }
+
+  onClickCancelRenameListButton(): void {
+    this.showRenameListModal.set(false);
+  }
+
+  onClickDeleteListButton(listId: string): void {
+    this.listService.deleteList(listId);
+  }
+
+  getListKeyPreview(): string {
+    return generateEntityKey(this.newListName);
+  }
 }
+

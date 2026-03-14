@@ -8,13 +8,7 @@ import { List } from '../models/list.model';
  */
 @Injectable({ providedIn: 'root' })
 export class ListsStore {
-    private listsSignal = signal<List[]>([
-        {
-            id: 'list1',
-            name: 'My First List',
-            itemIds: []
-        }
-    ]);
+    private listsSignal = signal<List[]>([]);
 
     public lists$ = this.listsSignal.asReadonly();
 
@@ -67,5 +61,46 @@ export class ListsStore {
      */
     createList(listId: string, name: string): void {
         this.listsSignal.update(lists => [...lists, { id: listId, name, itemIds: [] }]);
+    }
+
+    /**
+     * Add a list
+     *
+     * @param list The list to add
+     */
+    add(list: List): void {
+        this.listsSignal.update(lists => [...lists, list]);
+    }
+
+    /**
+     * Get all lists
+     *
+     * @returns Array of all lists
+     */
+    getAll(): List[] {
+        return this.listsSignal();
+    }
+
+    /**
+     * Rename a list by ID
+     *
+     * @param listId The ID of the list to rename
+     * @param newName The new name for the list
+     */
+    rename(listId: string, newName: string): void {
+        this.listsSignal.update(lists =>
+            lists.map(list =>
+                list.id === listId ? { ...list, name: newName } : list
+            )
+        );
+    }
+
+    /**
+     * Remove a list by ID
+     *
+     * @param listId The ID of the list to remove
+     */
+    remove(listId: string): void {
+        this.listsSignal.update(lists => lists.filter(list => list.id !== listId));
     }
 }

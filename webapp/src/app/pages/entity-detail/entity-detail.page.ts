@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -62,6 +62,7 @@ export class EntityDetailPageComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
+        private location: Location,
         private entityService: EntityService,
         public entityRecordService: EntityRecordService,
         private entityStore: EntityStore
@@ -90,12 +91,7 @@ export class EntityDetailPageComponent implements OnInit {
     }
 
     onClickBackButton(): void {
-        const entity = this.entity$();
-        if (entity) {
-            this.router.navigate(['/entity', generateEntityKey(entity.name)]);
-        } else {
-            this.router.navigate(['/']);
-        }
+        this.location.back();
     }
 
     onClickEdit(): void {

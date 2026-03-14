@@ -1,24 +1,12 @@
-- Give users a way to create and manage lists
-- Update the stylign of lists to look more like the rest of the app's tables and views
-- Move the 'columns' button on lists to the top I guess?
-- Better UX for adding items to list - allowing shift and select maybe. 
+- Make the lists page look like a table, with a header and columns that line up
+- Move items between lists
+- Remove items from a list
+- A 'kanban' view, where each list is a column and you can drag between them.
+  - could just be a list with 'sections', and you can drag items between sections.
+  - could be a list that has 'sections' mapped to a specific select field.
+- Create new items directly from the list page, and add them to the list right there. 
+  - individual items
+  - bulk create items
+- Quickly edit items directly from list or table pages. 
+
 - Global 'Create' UX, so you can add items no matter where you are in the app
-- Make the list look like a table? Then only change to a list when you click a button?
-
-
-
-Imaginary Project Management Workspace:
-- Entities:
-  - Person
-  - Team
-  - Project
-  - Task
-- Views:
-  - Open Tasks
-  - Closed Tasks
-  - Open Projects
-  - Closed Projects
-- Lists:
-  - Product Discovery
-  - Backlog 
-  - Kanban Board

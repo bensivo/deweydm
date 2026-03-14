@@ -13,17 +13,7 @@
     <p class="section-description">Start with a pre-configured template for Project Tracking, CRM, or Product Ideation</p>
   </nz-card>
 
-  <!-- Import/Export Section -->
-  <nz-card class="import-export-section">
-    <div class="section-header">
-      <h2>Import/Export</h2>
-      <div class="header-buttons">
-        <button nz-button (click)="onClickExportButton()">Export Data</button>
-        <button nz-button (click)="onClickImportButton()">Import Data</button>
-      </div>
-    </div>
-    <p class="section-description">Backup your workspace or transfer data between instances</p>
-  </nz-card>
+
 
   <!-- Entities Section -->
   <nz-card class="entities-section">
@@ -63,7 +53,106 @@
     </ng-template>
   </nz-card>
 
-  <!-- Create Entity Modal -->
+  <!-- Lists Section -->
+  <nz-card class="lists-section">
+    <div class="section-header">
+      <h2>Lists</h2>
+      <button nz-button nzType="primary" (click)="onClickAddListButton()">
+        + Add List
+      </button>
+    </div>
+
+    <div *ngIf="lists$().length === 0; else listsList" class="empty-state">
+      <nz-empty nzNotFoundContent="No lists created yet"></nz-empty>
+    </div>
+
+    <ng-template #listsList>
+      <div class="lists-list">
+        <div *ngFor="let list of lists$()" class="list-item">
+          <div class="list-info">
+            <h3>{{ list.name }}</h3>
+          </div>
+          <div class="list-actions">
+            <button
+              nz-button
+              nzType="primary"
+              (click)="onClickRenameListButton(list.id, list.name)"
+              nzSize="small">
+              Rename
+            </button>
+            <button
+              nz-button
+              nzDanger
+              nzType="text"
+              (click)="onClickDeleteListButton(list.id)"
+              nzSize="small">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    </nz-card>
+  
+  <!-- Import/Export Section -->
+  <nz-card class="import-export-section">
+    <div class="section-header">
+      <h2>Import/Export</h2>
+      <div class="header-buttons">
+        <button nz-button (click)="onClickExportButton()">Export Data</button>
+        <button nz-button (click)="onClickImportButton()">Import Data</button>
+      </div>
+    </div>
+    <p class="section-description">Backup your workspace or transfer data between instances</p>
+  </nz-card>
+
+  <!-- Create List Modal -->
+  <nz-modal
+    [(nzVisible)]="showCreateListModal"
+    nzTitle="Create New List"
+    (nzOnOk)="onClickCreateListButton()"
+    (nzOnCancel)="showCreateListModal.set(false)">
+    <ng-container *nzModalContent>
+      <div class="modal-form">
+        <div class="form-group">
+          <label>List Name</label>
+          <input
+            nz-input
+            placeholder="e.g., Customer List"
+            [(ngModel)]="newListName"
+            name="listName" />
+        </div>
+
+        <div *ngIf="newListName" class="key-preview">
+          <label>URL Key</label>
+          <div class="key-value">/config/list/<strong>{{ getListKeyPreview() }}</strong></div>
+        </div>
+      </div>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Rename List Modal -->
+  <nz-modal
+    [(nzVisible)]="showRenameListModal"
+    nzTitle="Rename List"
+    nzOkText="Rename"
+    nzCancelText="Cancel"
+    (nzOnOk)="onClickConfirmRenameListButton()"
+    (nzOnCancel)="onClickCancelRenameListButton()">
+    <ng-container *nzModalContent>
+      <div class="modal-form">
+        <div class="form-group">
+          <label>List Name</label>
+          <input
+            nz-input
+            [(ngModel)]="renameListName"
+            name="renameListName" />
+        </div>
+      </div>
+    </ng-container>
+  </nz-modal>
+
+<!-- Create Entity Modal -->
   <nz-modal
     [(nzVisible)]="showCreateEntityModal"
     nzTitle="Create New Entity"

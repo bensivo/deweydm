@@ -7,9 +7,13 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzMenuModule } from 'ng-zorro-antd/menu';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
+import { ListService } from '../../services/list.service';
 import { EntityStore } from '../../store/entity.store';
 import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
@@ -27,6 +31,9 @@ import { EntityReferenceComponent } from '../../components/entity-reference/enti
     NzTableModule,
     NzCheckboxModule,
     NzModalModule,
+    NzDropDownModule,
+    NzMenuModule,
+    NzIconModule,
     EntityReferenceComponent
   ],
   templateUrl: './entity-list.page.html',
@@ -53,12 +60,19 @@ export class EntityListPageComponent implements OnInit {
   sortFieldIdSignal = signal<string>('');
   sortOrderSignal = signal<'asc' | 'desc' | null>(null);
 
+  // Multi-select and add-to-list
+  selectedRecordIdsSignal = signal<Set<string>>(new Set());
+  lastSelectedRecordIdSignal = signal<string>('');
+  isShiftHeldSignal = signal<boolean>(false);
+
   visibleFields$ = computed(() => {
     const entity = this.entity$();
     if (!entity) return [];
     const selected = this.selectedFieldIdsSignal();
     return entity.fields.filter(f => selected.has(f.id));
   });
+
+  lists$ = computed(() => this.listService.lists$());
 
   filteredAndSortedRecords$ = computed(() => {
     const records = this.records$();
@@ -102,7 +116,8 @@ export class EntityListPageComponent implements OnInit {
     private router: Router,
     private entityService: EntityService,
     private entityRecordService: EntityRecordService,
-    private entityStore: EntityStore
+    private entityStore: EntityStore,
+    private listService: ListService
   ) {}
 
   ngOnInit(): void {
@@ -116,6 +131,18 @@ export class EntityListPageComponent implements OnInit {
         if (entity) {
           this.selectedFieldIdsSignal.set(new Set(entity.fields.map(f => f.id)));
         }
+      }
+    });
+
+    // Track shift key state
+    window.addEventListener('keydown', (event) => {
+      if (event.shiftKey) {
+        this.isShiftHeldSignal.set(true);
+      }
+    });
+    window.addEventListener('keyup', (event) => {
+      if (event.key === 'Shift') {
+        this.isShiftHeldSignal.set(false);
       }
     });
   }
@@ -241,5 +268,47 @@ export class EntityListPageComponent implements OnInit {
     const entity = this.entityStore.getById(field.referenceEntityId);
     if (!entity) return null;
     return generateEntityKey(entity.name);
+  }
+
+  onToggleRecordSelection(recordId: string, checked: boolean): void {
+    const records = this.filteredAndSortedRecords$();
+    const currentIndex = records.findIndex(r => r.id === recordId);
+    const isShiftHeld = this.isShiftHeldSignal();
+
+    // If shift is held and we have a last selected, do range selection
+    if (isShiftHeld && this.lastSelectedRecordIdSignal()) {
+      const lastIndex = records.findIndex(r => r.id === this.lastSelectedRecordIdSignal());
+      const [start, end] = currentIndex < lastIndex ? [currentIndex, lastIndex] : [lastIndex, currentIndex];
+      const selected = new Set(this.selectedRecordIdsSignal());
+
+      // Select all records in the range (inclusive)
+      for (let i = start; i <= end; i++) {
+        selected.add(records[i].id);
+      }
+      this.selectedRecordIdsSignal.set(selected);
+    } else {
+      // Normal toggle
+      const selected = new Set(this.selectedRecordIdsSignal());
+      if (checked) {
+        selected.add(recordId);
+      } else {
+        selected.delete(recordId);
+      }
+      this.selectedRecordIdsSignal.set(selected);
+    }
+
+    this.lastSelectedRecordIdSignal.set(recordId);
+  }
+
+  isRecordSelected(recordId: string): boolean {
+    return this.selectedRecordIdsSignal().has(recordId);
+  }
+
+  onAddSelectedItemsToList(listId: string): void {
+    const recordIds = Array.from(this.selectedRecordIdsSignal());
+    if (recordIds.length > 0) {
+      this.listService.addItemsToList(listId, recordIds);
+      this.selectedRecordIdsSignal.set(new Set());
+    }
   }
 }

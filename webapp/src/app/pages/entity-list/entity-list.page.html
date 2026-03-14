@@ -20,7 +20,26 @@
         (input)="onFilterChange($event)"
         [value]="filterTextSignal()" />
       <button nz-button nzSize="large" (click)="onClickColumnsButton()">Columns</button>
+      <button
+        nz-button
+        nzSize="large"
+        nz-dropdown
+        [nzDropdownMenu]="addToListMenu"
+        nzTrigger="click"
+        [disabled]="selectedRecordIdsSignal().size === 0">
+        Add to List
+        <i nz-icon nzType="down" nzTheme="outline"></i>
+      </button>
     </div>
+
+    <!-- Add to List Dropdown Menu -->
+    <nz-dropdown-menu #addToListMenu="nzDropdownMenu">
+      <ul nz-menu>
+        <li nz-menu-item *ngFor="let list of lists$()" (click)="onAddSelectedItemsToList(list.id)">
+          {{ list.name }}
+        </li>
+      </ul>
+    </nz-dropdown-menu>
 
     <!-- Records Table -->
     <nz-table
@@ -31,6 +50,7 @@
       class="records-table">
       <thead>
         <tr>
+          <th class="checkbox-col"></th>
           <th
             *ngFor="let field of visibleFields$()"
             (click)="onColumnHeaderClick(field.id)"
@@ -47,6 +67,12 @@
         <tr *ngFor="let record of recordTable.data"
           class="record-row"
           (click)="onClickRecordRow(record.id)">
+          <td class="checkbox-col" (click)="$event.stopPropagation()">
+            <label nz-checkbox
+              [nzChecked]="isRecordSelected(record.id)"
+              (nzCheckedChange)="onToggleRecordSelection(record.id, $event)">
+            </label>
+          </td>
           <td *ngFor="let field of visibleFields$()">
             <!-- Reference field: single link -->
             <app-entity-reference *ngIf="isReferenceField(field) && record.data[field.id]"
