@@ -1,0 +1,106 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-03-15T21:35:20.118Z",
+  "entities": [
+    {
+      "id": "1773609991772-c7jahr51p",
+      "name": "Person",
+      "pluralName": "People",
+      "fields": [
+        {
+          "id": "1773609999506-svvz6iymm",
+          "name": "Name",
+          "type": "short-text"
+        },
+        {
+          "id": "1773610007524-jj5zv5g84",
+          "name": "Address",
+          "type": "long-text"
+        },
+        {
+          "id": "1773610014947-16fkdtuls",
+          "name": "Age",
+          "type": "number"
+        },
+        {
+          "id": "1773610158274-o6snx8rrb",
+          "name": "Employer",
+          "type": "reference",
+          "referenceEntityId": "1773610055655-c8v5vusjw"
+        },
+        {
+          "id": "1773610173145-89s2hn0bl",
+          "name": "Customer of",
+          "type": "reference-list",
+          "referenceEntityId": "1773610055655-c8v5vusjw"
+        },
+        {
+          "id": "1773610233221-u6ou4ncni",
+          "name": "Race",
+          "type": "option",
+          "optionValues": [
+            "Asian",
+            "Not Asian"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1773610055655-c8v5vusjw",
+      "name": "Company",
+      "pluralName": "Companies",
+      "fields": [
+        {
+          "id": "1773610063044-kwxycjeji",
+          "name": "Name",
+          "type": "short-text"
+        },
+        {
+          "id": "1773610376119-uqax95irx",
+          "name": "Employees",
+          "type": "backlink",
+          "backlinkSourceEntityId": "1773609991772-c7jahr51p",
+          "backlinkSourceFieldId": "1773610158274-o6snx8rrb"
+        },
+        {
+          "id": "1773610387607-lv7w48nzd",
+          "name": "Customers",
+          "type": "backlink",
+          "backlinkSourceEntityId": "1773609991772-c7jahr51p",
+          "backlinkSourceFieldId": "1773610173145-89s2hn0bl"
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "id": "1773610292961-p0bxkmp6e",
+      "entityId": "1773610055655-c8v5vusjw",
+      "data": {
+        "1773610063044-kwxycjeji": "Apple"
+      }
+    },
+    {
+      "id": "1773610328316-acue9iec7",
+      "entityId": "1773610055655-c8v5vusjw",
+      "data": {
+        "1773610063044-kwxycjeji": "Google"
+      }
+    },
+    {
+      "id": "1773610328316-gv4q40qmz",
+      "entityId": "1773610055655-c8v5vusjw",
+      "data": {
+        "1773610063044-kwxycjeji": "Microsoft"
+      }
+    },
+    {
+      "id": "1773610328316-0pv7vd36a",
+      "entityId": "1773610055655-c8v5vusjw",
+      "data": {
+        "1773610063044-kwxycjeji": "Netflix"
+      }
+    }
+  ],
+  "lists": []
+}

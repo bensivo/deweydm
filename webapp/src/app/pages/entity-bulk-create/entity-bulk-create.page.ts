@@ -150,13 +150,8 @@ export class EntityBulkCreatePageComponent implements OnInit {
         this.bulkDataSignal.set(bulkData.filter((_, i) => i !== rowIndex));
     }
 
-    getReferencedRecordOptions(field: EntityField): { label: string; value: string }[] {
-        if (!field.referenceEntityId) return [];
-        const referencedRecords = this.entityRecordService.getByEntityId(field.referenceEntityId);
-        return referencedRecords.map(record => ({
-            label: this.entityRecordService.getRecordDisplayName(field.referenceEntityId!, record.id),
-            value: record.id
-        }));
+    getReferenceOptions(field: EntityField){
+        return this.entityRecordService.getReferenceOptions(field);
     }
 
     getRefListValues(rowIndex: number, fieldId: string): string[] {

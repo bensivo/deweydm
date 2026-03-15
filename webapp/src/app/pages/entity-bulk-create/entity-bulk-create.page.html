@@ -73,9 +73,9 @@
                   [attr.data-field-index]="fieldIndex"
                   class="cell-select">
                   <nz-option
-                    *ngFor="let opt of getReferencedRecordOptions(field)"
-                    [nzValue]="opt.value"
-                    [nzLabel]="opt.label">
+                    *ngFor="let opt of getReferenceOptions(field)"
+                    [nzValue]="opt.recordId"
+                    [nzLabel]="opt.recordName">
                   </nz-option>
                 </nz-select>
                 <!-- Select for option type -->
@@ -102,9 +102,9 @@
                   [attr.data-field-index]="fieldIndex"
                   class="cell-select">
                   <nz-option
-                    *ngFor="let opt of getReferencedRecordOptions(field)"
-                    [nzValue]="opt.value"
-                    [nzLabel]="opt.label">
+                    *ngFor="let opt of getReferenceOptions(field)"
+                    [nzValue]="opt.recordId"
+                    [nzLabel]="opt.recordName">
                   </nz-option>
                 </nz-select>
               </td>

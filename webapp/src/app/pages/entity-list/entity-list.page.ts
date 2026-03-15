@@ -14,7 +14,6 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
 import { ListService } from '../../services/list.service';
-import { EntityStore } from '../../store/entity.store';
 import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
 import { generateEntityKey } from '../../services/entity-key.util';
@@ -116,7 +115,6 @@ export class EntityListPageComponent implements OnInit {
     private router: Router,
     private entityService: EntityService,
     private entityRecordService: EntityRecordService,
-    private entityStore: EntityStore,
     private listService: ListService
   ) {}
 
@@ -254,20 +252,15 @@ export class EntityListPageComponent implements OnInit {
 
   getRefListItems(field: EntityField, record: EntityRecord): { label: string; id: string; routeKey: string | null }[] {
     const value = record.data[field.id];
-    if (!value) return [];
-    const ids = value.split(',');
-    return ids.map(id => ({
-      id,
-      label: this.entityRecordService.getRecordDisplayName(field.referenceEntityId!, id),
-      routeKey: this.getReferencedEntityRouteKey(field)
+    return this.entityRecordService.getRefListItems(value, field).map(record => ({
+      id: record.id,
+      label: this.entityRecordService.getRecordDisplayName(field.referenceEntityId!, record.id),
+      routeKey: this.entityRecordService.getReferenceRouteKey(field)
     }));
   }
 
   getReferencedEntityRouteKey(field: EntityField): string | null {
-    if (!field.referenceEntityId) return null;
-    const entity = this.entityStore.getById(field.referenceEntityId);
-    if (!entity) return null;
-    return generateEntityKey(entity.name);
+    return this.entityRecordService.getReferenceRouteKey(field);
   }
 
   onToggleRecordSelection(recordId: string, checked: boolean): void {

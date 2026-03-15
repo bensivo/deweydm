@@ -36,9 +36,9 @@
               (ngModelChange)="setFieldValue(field.id, $event)"
               [name]="field.id">
               <nz-option
-                *ngFor="let opt of getReferencedRecordOptions(field)"
-                [nzValue]="opt.value"
-                [nzLabel]="opt.label">
+                *ngFor="let opt of getReferenceOptions(field)"
+                [nzValue]="opt.recordId"
+                [nzLabel]="opt.recordName">
               </nz-option>
             </nz-select>
             <nz-select
@@ -58,9 +58,9 @@
               (ngModelChange)="setRefListValues(field.id, $event)"
               [name]="field.id">
               <nz-option
-                *ngFor="let opt of getReferencedRecordOptions(field)"
-                [nzValue]="opt.value"
-                [nzLabel]="opt.label">
+                *ngFor="let opt of getReferenceOptions(field)"
+                [nzValue]="opt.recordId"
+                [nzLabel]="opt.recordName">
               </nz-option>
             </nz-select>
           </nz-form-control>

@@ -131,13 +131,8 @@ export class EntityDetailPageComponent implements OnInit {
         this.isDeleteConfirmModalOpen.set(false);
     }
 
-    getReferencedRecordOptions(field: EntityField): { label: string; value: string }[] {
-        if (!field.referenceEntityId) return [];
-        const referencedRecords = this.entityRecordService.getByEntityId(field.referenceEntityId);
-        return referencedRecords.map(record => ({
-            label: this.entityRecordService.getRecordDisplayName(field.referenceEntityId!, record.id),
-            value: record.id
-        }));
+    getReferenceOptions(field: EntityField) {
+        return this.entityRecordService.getReferenceOptions(field)
     }
 
     getReferencedRecordDisplayName(field: EntityField, recordId: string): string {
@@ -145,10 +140,7 @@ export class EntityDetailPageComponent implements OnInit {
     }
 
     getReferencedEntityRouteKey(field: EntityField): string | null {
-        if (!field.referenceEntityId) return null;
-        const entity = this.entityStore.getById(field.referenceEntityId);
-        if (!entity) return null;
-        return generateEntityKey(entity.name);
+        return this.entityRecordService.getReferenceRouteKey(field);
     }
 
     getRefListValues(fieldId: string): string[] {
@@ -168,13 +160,11 @@ export class EntityDetailPageComponent implements OnInit {
 
     getRefListViewItems(field: EntityField): { label: string; id: string; routeKey: string | null }[] {
         const value = this.getFieldValue(field.id);
-        if (!value) return [];
-        const ids = value.split(',');
-        return ids.map(id => ({
-            id,
-            label: this.entityRecordService.getRecordDisplayName(field.referenceEntityId!, id),
-            routeKey: this.getReferencedEntityRouteKey(field)
-        }));
+        return this.entityRecordService.getRefListItems(value, field).map(record => ({
+            id: record.id,
+            label: this.entityRecordService.getRecordDisplayName(field.referenceEntityId!, record.id),
+            routeKey: this.entityRecordService.getReferenceRouteKey(field)
+        }))
     }
 
     getBacklinkedRecords(field: EntityField): EntityRecord[] {

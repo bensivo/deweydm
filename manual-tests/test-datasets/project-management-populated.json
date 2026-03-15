@@ -1,0 +1,280 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-03-15T21:21:18.643Z",
+  "entities": [
+    {
+      "id": "1773608713590-j32k1bgw1",
+      "name": "Epic",
+      "pluralName": "Epics",
+      "fields": [
+        {
+          "id": "1773608932175-iacddyy5v",
+          "name": "Name",
+          "type": "short-text"
+        },
+        {
+          "id": "1773609570563-asshxhvhz",
+          "name": "Stories",
+          "type": "backlink",
+          "backlinkSourceEntityId": "1773608719652-malwgt1s2",
+          "backlinkSourceFieldId": "1773609543957-c8kg2izt4"
+        }
+      ]
+    },
+    {
+      "id": "1773608719652-malwgt1s2",
+      "name": "Story",
+      "pluralName": "Stories",
+      "fields": [
+        {
+          "id": "1773608757786-q14aska32",
+          "name": "Name",
+          "type": "short-text"
+        },
+        {
+          "id": "1773609543957-c8kg2izt4",
+          "name": "Epic",
+          "type": "reference",
+          "referenceEntityId": "1773608713590-j32k1bgw1"
+        },
+        {
+          "id": "1773609556620-45d7074ue",
+          "name": "Assignees",
+          "type": "reference-list",
+          "referenceEntityId": "1773608870797-la0qdpym2"
+        }
+      ]
+    },
+    {
+      "id": "1773608870797-la0qdpym2",
+      "name": "Person",
+      "pluralName": "People",
+      "fields": [
+        {
+          "id": "1773608878253-bwia3kytv",
+          "name": "Name",
+          "type": "short-text"
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "id": "1772310900001-team1",
+      "entityId": "1772310544848-wq6e553q3",
+      "data": {
+        "1772310614114-4xwtklm66": "Engineering Team"
+      }
+    },
+    {
+      "id": "1772310901001-member1",
+      "entityId": "1772310521347-y5myyhl0j",
+      "data": {
+        "1772310529665-ksz8ea0sr": "Alice Johnson",
+        "1772310532882-g3us1fumg": "Senior Engineer",
+        "1772310556063-7fmtd2u2w": "1772310900001-team1"
+      }
+    },
+    {
+      "id": "1772310901002-member2",
+      "entityId": "1772310521347-y5myyhl0j",
+      "data": {
+        "1772310529665-ksz8ea0sr": "Bob Smith",
+        "1772310532882-g3us1fumg": "Tech Lead",
+        "1772310556063-7fmtd2u2w": "1772310900001-team1"
+      }
+    },
+    {
+      "id": "1772310902001-project1",
+      "entityId": "1772310624109-pk7op268b",
+      "data": {
+        "1772310628695-557i0oaa3": "Website Redesign",
+        "1772310649225-umgk8przz": "Modernize the company website with a fresh design",
+        "1772310676690-7nyjo5foq": "Complete redesign and modernization",
+        "1772310687667-3c24aocrb": "1772310900001-team1",
+        "1772310706021-lhsg7gf8c": "20"
+      }
+    },
+    {
+      "id": "1772310903001-task1",
+      "entityId": "1772310728856-iqg7d9an4",
+      "data": {
+        "1772310793220-asdfaisda": "1772310902001-project1",
+        "1772310736904-87mgwxh0e": "Design mockups",
+        "1772310793220-tx3usihxv": "1772310901001-member1",
+        "1772310812805-wbhza1et1": "Create wireframes and high-fidelity mockups",
+        "1772310819672-at1za4rik": "Use Figma for design"
+      }
+    },
+    {
+      "id": "1772310903002-task2",
+      "entityId": "1772310728856-iqg7d9an4",
+      "data": {
+        "1772310793220-asdfaisda": "1772310902001-project1",
+        "1772310736904-87mgwxh0e": "Implement frontend components",
+        "1772310793220-tx3usihxv": "1772310901002-member2",
+        "1772310812805-wbhza1et1": "Build React components from mockups",
+        "1772310819672-at1za4rik": "Follow the design system"
+      }
+    },
+    {
+      "id": "1772310903003-task3",
+      "entityId": "1772310728856-iqg7d9an4",
+      "data": {
+        "1772310793220-asdfaisda": "1772310902001-project1",
+        "1772310736904-87mgwxh0e": "Setup development environment",
+        "1772310793220-tx3usihxv": "1772310901002-member2",
+        "1772310812805-wbhza1et1": "Configure local dev environment and deployment",
+        "1772310819672-at1za4rik": "Document setup process"
+      }
+    },
+    {
+      "id": "1772310903004-task4",
+      "entityId": "1772310728856-iqg7d9an4",
+      "data": {
+        "1772310793220-asdfaisda": "1772310902001-project1",
+        "1772310736904-87mgwxh0e": "Create database schema",
+        "1772310793220-tx3usihxv": "1772310901001-member1",
+        "1772310812805-wbhza1et1": "Design and implement database tables",
+        "1772310819672-at1za4rik": "Use PostgreSQL"
+      }
+    },
+    {
+      "id": "1772310903005-task5",
+      "entityId": "1772310728856-iqg7d9an4",
+      "data": {
+        "1772310793220-asdfaisda": "1772310902001-project1",
+        "1772310736904-87mgwxh0e": "API endpoint development",
+        "1772310793220-tx3usihxv": "1772310901002-member2",
+        "1772310812805-wbhza1et1": "Build REST API endpoints for core features",
+        "1772310819672-at1za4rik": "Follow API design guidelines"
+      }
+    },
+    {
+      "id": "1772310903006-task6",
+      "entityId": "1772310728856-iqg7d9an4",
+      "data": {
+        "1772310793220-asdfaisda": "1772310902001-project1",
+        "1772310736904-87mgwxh0e": "Write unit tests",
+        "1772310793220-tx3usihxv": "1772310901001-member1",
+        "1772310812805-wbhza1et1": "Achieve 80%+ code coverage",
+        "1772310819672-at1za4rik": "Use Jest for testing"
+      }
+    },
+    {
+      "id": "1772310903007-task7",
+      "entityId": "1772310728856-iqg7d9an4",
+      "data": {
+        "1772310793220-asdfaisda": "1772310902001-project1",
+        "1772310736904-87mgwxh0e": "Performance optimization",
+        "1772310793220-tx3usihxv": "1772310901002-member2",
+        "1772310812805-wbhza1et1": "Optimize images, bundle size, and API responses",
+        "1772310819672-at1za4rik": "Target < 3s initial load"
+      }
+    },
+    {
+      "id": "1772310903008-task8",
+      "entityId": "1772310728856-iqg7d9an4",
+      "data": {
+        "1772310793220-asdfaisda": "1772310902001-project1",
+        "1772310736904-87mgwxh0e": "Security audit",
+        "1772310793220-tx3usihxv": "1772310901001-member1",
+        "1772310812805-wbhza1et1": "Review and fix security vulnerabilities",
+        "1772310819672-at1za4rik": "Check OWASP top 10"
+      }
+    },
+    {
+      "id": "1772310903009-task9",
+      "entityId": "1772310728856-iqg7d9an4",
+      "data": {
+        "1772310793220-asdfaisda": "1772310902001-project1",
+        "1772310736904-87mgwxh0e": "User acceptance testing",
+        "1772310793220-tx3usihxv": "1772310901002-member2",
+        "1772310812805-wbhza1et1": "Conduct UAT with stakeholders",
+        "1772310819672-at1za4rik": "Document feedback and iterations"
+      }
+    },
+    {
+      "id": "1772310903010-task10",
+      "entityId": "1772310728856-iqg7d9an4",
+      "data": {
+        "1772310793220-asdfaisda": "1772310902001-project1",
+        "1772310736904-87mgwxh0e": "Deployment and launch",
+        "1772310793220-tx3usihxv": "1772310901001-member1",
+        "1772310812805-wbhza1et1": "Deploy to production and monitor",
+        "1772310819672-at1za4rik": "Have rollback plan ready"
+      }
+    },
+    {
+      "id": "1773609598446-t2ejdi8r9",
+      "entityId": "1773608713590-j32k1bgw1",
+      "data": {
+        "1773608932175-iacddyy5v": "Project Alpha"
+      }
+    },
+    {
+      "id": "1773609598446-vowb6qn81",
+      "entityId": "1773608713590-j32k1bgw1",
+      "data": {
+        "1773608932175-iacddyy5v": "Project Beta"
+      }
+    },
+    {
+      "id": "1773609609363-67c0ami4g",
+      "entityId": "1773608870797-la0qdpym2",
+      "data": {
+        "1773608878253-bwia3kytv": "Alice"
+      }
+    },
+    {
+      "id": "1773609609364-vy75vr6t4",
+      "entityId": "1773608870797-la0qdpym2",
+      "data": {
+        "1773608878253-bwia3kytv": "Bob"
+      }
+    },
+    {
+      "id": "1773609609364-hmai5zyvg",
+      "entityId": "1773608870797-la0qdpym2",
+      "data": {
+        "1773608878253-bwia3kytv": "Charlie"
+      }
+    },
+    {
+      "id": "1773609672459-547akm3u0",
+      "entityId": "1773608719652-malwgt1s2",
+      "data": {
+        "1773608757786-q14aska32": "Alpha Design",
+        "1773609543957-c8kg2izt4": "1773609598446-t2ejdi8r9",
+        "1773609556620-45d7074ue": "1773609609363-67c0ami4g"
+      }
+    },
+    {
+      "id": "1773609672459-vijx4vbrz",
+      "entityId": "1773608719652-malwgt1s2",
+      "data": {
+        "1773608757786-q14aska32": "Alpha Development",
+        "1773609543957-c8kg2izt4": "1773609598446-t2ejdi8r9",
+        "1773609556620-45d7074ue": "1773609609364-vy75vr6t4,1773609609364-hmai5zyvg"
+      }
+    },
+    {
+      "id": "1773609672459-w33z1xk0g",
+      "entityId": "1773608719652-malwgt1s2",
+      "data": {
+        "1773608757786-q14aska32": "Alpha UAT",
+        "1773609543957-c8kg2izt4": "1773609598446-t2ejdi8r9",
+        "1773609556620-45d7074ue": "1773609609363-67c0ami4g"
+      }
+    },
+    {
+      "id": "1773609672459-563nt5zoz",
+      "entityId": "1773608719652-malwgt1s2",
+      "data": {
+        "1773608757786-q14aska32": "Beta Discovery",
+        "1773609543957-c8kg2izt4": "1773609598446-vowb6qn81"
+      }
+    }
+  ],
+  "lists": []
+}

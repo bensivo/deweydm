@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 
 import { EntityRecord } from '../models/entity-record.model';
+import { EntityField } from '../models/entity.model';
 import { EntityRecordStore } from '../store/entity-record.store';
 import { EntityStore } from '../store/entity.store';
+import { generateEntityKey } from './entity-key.util';
 
 @Injectable({ providedIn: 'root' })
 export class EntityRecordService {
@@ -120,6 +122,57 @@ export class EntityRecordService {
 
             return false;
         });
+    }
+
+    /**
+     * Given a field of type 'reference' or 'reference-list', lookup the list
+     * of potential records that can be referenced. 
+     * 
+     * E.g. If a 'task' entity has a 'project' reference field, this function will return the list of projects that can be used.
+     *
+     * @param field - An EntityField of type 'reference' or 'reference-list'
+     * @returns Array of records that can be referenced, formatted as { label, value } for use in dropdowns
+     */
+    getReferenceOptions(field: EntityField): { recordName: string; recordId: string }[] {
+        if (!field.referenceEntityId) return [];
+        const referencedRecords = this.getByEntityId(field.referenceEntityId);
+        return referencedRecords.map(record => ({
+            recordName: this.getRecordDisplayName(field.referenceEntityId!, record.id),
+            recordId: record.id
+        }));
+    }
+
+    /**
+     * Get the route key (slug) for navigating to a referenced entity.
+     *
+     * @param field - The field with a referenceEntityId
+     * @returns The route-friendly key for the entity, or null if entity not found
+     */
+    getReferenceRouteKey(field: EntityField): string | null {
+        if (!field.referenceEntityId) return null;
+        const record = this.entityStore.getById(field.referenceEntityId);
+        if (!record) return null;
+        return generateEntityKey(record.name);
+    }
+
+    /**
+     * Given a reference-list field (which stores record-ids in a CSV), extract the individual record IDs, 
+     * then, lookup the records themselves and extract key inforamtion.
+     *
+     * @param value - The comma-separated record IDs from a reference-list field
+     * @param field - The reference-list field
+     * @returns Array of { label, id, routeKey } for each referenced record
+     */
+    getRefListItems(value: string, field: EntityField): EntityRecord[] {
+        if (!value) return [];
+        const ids = value.split(',');
+        return ids.map(id => this.getById(id))
+        .filter((record): record is EntityRecord => record !== undefined);
+        // return ids.map(id => ({
+        //     id,
+        //     label: this.getRecordDisplayName(field.referenceEntityId!, id),
+        //     routeKey: this.getReferenceRouteKey(field)
+        // }));
     }
 
     private generateId(): string {
