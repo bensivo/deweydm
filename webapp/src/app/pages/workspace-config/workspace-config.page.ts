@@ -157,50 +157,37 @@ export class WorkspaceConfigPageComponent {
   }
 
   onClickImportButton(): void {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = (event: any) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
+    this.importExportService.openImportFileDialog()
+        .then(importData => {
+            // Clear existing data
+            this.entityStore.getAll().forEach(entity => {
+                this.entityService.deleteEntity(entity.id);
+            });
+            this.entityRecordStore.getAll().forEach(record => {
+                this.entityRecordStore.remove(record.id);
+            });
+            this.listsStore.getAll().forEach(list => {
+                this.listsStore.remove(list.id);
+            });
 
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        try {
-          const importData = this.importExportService.parseImportFile(e.target.result);
+            // Load imported data
+            importData.entities.forEach(entity => {
+                this.entityStore.add(entity);
+            });
 
-          // Clear existing data
-          this.entityStore.getAll().forEach(entity => {
-            this.entityService.deleteEntity(entity.id);
-          });
-          this.entityRecordStore.getAll().forEach(record => {
-            this.entityRecordStore.remove(record.id);
-          });
-          this.listsStore.getAll().forEach(list => {
-            this.listsStore.remove(list.id);
-          });
+            importData.records.forEach(record => {
+                this.entityRecordStore.add(record);
+            });
 
-          // Load imported data
-          importData.entities.forEach(entity => {
-            this.entityStore.add(entity);
-          });
+            (importData.lists || []).forEach(list => {
+                this.listsStore.add(list);
+            });
 
-          importData.records.forEach(record => {
-            this.entityRecordStore.add(record);
-          });
-
-          (importData.lists || []).forEach(list => {
-            this.listsStore.add(list);
-          });
-
-          alert('Data imported successfully!');
-        } catch (error) {
-          alert(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
+            alert('Data imported successfully!');
+        })
+        .catch(error => {
+            alert(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        });
   }
 
   showCreateListModal = signal(false);

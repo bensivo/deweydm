@@ -70,4 +70,41 @@ export class ImportExportService {
             throw new Error('Invalid lists array in import data');
         }
     }
+
+    /**
+     * Open file browser and read selected JSON file.
+     * Returns a Promise that resolves with the parsed ExportData or rejects on error.
+     */
+    openImportFileDialog(): Promise<ExportData> {
+        return new Promise((resolve, reject) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+
+            input.onchange = (event: any) => {
+                const file = event.target.files?.[0];
+                if (!file) {
+                    reject(new Error('No file selected'));
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e: any) => {
+                    try {
+                        const fileContent = e.target.result;
+                        const importData = this.parseImportFile(fileContent);
+                        resolve(importData);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => {
+                    reject(new Error('Failed to read file'));
+                };
+                reader.readAsText(file);
+            };
+
+            input.click();
+        });
+    }
 }
