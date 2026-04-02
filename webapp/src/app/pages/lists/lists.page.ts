@@ -12,6 +12,7 @@ import { EntityStore } from '../../store/entity.store';
 import { EntityRecordStore } from '../../store/entity-record.store';
 import { ListsStore } from '../../store/lists.store';
 import { EntityField } from '../../models/entity.model';
+import { ModalState } from '../../utils/modal-state.util';
 
 @Component({
     selector: 'app-lists-page',
@@ -82,12 +83,8 @@ export class ListsPageComponent implements OnInit {
         return Array.from(fieldsMap.values());
     });
 
-    // Track selected column IDs (excludes display name fields)
-    selectedColumnIds = signal<string[]>([]);
-
     // Modal state for column selection
-    isColumnModalOpen = signal<boolean>(false);
-    pendingSelectedColumnIds = signal<string[]>([]);
+    columnModalState = new ModalState<string[]>([], (arr) => [...arr]);
 
     constructor(
         private route: ActivatedRoute,
@@ -103,8 +100,8 @@ export class ListsPageComponent implements OnInit {
             // Initialize selected columns once list is set
             setTimeout(() => {
                 const defaultFields = this.availableFields$().slice(0, 2);
-                if (this.selectedColumnIds().length === 0 && defaultFields.length > 0) {
-                    this.selectedColumnIds.set(defaultFields.map(f => f.id));
+                if (this.columnModalState.committed$().length === 0 && defaultFields.length > 0) {
+                    this.columnModalState.committed$.set(defaultFields.map(f => f.id));
                 }
             });
         });
@@ -124,23 +121,21 @@ export class ListsPageComponent implements OnInit {
      * Open the column selection modal
      */
     onClickColumnsButton(): void {
-        this.pendingSelectedColumnIds.set([...this.selectedColumnIds()]);
-        this.isColumnModalOpen.set(true);
+        this.columnModalState.open();
     }
 
     /**
      * Confirm column selection and close modal
      */
     onConfirmColumns(): void {
-        this.selectedColumnIds.set(this.pendingSelectedColumnIds());
-        this.isColumnModalOpen.set(false);
+        this.columnModalState.confirm();
     }
 
     /**
      * Cancel and close modal without saving
      */
     onCancelColumns(): void {
-        this.isColumnModalOpen.set(false);
+        this.columnModalState.cancel();
     }
 
     /**
@@ -150,7 +145,7 @@ export class ListsPageComponent implements OnInit {
      * @returns True if selected
      */
     isPendingFieldSelected(fieldId: string): boolean {
-        return this.pendingSelectedColumnIds().includes(fieldId);
+        return this.columnModalState.pending$().includes(fieldId);
     }
 
     /**
@@ -159,7 +154,7 @@ export class ListsPageComponent implements OnInit {
      * @param fieldId The field ID to toggle
      */
     onTogglePendingColumn(fieldId: string): void {
-        this.pendingSelectedColumnIds.update(ids =>
+        this.columnModalState.pending$.update(ids =>
             ids.includes(fieldId) ? ids.filter(id => id !== fieldId) : [...ids, fieldId]
         );
     }
@@ -170,7 +165,7 @@ export class ListsPageComponent implements OnInit {
      * @param fieldId The field ID to toggle
      */
     toggleColumn(fieldId: string): void {
-        this.selectedColumnIds.update(ids =>
+        this.columnModalState.committed$.update(ids =>
             ids.includes(fieldId) ? ids.filter(id => id !== fieldId) : [...ids, fieldId]
         );
     }

@@ -15,6 +15,7 @@ import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
 import { EntityField } from '../../models/entity.model';
 import { generateEntityKey } from '../../services/entity-key.util';
+import { ModalState } from '../../utils/modal-state.util';
 
 @Component({
     selector: 'app-entity-bulk-create-page',
@@ -42,9 +43,7 @@ export class EntityBulkCreatePageComponent implements OnInit {
         return entities.find(e => generateEntityKey(e.name) === key);
     });
 
-    selectedFieldIdsSignal = signal<Set<string>>(new Set());
-    pendingFieldIdsSignal = signal<Set<string>>(new Set());
-    isFieldModalOpenSignal = signal<boolean>(false);
+    fieldModalState = new ModalState<Set<string>>(new Set(), (set) => new Set(set));
 
     // Bulk data: array of records, each is a map of fieldId -> value
     bulkDataSignal = signal<Record<string, string>[]>([{}]);
@@ -55,7 +54,7 @@ export class EntityBulkCreatePageComponent implements OnInit {
     visibleFields$ = computed(() => {
         const entity = this.entity$();
         if (!entity) return [];
-        const selected = this.selectedFieldIdsSignal();
+        const selected = this.fieldModalState.committed$();
         return entity.fields.filter(f => selected.has(f.id));
     });
 
@@ -78,8 +77,7 @@ export class EntityBulkCreatePageComponent implements OnInit {
             // Initialize field selection - only select displayNameField by default
             const displayFieldId = entity.displayNameFieldId || entity.fields[0]?.id;
             const initialFields = displayFieldId ? new Set([displayFieldId]) : new Set<string>();
-            this.selectedFieldIdsSignal.set(initialFields);
-            this.pendingFieldIdsSignal.set(initialFields);
+            this.fieldModalState.committed$.set(initialFields);
         });
     }
 
@@ -93,31 +91,29 @@ export class EntityBulkCreatePageComponent implements OnInit {
     }
 
     onClickFieldsButton(): void {
-        this.pendingFieldIdsSignal.set(new Set(this.selectedFieldIdsSignal()));
-        this.isFieldModalOpenSignal.set(true);
+        this.fieldModalState.open();
     }
 
     onConfirmFields(): void {
-        this.selectedFieldIdsSignal.set(new Set(this.pendingFieldIdsSignal()));
-        this.isFieldModalOpenSignal.set(false);
+        this.fieldModalState.confirm();
     }
 
     onCancelFields(): void {
-        this.isFieldModalOpenSignal.set(false);
+        this.fieldModalState.cancel();
     }
 
     onTogglePendingField(fieldId: string, checked: boolean): void {
-        const pending = new Set(this.pendingFieldIdsSignal());
+        const pending = new Set(this.fieldModalState.pending$());
         if (checked) {
             pending.add(fieldId);
         } else {
             pending.delete(fieldId);
         }
-        this.pendingFieldIdsSignal.set(pending);
+        this.fieldModalState.pending$.set(pending);
     }
 
     isPendingFieldVisible(fieldId: string): boolean {
-        return this.pendingFieldIdsSignal().has(fieldId);
+        return this.fieldModalState.pending$().has(fieldId);
     }
 
     isFieldSelectable(field: EntityField): boolean {

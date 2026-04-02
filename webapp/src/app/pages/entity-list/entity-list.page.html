@@ -100,7 +100,7 @@
 
     <!-- Column Selection Modal -->
     <nz-modal
-      [(nzVisible)]="isColumnModalOpenSignal"
+      [(nzVisible)]="columnModalState.isOpen$"
       nzTitle="Select Columns"
       (nzOnOk)="onConfirmColumns()"
       (nzOnCancel)="onCancelColumns()">

@@ -84,20 +84,6 @@ private loadWorkspaceData(entities, records, lists): void {
 
 ---
 
-### 7. **Extract Import/Export File Handling to Service**
-**Location**: `workspace-config.page.ts:150-203`
-
-**Issue**: File input creation, FileReader logic, and error handling mixed into component. This is not UI logic—it's a side effect.
-
-**Refactor**:
-- Move into `ImportExportService` (which already exists)
-- Return observable with parsed data
-- Let component handle UI state only
-
-**Impact**: Separates concerns, testable file handling, cleaner component.
-
----
-
 ## Medium Priority Refactors
 
 ### 8. **Standardize Modal State Pattern**

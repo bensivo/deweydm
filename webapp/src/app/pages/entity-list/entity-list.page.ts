@@ -18,6 +18,7 @@ import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
 import { generateEntityKey } from '../../services/entity-key.util';
 import { EntityReferenceComponent } from '../../components/entity-reference/entity-reference.component';
+import { ModalState } from '../../utils/modal-state.util';
 
 @Component({
   selector: 'app-entity-list-page',
@@ -52,9 +53,7 @@ export class EntityListPageComponent implements OnInit {
     return this.entityRecordService.records$().filter(r => r.entityId === entity.id);
   });
 
-  selectedFieldIdsSignal = signal<Set<string>>(new Set());
-  pendingFieldIdsSignal = signal<Set<string>>(new Set());
-  isColumnModalOpenSignal = signal<boolean>(false);
+  columnModalState = new ModalState<Set<string>>(new Set(), (set) => new Set(set));
   filterTextSignal = signal<string>('');
   sortFieldIdSignal = signal<string>('');
   sortOrderSignal = signal<'asc' | 'desc' | null>(null);
@@ -67,7 +66,7 @@ export class EntityListPageComponent implements OnInit {
   visibleFields$ = computed(() => {
     const entity = this.entity$();
     if (!entity) return [];
-    const selected = this.selectedFieldIdsSignal();
+    const selected = this.columnModalState.committed$();
     return entity.fields.filter(f => selected.has(f.id));
   });
 
@@ -127,7 +126,8 @@ export class EntityListPageComponent implements OnInit {
       } else {
         const entity = this.entity$();
         if (entity) {
-          this.selectedFieldIdsSignal.set(new Set(entity.fields.map(f => f.id)));
+          const allFieldIds = new Set(entity.fields.map(f => f.id));
+          this.columnModalState.committed$.set(allFieldIds);
         }
       }
     });
@@ -171,31 +171,29 @@ export class EntityListPageComponent implements OnInit {
   }
 
   onClickColumnsButton(): void {
-    this.pendingFieldIdsSignal.set(new Set(this.selectedFieldIdsSignal()));
-    this.isColumnModalOpenSignal.set(true);
+    this.columnModalState.open();
   }
 
   onConfirmColumns(): void {
-    this.selectedFieldIdsSignal.set(new Set(this.pendingFieldIdsSignal()));
-    this.isColumnModalOpenSignal.set(false);
+    this.columnModalState.confirm();
   }
 
   onCancelColumns(): void {
-    this.isColumnModalOpenSignal.set(false);
+    this.columnModalState.cancel();
   }
 
   onTogglePendingColumn(fieldId: string, checked: boolean): void {
-    const pending = new Set(this.pendingFieldIdsSignal());
+    const pending = new Set(this.columnModalState.pending$());
     if (checked) {
       pending.add(fieldId);
     } else {
       pending.delete(fieldId);
     }
-    this.pendingFieldIdsSignal.set(pending);
+    this.columnModalState.pending$.set(pending);
   }
 
   isPendingFieldVisible(fieldId: string): boolean {
-    return this.pendingFieldIdsSignal().has(fieldId);
+    return this.columnModalState.pending$().has(fieldId);
   }
 
   onFilterChange(event: Event): void {

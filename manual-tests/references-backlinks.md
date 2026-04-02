@@ -38,7 +38,7 @@ Steps:
 9. Find the epic, verify that the 2 stories show up 
 
 
-## Edit References, Reference Links
+### Edit References, Reference Links
 Users can:
 - Edit a 'reference' or 'reference-link' field appropriately
 
@@ -47,3 +47,13 @@ Steps:
 2. Edit any of the stories
    1. Switch the epic
    2. Switch the assignees
+
+
+### Delete referenced field
+Users can:
+- Choose to cascade delete or not
+
+Steps:
+1. Import the data `project-management-populated.json`
+2. Go to 'Project alpha', and delete it
+3. (not implemented yet) See teh option to cascade delete, or set to null, or replace referenc

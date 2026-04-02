@@ -20,8 +20,8 @@
                         class="item-display-name"
                         (click)="$event.stopPropagation()">
                     </app-entity-reference>
-                    <div class="item-columns" *ngIf="selectedColumnIds().length > 0">
-                        <span class="column-value" *ngFor="let fieldId of selectedColumnIds()">
+                    <div class="item-columns" *ngIf="columnModalState.committed$().length > 0">
+                        <span class="column-value" *ngFor="let fieldId of columnModalState.committed$()">
                             {{ getFieldValue(item, fieldId) }}
                         </span>
                     </div>
@@ -31,7 +31,7 @@
 
         <!-- Column Selection Modal -->
         <nz-modal
-            [(nzVisible)]="isColumnModalOpen"
+            [(nzVisible)]="columnModalState.isOpen$"
             nzTitle="Select Columns"
             (nzOnOk)="onConfirmColumns()"
             (nzOnCancel)="onCancelColumns()">

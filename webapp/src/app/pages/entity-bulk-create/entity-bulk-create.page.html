@@ -125,7 +125,7 @@
 
   <!-- Field Selection Modal -->
   <nz-modal
-    [(nzVisible)]="isFieldModalOpenSignal"
+    [(nzVisible)]="fieldModalState.isOpen$"
     nzTitle="Select Fields"
     (nzOnOk)="onConfirmFields()"
     (nzOnCancel)="onCancelFields()">
