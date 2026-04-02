@@ -1,12 +1,16 @@
-- Make the lists page look like a table, with a header and columns that line up
-- Move items between lists
-- Remove items from a list
-- A 'kanban' view, where each list is a column and you can drag between them.
-  - could just be a list with 'sections', and you can drag items between sections.
-  - could be a list that has 'sections' mapped to a specific select field.
-- Create new items directly from the list page, and add them to the list right there. 
-  - individual items
-  - bulk create items
-- Quickly edit items directly from list or table pages. 
+- Bundling into an electron app with a sqlite database
+- Filters on the all-entities view
+- Sort by on the all-entities view
+- Views, which are just pre-created sets of filters and sorting (may replace lists)
+- Make the searchbar work
+- MD field type
+- Attachment field type
+- Bulk edit mode in all-entities view
 
-- Global 'Create' UX, so you can add items no matter where you are in the app
+- Lists:
+  - Make the lists page look like a table, with a header and columns that line up
+  - Move items between lists
+  - Remove items from a list
+  - A 'kanban' view, where each list is a column and you can drag between them.
+    - could just be a list with 'sections', and you can drag items between sections.
+    - could be a list that has 'sections' mapped to a specific select field.
