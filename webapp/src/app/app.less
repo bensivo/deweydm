@@ -1,34 +1,96 @@
+// Top Navigation Bar
+.app-topnav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: #001529;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  justify-content: space-between;
+}
+
+.topnav-left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.topnav-logo {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.topnav-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+  flex-shrink: 0;
+
+  .ant-input {
+    width: 350px;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+
+    &:focus {
+      border-color: #1890ff;
+      background-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    }
+  }
+}
+
+.topnav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+
+  button {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 14px;
+  }
+}
+
 .app-layout {
   height: 100vh;
   display: flex;
+  flex-direction: column;
+  padding-top: 56px;
+}
+
+.app-main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
 }
 
 .app-sider {
   background: #001529;
-
-  .logo {
-    height: 48px;
-    margin: 8px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-  }
-
-  .create-button-container {
-
-    button {
-      min-height: 40px;
-      text-align: left;
-      background-color: #374b5d;
-      border-color: #374b5d;
-      font-weight: 500;
-      font-size: 14px;
-    }
-  }
+  overflow-y: auto;
 
   .nav-divider {
     margin: 4px 8px;

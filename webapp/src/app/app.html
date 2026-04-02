@@ -1,22 +1,36 @@
 <nz-layout class="app-layout">
-  <nz-sider class="app-sider" nzWidth="256px">
-    <div class="logo">Dewey DM</div>
-    <div class="create-button-container">
+  <!-- Top Navigation Bar -->
+  <div class="app-topnav">
+    <div class="topnav-left">
+      <div class="topnav-logo">Dewey DM</div>
+    </div>
+    <div class="topnav-center">
+      <input
+        type="text"
+        placeholder="Search..."
+        class="topnav-search"
+        nz-input
+        nzSize="large" />
+    </div>
+    <div class="topnav-right">
       <button
         nz-button
         nzType="primary"
-        nzBlock
         (click)="onClickCreateButton()">
         + Create
       </button>
     </div>
-    <ul nz-menu
-        nzTheme="dark"
-        nzMode="inline"
-        [nzInlineIndent]="24">
-      <!-- <li nz-menu-item nzMatchRouter>
+  </div>
+
+  <nz-layout class="app-main-container">
+    <nz-sider class="app-sider" nzWidth="256px">
+      <ul nz-menu
+          nzTheme="dark"
+          nzMode="inline"
+          [nzInlineIndent]="24">
+      <li nz-menu-item nzMatchRouter>
         <a routerLink="/home">Home</a>
-      </li> -->
+      </li>
       <li *ngIf="lists$().length > 0" nz-menu-divider class="nav-divider"></li>
       <li nz-menu-item
           *ngFor="let list of lists$()"
@@ -37,12 +51,13 @@
       <li nz-menu-item nzMatchRouter>
         <a routerLink="/workspace-config">Workspace Config</a>
       </li>
-    </ul>
-  </nz-sider>
-  <nz-layout class="app-main-layout">
-    <nz-content class="app-content">
-      <router-outlet></router-outlet>
-    </nz-content>
+      </ul>
+    </nz-sider>
+    <nz-layout class="app-main-layout">
+      <nz-content class="app-content">
+        <router-outlet></router-outlet>
+      </nz-content>
+    </nz-layout>
   </nz-layout>
 </nz-layout>
 

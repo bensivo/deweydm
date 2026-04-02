@@ -4,6 +4,7 @@ import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzInputModule } from 'ng-zorro-antd/input';
 
 import { EntityService } from './services/entity.service';
 import { EntityRecordService } from './services/entity-record.service';
@@ -22,6 +23,7 @@ import { FormModalComponent } from './components/global-create/form-modal.compon
         NzLayoutModule,
         NzMenuModule,
         NzButtonModule,
+        NzInputModule,
         EntitySelectModalComponent,
         FormModalComponent
     ],
