@@ -1,0 +1,75 @@
+<nz-modal
+    [nzVisible]="isOpen()"
+    [nzTitle]="'New ' + (entity()?.name ?? '')"
+    nzOkText="Create"
+    nzCancelText="Cancel"
+    (nzOnOk)="onClickSubmit()"
+    (nzOnCancel)="onClickCancel()">
+    <ng-container *nzModalContent>
+        <div class="form-modal">
+            <div *ngIf="entity(); else noEntity" class="form-modal-content">
+                <form nz-form nzLayout="vertical">
+                    <nz-form-item *ngFor="let field of editableFields$(); let isFirst = first">
+                        <nz-form-label>{{ field.name }}</nz-form-label>
+                        <nz-form-control>
+                            <textarea
+                                *ngIf="field.type === 'long-text'"
+                                nz-input
+                                [nzAutosize]="{ minRows: 3, maxRows: 6 }"
+                                [ngModel]="getFieldValue(field.id)"
+                                (ngModelChange)="onFieldChange(field.id, $event)"
+                                [name]="field.id"
+                                #firstInput>
+                            </textarea>
+                            <input
+                                *ngIf="field.type === 'short-text' || field.type === 'number'"
+                                nz-input
+                                [type]="field.type === 'number' ? 'number' : 'text'"
+                                [ngModel]="getFieldValue(field.id)"
+                                (ngModelChange)="onFieldChange(field.id, $event)"
+                                [name]="field.id"
+                                #firstInput />
+                            <nz-select
+                                *ngIf="field.type === 'reference'"
+                                nzPlaceHolder="Select..."
+                                [ngModel]="getFieldValue(field.id)"
+                                (ngModelChange)="onFieldChange(field.id, $event)"
+                                [name]="field.id">
+                                <nz-option
+                                    *ngFor="let opt of getReferenceOptions(field)"
+                                    [nzValue]="opt.recordId"
+                                    [nzLabel]="opt.recordName">
+                                </nz-option>
+                            </nz-select>
+                            <nz-select
+                                *ngIf="field.type === 'option'"
+                                nzPlaceHolder="Select..."
+                                [ngModel]="getFieldValue(field.id)"
+                                (ngModelChange)="onFieldChange(field.id, $event)"
+                                [name]="field.id">
+                                <nz-option *ngFor="let val of field.optionValues" [nzValue]="val" [nzLabel]="val"></nz-option>
+                            </nz-select>
+                            <nz-select
+                                class="reference-list-select"
+                                *ngIf="field.type === 'reference-list'"
+                                nzMode="multiple"
+                                nzPlaceHolder="Select..."
+                                [ngModel]="getRefListValues(field.id)"
+                                (ngModelChange)="setRefListValues(field.id, $event)"
+                                [name]="field.id">
+                                <nz-option
+                                    *ngFor="let opt of getReferenceOptions(field)"
+                                    [nzValue]="opt.recordId"
+                                    [nzLabel]="opt.recordName">
+                                </nz-option>
+                            </nz-select>
+                        </nz-form-control>
+                    </nz-form-item>
+                </form>
+            </div>
+            <ng-template #noEntity>
+                <nz-empty nzNotFoundContent="No entity selected"></nz-empty>
+            </ng-template>
+        </div>
+    </ng-container>
+</nz-modal>

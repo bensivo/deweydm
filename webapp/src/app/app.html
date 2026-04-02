@@ -1,6 +1,15 @@
 <nz-layout class="app-layout">
   <nz-sider class="app-sider" nzWidth="256px">
     <div class="logo">Dewey DM</div>
+    <div class="create-button-container">
+      <button
+        nz-button
+        nzType="primary"
+        nzBlock
+        (click)="onClickCreateButton()">
+        + Create
+      </button>
+    </div>
     <ul nz-menu
         nzTheme="dark"
         nzMode="inline"
@@ -36,3 +45,19 @@
     </nz-content>
   </nz-layout>
 </nz-layout>
+
+<!-- Global Create Modals -->
+<app-global-create-entity-select
+  [isOpen]="isCreateModalOpen$()"
+  [entities]="entities$()"
+  (onSelectEntity)="onSelectEntity($event)"
+  (onCancel)="onCancelEntitySelect()">
+</app-global-create-entity-select>
+
+<app-global-create-form
+  [isOpen]="isFormModalOpen$()"
+  [entity]="selectedEntity$()"
+  [formData]="formData$()"
+  (onSubmit)="onFormSubmit($event)"
+  (onCancel)="onFormCancel()">
+</app-global-create-form>

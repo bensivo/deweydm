@@ -1,0 +1,31 @@
+<ng-template #footerTemplate>
+    <button nz-button (click)="onClickCancel()">Cancel</button>
+</ng-template>
+
+<nz-modal
+    [nzVisible]="isOpen()"
+    nzTitle="Create New Record"
+    [nzFooter]="footerTemplate"
+    (nzOnCancel)="onClickCancel()">
+    <ng-container *nzModalContent>
+        <div class="entity-select-modal">
+            <p class="modal-description">Select the type of record you want to create:</p>
+            <div class="entity-options">
+                <ng-container *ngIf="entities().length > 0; else noEntities">
+                    <button
+                        *ngFor="let entity of entities()"
+                        nz-button
+                        nzType="default"
+                        nzBlock
+                        class="entity-option-button"
+                        (click)="onClickEntityButton(entity.id)">
+                        {{ entity.name }}
+                    </button>
+                </ng-container>
+            </div>
+            <ng-template #noEntities>
+                <nz-empty nzNotFoundContent="No entities available. Create entities in Workspace Config first."></nz-empty>
+            </ng-template>
+        </div>
+    </ng-container>
+</nz-modal>
