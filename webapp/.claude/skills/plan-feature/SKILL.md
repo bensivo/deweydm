@@ -12,4 +12,6 @@ If given, look at the reference files the user provides as a starting point.
 
 The folder `docs/features` contains traces and documentation on how some existing features were implemented. Before planning, look through that to see if any similar features have been implemented before, and try your best to match the implementation there. 
 
-Create the plan for the feature, and write it to a MD file in /docs/scratchpad/<feature_name>-plan.md. Keep the implementation plan concise enough for a human to read, but detailed enough to a future LLM to one-shot the implementation. 
+Create the plan for the feature, and write it to a MD file in /docs/plans/<feature_name>-plan.md. Keep the implementation plan concise enough for a human to read, but detailed enough to a future LLM to one-shot the implementation. 
+
+If you find that the feature descriptions in docs have deviated from what you see in teh codebase, update the docs.
