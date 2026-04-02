@@ -9,7 +9,7 @@ context: fork
 Look through this codebase, for the implementation of the feature described below, starting at the file mentioned:
 $ARGUMENTS
 
-Follow import paths, and crawl the rest of the codebase to find the e2e implementation of this feature, then create a file in .claude/docs/features/<feature_name>.md, with these headings:
+Follow import paths, and crawl the rest of the codebase to find the e2e implementation of this feature, then create a file in docs/features/<feature_name>.md, with these headings:
 
 - Description - what does this feature do?
 - Trigger - how is this feature triggered or invoked?
