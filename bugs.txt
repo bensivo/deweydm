@@ -1,7 +1,5 @@
 - The "Display Field" lets you choose refernces and backlinks
 
-- 'back' button on entity-detail page always takes you to entity-list, not where you just were
-
 - The 'long text' input field isn't actaully very long
 
 - Setting 'number' in a field type doesn't restrict the input in add record
@@ -9,3 +7,5 @@
 - refernce inputs are selects, not typable selects. Could get unwieldy
 
 - Search input in entity-list page doesn't search by reference names
+
+- Text sizes across the app are not consistent, especially page headers and stuff. 
