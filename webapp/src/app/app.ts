@@ -5,11 +5,14 @@ import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 
 import { EntityService } from './services/entity.service';
 import { EntityRecordService } from './services/entity-record.service';
+import { SearchService } from './services/search.service';
 import { generateEntityKey } from './services/entity-key.util';
 import { ListsStore } from './store/lists.store';
+import { SearchStore } from './store/search.store';
 import { GlobalCreateStore } from './store/global-create.store';
 import { EntitySelectModalComponent } from './components/global-create/entity-select-modal.component';
 import { FormModalComponent } from './components/global-create/form-modal.component';
@@ -24,6 +27,7 @@ import { FormModalComponent } from './components/global-create/form-modal.compon
         NzMenuModule,
         NzButtonModule,
         NzInputModule,
+        NzAutocompleteModule,
         EntitySelectModalComponent,
         FormModalComponent
     ],
@@ -31,10 +35,14 @@ import { FormModalComponent } from './components/global-create/form-modal.compon
     styleUrl: './app.less'
 })
 export class App {
+    private highlightedIndex = 0;
+
     constructor(
         private entityService: EntityService,
         private entityRecordService: EntityRecordService,
+        private searchService: SearchService,
         private listsStore: ListsStore,
+        private searchStore: SearchStore,
         private globalCreateStore: GlobalCreateStore,
         private router: Router
     ) {}
@@ -67,6 +75,14 @@ export class App {
         return this.globalCreateStore.formData$;
     }
 
+    get searchQuery$() {
+        return this.searchStore.searchQuery$;
+    }
+
+    get searchResults$() {
+        return this.searchStore.searchResults$;
+    }
+
     getEntityKey(name: string): string {
         return generateEntityKey(name);
     }
@@ -94,5 +110,33 @@ export class App {
 
     onFormCancel(): void {
         this.globalCreateStore.closeCreateFlow();
+    }
+
+    onSearchInput(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        this.highlightedIndex = 0;
+        this.searchService.performSearch(input.value);
+    }
+
+    onSearchSelect(result: any): void {
+        this.router.navigate(['/entity', result.entityKey, result.recordId]);
+        this.searchService.clearSearch();
+        this.highlightedIndex = 0;
+    }
+
+    onSearchKeydown(event: KeyboardEvent): void {
+        const results = this.searchResults$();
+        if (results.length === 0) return;
+
+        if (event.key === 'ArrowDown') {
+            this.highlightedIndex = Math.min(this.highlightedIndex + 1, results.length - 1);
+            event.preventDefault();
+        } else if (event.key === 'ArrowUp') {
+            this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
+            event.preventDefault();
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
+            this.onSearchSelect(results[this.highlightedIndex]);
+        }
     }
 }
