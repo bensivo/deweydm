@@ -7,8 +7,8 @@ Users can:
 Steps:
 1. Import the dataset `project-management-populated.json`
 2. Type 'Alpha' in the searchbar
-3. Click the 'Alpha Sprint' result
-4. Verify you navigate to the Sprint detail page for 'Alpha Sprint'
+3. Click the 'Alpha Design (story)' result
+4. Verify you navigate to the right page
 
 ### Search by Display Name - Keyboard (Arrow Keys)
 Users can:
@@ -17,8 +17,8 @@ Users can:
 
 Steps:
 1. Import the dataset `project-management-populated.json`
-2. Type 'Story' in the searchbar
-3. Press down arrow to highlight a result
+2. Type 'alpha' in the searchbar
+3. Press down arrow to highlight 'Alpha UAT (story)'
 4. Press Enter
 5. Verify you navigate to that story's detail page
 
@@ -28,9 +28,9 @@ Users can:
 
 Steps:
 1. Import the dataset `project-management-populated.json`
-2. Type 'Alpha' in the searchbar
+2. Type 'Beta' in the searchbar
 3. Press Enter immediately
-4. Verify you navigate to the first result (Alpha Sprint)
+4. Verify you navigate to the first result 'Project Beta'
 
 ### Case-Insensitive Search
 Users can:
