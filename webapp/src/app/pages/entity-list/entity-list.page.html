@@ -20,6 +20,13 @@
         (input)="onFilterChange($event)"
         [value]="filterTextSignal()" />
       <button nz-button nzSize="large" (click)="onClickColumnsButton()">Columns</button>
+      <button nz-button nzSize="large" (click)="onClickFilterToggleButton()">
+        <i nz-icon nzType="filter" nzTheme="outline"></i>
+        Filters
+      <div class="toolbar-filters-badge" *ngIf="getFiltersSignal()().length > 0">
+        <span class="badge">{{ getFiltersSignal()().length }}</span>
+      </div>
+      </button>
       <button
         nz-button
         nzSize="large"
@@ -30,6 +37,92 @@
         Add to List
         <i nz-icon nzType="down" nzTheme="outline"></i>
       </button>
+    </div>
+
+    <!-- Filters Section -->
+    <!-- <div class="filters-section" *ngIf="isFiltersVisibleSignal() || getFiltersSignal()().length > 0"> -->
+    <div class="filters-section" *ngIf="isFiltersVisibleSignal()">
+      <div class="filter-rows">
+        <div *ngFor="let filter of getFiltersSignal()()" class="filter-row">
+          <!-- Field Selector Dropdown -->
+          <nz-select
+            class="filter-field-select"
+            [ngModel]="filter.fieldId"
+            (ngModelChange)="onFilterFieldChange(filter.id, $event)">
+            <nz-option *ngFor="let field of entity$()!.fields"
+              [nzLabel]="field.name"
+              [nzValue]="field.id">
+            </nz-option>
+          </nz-select>
+
+          <!-- Operator Selector Dropdown -->
+          <nz-select
+            class="filter-operator-select"
+            [ngModel]="filter.operator"
+            (ngModelChange)="onFilterOperatorChange(filter.id, $event)">
+            <nz-option *ngFor="let op of filterService.getFilterOperatorsForFieldType(getFieldById(filter.fieldId)!.type)"
+              [nzLabel]="getOperatorLabel(op)"
+              [nzValue]="op">
+            </nz-option>
+          </nz-select>
+
+          <!-- Value Input (varies by field type and operator) -->
+          <!-- Text input for text fields -->
+          <input
+            *ngIf="isTextFieldType(getFieldById(filter.fieldId)!.type) && !isEmptyOperator(filter.operator)"
+            nz-input
+            class="filter-value-input"
+            type="text"
+            [(ngModel)]="filter.value"
+            (blur)="onFilterValueChange(filter.id, filter.value)"
+            (keydown.enter)="onFilterValueChange(filter.id, filter.value)" />
+
+          <!-- Number input for number fields -->
+          <input
+            *ngIf="getFieldById(filter.fieldId)!.type === 'number' && !isEmptyOperator(filter.operator)"
+            nz-input
+            class="filter-value-input"
+            type="number"
+            [(ngModel)]="filter.value"
+            (blur)="onFilterValueChange(filter.id, filter.value)"
+            (keydown.enter)="onFilterValueChange(filter.id, filter.value)" />
+
+          <!-- Reference selector (dropdown) -->
+          <nz-select
+            *ngIf="isReferenceFieldType(getFieldById(filter.fieldId)!.type) && !isEmptyOperator(filter.operator)"
+            class="filter-value-select"
+            [ngModel]="filter.value"
+            (ngModelChange)="onFilterValueChange(filter.id, $event)">
+            <nz-option *ngFor="let option of getReferenceFilterOptions(getFieldById(filter.fieldId)!)"
+              [nzLabel]="option.label"
+              [nzValue]="option.id">
+            </nz-option>
+          </nz-select>
+
+          <!-- Option selector (dropdown) -->
+          <nz-select
+            *ngIf="getFieldById(filter.fieldId)!.type === 'option' && !isEmptyOperator(filter.operator)"
+            class="filter-value-select"
+            [ngModel]="filter.value"
+            (ngModelChange)="onFilterValueChange(filter.id, $event)">
+            <nz-option *ngFor="let optionValue of getFieldById(filter.fieldId)!.optionValues || []"
+              [nzLabel]="optionValue"
+              [nzValue]="optionValue">
+            </nz-option>
+          </nz-select>
+
+          <!-- Remove Button -->
+          <button nz-button nzType="text" nzDanger (click)="onClickRemoveFilterButton(filter.id)">
+            <i nz-icon nzType="close" nzTheme="outline"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="filters-footer">
+        <button nz-button nzType="default" (click)="onClickAddFilterButton()">
+          {{ getFiltersSignal()().length > 0 ? '+ Add Another Filter' : '+ Add Filter' }}
+        </button>
+      </div>
     </div>
 
     <!-- Add to List Dropdown Menu -->

@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
@@ -10,12 +11,15 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
+import { FilterService } from '../../services/filter.service';
 import { ListService } from '../../services/list.service';
 import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
+import { FilterOperator } from '../../models/filter.model';
 import { generateEntityKey } from '../../services/entity-key.util';
 import { EntityReferenceComponent } from '../../components/entity-reference/entity-reference.component';
 import { ModalState } from '../../utils/modal-state.util';
@@ -24,6 +28,7 @@ import { ModalState } from '../../utils/modal-state.util';
   selector: 'app-entity-list-page',
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
     NzButtonModule,
     NzInputModule,
@@ -34,6 +39,7 @@ import { ModalState } from '../../utils/modal-state.util';
     NzDropDownModule,
     NzMenuModule,
     NzIconModule,
+    NzSelectModule,
     EntityReferenceComponent
   ],
   templateUrl: './entity-list.page.html',
@@ -41,6 +47,7 @@ import { ModalState } from '../../utils/modal-state.util';
 })
 export class EntityListPageComponent implements OnInit {
   private entityKeySignal = signal<string>('');
+
   entity$ = computed(() => {
     const key = this.entityKeySignal();
     const entities = this.entityService.entities$();
@@ -57,6 +64,7 @@ export class EntityListPageComponent implements OnInit {
   filterTextSignal = signal<string>('');
   sortFieldIdSignal = signal<string>('');
   sortOrderSignal = signal<'asc' | 'desc' | null>(null);
+  isFiltersVisibleSignal = signal<boolean>(false);
 
   // Multi-select and add-to-list
   selectedRecordIdsSignal = signal<Set<string>>(new Set());
@@ -78,11 +86,19 @@ export class EntityListPageComponent implements OnInit {
     const entity = this.entity$();
     const sortFieldId = this.sortFieldIdSignal();
     const sortOrder = this.sortOrderSignal();
+    const filters = this.filterService.getFilters();
 
-    // Filter records
-    let filtered = records;
+    // Apply dynamic filters
+    let filtered = this.filterService.applyFiltersToRecords(
+        records,
+        filters,
+        entity!,
+        this.entityRecordService
+    );
+
+    // Apply text filter
     if (filterText) {
-      filtered = records.filter(record => {
+      filtered = filtered.filter(record => {
         return Object.values(record.data).some(value =>
           value.toLowerCase().includes(filterText)
         );
@@ -114,6 +130,7 @@ export class EntityListPageComponent implements OnInit {
     private router: Router,
     private entityService: EntityService,
     private entityRecordService: EntityRecordService,
+    public filterService: FilterService,
     private listService: ListService
   ) {}
 
@@ -128,6 +145,8 @@ export class EntityListPageComponent implements OnInit {
         if (entity) {
           const allFieldIds = new Set(entity.fields.map(f => f.id));
           this.columnModalState.committed$.set(allFieldIds);
+          // Set the current entity in the filter service so filters are entity-specific
+          this.filterService.setCurrentEntity(entity.id);
         }
       }
     });
@@ -301,5 +320,162 @@ export class EntityListPageComponent implements OnInit {
       this.listService.addItemsToList(listId, recordIds);
       this.selectedRecordIdsSignal.set(new Set());
     }
+  }
+
+  /**
+   * Returns the filters signal for reactive binding in the template.
+   *
+   * @returns Signal containing the active filters array
+   */
+  getFiltersSignal() {
+    return this.filterService.getFiltersSignal();
+  }
+
+  /**
+   * Toggles the visibility of the filters section in the UI.
+   */
+  onClickFilterToggleButton(): void {
+    this.isFiltersVisibleSignal.update(visible => !visible);
+  }
+
+  /**
+   * Adds a new empty filter row to the filters section.
+   */
+  onClickAddFilterButton(): void {
+    const entity = this.entity$();
+    if (entity) {
+      this.filterService.addFilter(entity.fields);
+    }
+  }
+
+  /**
+   * Removes a filter by its id.
+   *
+   * @param filterId - The filter id to remove
+   */
+  onClickRemoveFilterButton(filterId: string): void {
+    this.filterService.removeFilter(filterId);
+  }
+
+  /**
+   * Updates a filter when the field selection changes.
+   * Resets operator and value to defaults for the new field type.
+   *
+   * @param filterId - The filter id to update
+   * @param newFieldId - The newly selected field id
+   */
+  onFilterFieldChange(filterId: string, newFieldId: string): void {
+    const entity = this.entity$();
+    if (entity) {
+      const field = entity.fields.find(f => f.id === newFieldId);
+      if (field) {
+        const validOperators = this.filterService.getFilterOperatorsForFieldType(field.type);
+        const defaultOperator = validOperators.length > 0 ? validOperators[0] : 'equals';
+        this.filterService.updateFilter(filterId, {
+            fieldId: newFieldId,
+            operator: defaultOperator,
+            value: ''
+        });
+      }
+    }
+  }
+
+  /**
+   * Updates a filter when the operator selection changes.
+   *
+   * @param filterId - The filter id to update
+   * @param newOperator - The newly selected operator
+   */
+  onFilterOperatorChange(filterId: string, newOperator: FilterOperator): void {
+    this.filterService.updateFilter(filterId, { operator: newOperator });
+  }
+
+  /**
+   * Updates a filter when the value changes.
+   *
+   * @param filterId - The filter id to update
+   * @param newValue - The new filter value
+   */
+  onFilterValueChange(filterId: string, newValue: string | string[]): void {
+    this.filterService.updateFilter(filterId, { value: newValue });
+  }
+
+  /**
+   * Finds an entity field by its id.
+   *
+   * @param fieldId - The field id to find
+   * @returns The field, or undefined if not found
+   */
+  getFieldById(fieldId: string): EntityField | undefined {
+    const entity = this.entity$();
+    return entity?.fields.find(f => f.id === fieldId);
+  }
+
+  /**
+   * Gets a human-readable label for a filter operator.
+   *
+   * @param operator - The filter operator
+   * @returns The operator label, or the operator itself if not found
+   */
+  getOperatorLabel(operator: FilterOperator): string {
+    const operatorLabels: Record<FilterOperator, string> = {
+        'contains': 'Contains',
+        'not-contains': 'Does Not Contain',
+        'equals': 'Equals',
+        'not-equals': 'Not Equals',
+        'starts-with': 'Starts With',
+        'ends-with': 'Ends With',
+        'greater-than': 'Greater Than',
+        'less-than': 'Less Than',
+        'greater-or-equal': 'Greater or Equal',
+        'less-or-equal': 'Less or Equal',
+        'is-empty': 'Is Empty',
+        'is-not-empty': 'Is Not Empty'
+    };
+    return operatorLabels[operator] || operator;
+  }
+
+  /**
+   * Checks if a field type is a text field (short or long text).
+   *
+   * @param fieldType - The field type to check
+   * @returns true if the field is a text type
+   */
+  isTextFieldType(fieldType: string): boolean {
+    return fieldType === 'short-text' || fieldType === 'long-text';
+  }
+
+  /**
+   * Checks if a field type is a reference field (single or list).
+   *
+   * @param fieldType - The field type to check
+   * @returns true if the field is a reference type
+   */
+  isReferenceFieldType(fieldType: string): boolean {
+    return fieldType === 'reference' || fieldType === 'reference-list';
+  }
+
+  /**
+   * Checks if an operator is an "empty" operator that doesn't require a value.
+   *
+   * @param operator - The filter operator to check
+   * @returns true if the operator is is-empty or is-not-empty
+   */
+  isEmptyOperator(operator: FilterOperator): boolean {
+    return operator === 'is-empty' || operator === 'is-not-empty';
+  }
+
+  /**
+   * Gets the available options for filtering by a reference field.
+   *
+   * @param field - The reference field
+   * @returns Array of reference options with id and label
+   */
+  getReferenceFilterOptions(field: EntityField): { id: string; label: string }[] {
+    const options = this.entityRecordService.getReferenceOptions(field);
+    return options.map(opt => ({
+        id: opt.recordId,
+        label: opt.recordName
+    }));
   }
 }
