@@ -6,11 +6,29 @@
     </div>
     <div class="topnav-center">
       <input
+        #searchInput
         type="text"
         placeholder="Search..."
         class="topnav-search"
         nz-input
-        nzSize="large" />
+        nzSize="large"
+        [value]="searchQuery$()"
+        (input)="onSearchInput($event)"
+        (keydown)="onSearchKeydown($event)"
+        [nzAutocomplete]="searchAutocomplete" />
+      <nz-autocomplete #searchAutocomplete>
+        <nz-auto-option
+          *ngFor="let result of searchResults$()"
+          (click)="onSearchSelect(result)">
+          <span>{{ result.recordName }}</span>
+          <span class="search-result-entity"> ({{ result.entityName }})</span>
+        </nz-auto-option>
+        <nz-auto-option
+          *ngIf="searchQuery$() && searchResults$().length === 0"
+          [nzDisabled]="true">
+          <span class="search-no-results">No records found</span>
+        </nz-auto-option>
+      </nz-autocomplete>
     </div>
     <div class="topnav-right">
       <button

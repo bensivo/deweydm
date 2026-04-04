@@ -35,6 +35,7 @@
   max-width: 600px;
   margin: 0 auto;
   flex-shrink: 0;
+  position: relative;
 
   .ant-input {
     width: 350px;
@@ -56,6 +57,44 @@
       border-color: #1890ff;
       background-color: rgba(255, 255, 255, 0.12);
       box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    }
+  }
+
+  .ant-autocomplete-dropdown {
+    .ant-autocomplete-option {
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .search-result-entity {
+        color: #8c8c8c;
+        font-size: 12px;
+        margin-left: 8px;
+      }
+
+      &:hover {
+        background-color: #e6f4ff;
+      }
+
+      &.ant-autocomplete-option-selected {
+        background-color: #e6f4ff;
+        color: #1890ff;
+      }
+
+      &.ant-autocomplete-option-disabled {
+        cursor: default;
+        color: #8c8c8c;
+
+        &:hover {
+          background-color: transparent;
+        }
+      }
+    }
+
+    .search-no-results {
+      color: #8c8c8c;
+      font-size: 12px;
     }
   }
 }
