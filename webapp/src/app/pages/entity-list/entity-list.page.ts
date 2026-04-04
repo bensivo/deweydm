@@ -145,6 +145,8 @@ export class EntityListPageComponent implements OnInit {
         if (entity) {
           const allFieldIds = new Set(entity.fields.map(f => f.id));
           this.columnModalState.committed$.set(allFieldIds);
+          // Set the current entity in the filter service so filters are entity-specific
+          this.filterService.setCurrentEntity(entity.id);
         }
       }
     });

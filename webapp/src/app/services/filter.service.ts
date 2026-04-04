@@ -13,6 +13,7 @@ import { EntityRecordService } from './entity-record.service';
 export class FilterService {
     private filtersSignal = signal<Filter[]>([]);
     private nextFilterIdSignal = signal<number>(0);
+    private currentEntityIdSignal = signal<string>('');
 
     /**
      * Computed signal that maps each field type to its valid filter operators.
@@ -30,25 +31,38 @@ export class FilterService {
     constructor(private entityRecordService: EntityRecordService) {}
 
     /**
-     * Returns current filters as a read-only array.
+     * Sets the current entity being filtered. Call this when navigating to a different entity.
      *
-     * @returns Array of active filters
+     * @param entityId - The entity id to filter for
+     */
+    setCurrentEntity(entityId: string): void {
+        this.currentEntityIdSignal.set(entityId);
+    }
+
+    /**
+     * Returns filters for the current entity as a read-only array.
+     *
+     * @returns Array of active filters for the current entity
      */
     getFilters(): Filter[] {
-        return [...this.filtersSignal()];
+        const currentEntityId = this.currentEntityIdSignal();
+        return this.filtersSignal().filter(f => f.entityId === currentEntityId);
     }
 
     /**
-     * Returns the filters signal for reactive binding in templates.
+     * Returns a computed signal containing only filters for the current entity.
      *
-     * @returns Signal containing the filters array
+     * @returns Signal containing filters for the current entity
      */
     getFiltersSignal() {
-        return this.filtersSignal.asReadonly();
+        return computed(() => {
+            const currentEntityId = this.currentEntityIdSignal();
+            return this.filtersSignal().filter(f => f.entityId === currentEntityId);
+        });
     }
 
     /**
-     * Adds a new empty filter to the filters array.
+     * Adds a new empty filter for the current entity.
      *
      * @param fieldsFromEntity - The entity fields to use for the first field default
      */
@@ -59,6 +73,7 @@ export class FilterService {
 
         const newFilter: Filter = {
             id: `filter-${this.nextFilterIdSignal()}`,
+            entityId: this.currentEntityIdSignal(),
             fieldId: defaultFieldId,
             operator: defaultOperator,
             value: ''
