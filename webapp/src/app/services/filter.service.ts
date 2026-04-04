@@ -132,7 +132,17 @@ export class FilterService {
         // Filter out incomplete filters (empty value, except for empty operators)
         const activeFilters = filters.filter(filter => {
             const isEmptyOperator = filter.operator === 'is-empty' || filter.operator === 'is-not-empty';
-            return isEmptyOperator || (typeof filter.value === 'string' && filter.value.trim() !== '') || (Array.isArray(filter.value) && filter.value.length > 0);
+            if (isEmptyOperator) return true;
+
+            // For number fields, validate that the value is a valid number
+            const field = entity.fields.find(f => f.id === filter.fieldId);
+            if (field?.type === 'number') {
+                const numValue = parseFloat(filter.value as string);
+                return !isNaN(numValue);
+            }
+
+            // For other fields, check that value is not empty
+            return (typeof filter.value === 'string' && filter.value.trim() !== '') || (Array.isArray(filter.value) && filter.value.length > 0);
         });
 
         if (activeFilters.length === 0) return records;
