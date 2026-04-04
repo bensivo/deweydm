@@ -19,6 +19,7 @@
       <nz-autocomplete #searchAutocomplete>
         <nz-auto-option
           *ngFor="let result of searchResults$()"
+          [nzValue]="result.recordName"
           (click)="onSearchSelect(result)">
           <span>{{ result.recordName }}</span>
           <span class="search-result-entity"> ({{ result.entityName }})</span>

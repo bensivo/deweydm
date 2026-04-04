@@ -35,6 +35,8 @@ import { FormModalComponent } from './components/global-create/form-modal.compon
     styleUrl: './app.less'
 })
 export class App {
+    private highlightedIndex = 0;
+
     constructor(
         private entityService: EntityService,
         private entityRecordService: EntityRecordService,
@@ -112,21 +114,29 @@ export class App {
 
     onSearchInput(event: Event): void {
         const input = event.target as HTMLInputElement;
+        this.highlightedIndex = 0;
         this.searchService.performSearch(input.value);
     }
 
     onSearchSelect(result: any): void {
         this.router.navigate(['/entity', result.entityKey, result.recordId]);
         this.searchService.clearSearch();
+        this.highlightedIndex = 0;
     }
 
     onSearchKeydown(event: KeyboardEvent): void {
-        if (event.key === 'Enter') {
-            const results = this.searchResults$();
-            if (results.length > 0) {
-                event.preventDefault();
-                this.onSearchSelect(results[0]);
-            }
+        const results = this.searchResults$();
+        if (results.length === 0) return;
+
+        if (event.key === 'ArrowDown') {
+            this.highlightedIndex = Math.min(this.highlightedIndex + 1, results.length - 1);
+            event.preventDefault();
+        } else if (event.key === 'ArrowUp') {
+            this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
+            event.preventDefault();
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
+            this.onSearchSelect(results[this.highlightedIndex]);
         }
     }
 }
