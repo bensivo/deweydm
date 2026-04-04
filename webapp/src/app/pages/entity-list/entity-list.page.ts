@@ -320,15 +320,25 @@ export class EntityListPageComponent implements OnInit {
     }
   }
 
-  // Filter-related methods
+  /**
+   * Returns the filters signal for reactive binding in the template.
+   *
+   * @returns Signal containing the active filters array
+   */
   getFiltersSignal() {
     return this.filterService.getFiltersSignal();
   }
 
+  /**
+   * Toggles the visibility of the filters section in the UI.
+   */
   onClickFilterToggleButton(): void {
     this.isFiltersVisibleSignal.update(visible => !visible);
   }
 
+  /**
+   * Adds a new empty filter row to the filters section.
+   */
   onClickAddFilterButton(): void {
     const entity = this.entity$();
     if (entity) {
@@ -336,10 +346,22 @@ export class EntityListPageComponent implements OnInit {
     }
   }
 
+  /**
+   * Removes a filter by its id.
+   *
+   * @param filterId - The filter id to remove
+   */
   onClickRemoveFilterButton(filterId: string): void {
     this.filterService.removeFilter(filterId);
   }
 
+  /**
+   * Updates a filter when the field selection changes.
+   * Resets operator and value to defaults for the new field type.
+   *
+   * @param filterId - The filter id to update
+   * @param newFieldId - The newly selected field id
+   */
   onFilterFieldChange(filterId: string, newFieldId: string): void {
     const entity = this.entity$();
     if (entity) {
@@ -356,22 +378,47 @@ export class EntityListPageComponent implements OnInit {
     }
   }
 
+  /**
+   * Updates a filter when the operator selection changes.
+   *
+   * @param filterId - The filter id to update
+   * @param newOperator - The newly selected operator
+   */
   onFilterOperatorChange(filterId: string, newOperator: FilterOperator): void {
     this.filterService.updateFilter(filterId, { operator: newOperator });
   }
 
+  /**
+   * Updates a filter when the value changes.
+   *
+   * @param filterId - The filter id to update
+   * @param newValue - The new filter value
+   */
   onFilterValueChange(filterId: string, newValue: string | string[]): void {
     this.filterService.updateFilter(filterId, { value: newValue });
   }
 
+  /**
+   * Finds an entity field by its id.
+   *
+   * @param fieldId - The field id to find
+   * @returns The field, or undefined if not found
+   */
   getFieldById(fieldId: string): EntityField | undefined {
     const entity = this.entity$();
     return entity?.fields.find(f => f.id === fieldId);
   }
 
+  /**
+   * Gets a human-readable label for a filter operator.
+   *
+   * @param operator - The filter operator
+   * @returns The operator label, or the operator itself if not found
+   */
   getOperatorLabel(operator: FilterOperator): string {
     const operatorLabels: Record<FilterOperator, string> = {
         'contains': 'Contains',
+        'not-contains': 'Does Not Contain',
         'equals': 'Equals',
         'not-equals': 'Not Equals',
         'starts-with': 'Starts With',
@@ -386,18 +433,42 @@ export class EntityListPageComponent implements OnInit {
     return operatorLabels[operator] || operator;
   }
 
+  /**
+   * Checks if a field type is a text field (short or long text).
+   *
+   * @param fieldType - The field type to check
+   * @returns true if the field is a text type
+   */
   isTextFieldType(fieldType: string): boolean {
     return fieldType === 'short-text' || fieldType === 'long-text';
   }
 
+  /**
+   * Checks if a field type is a reference field (single or list).
+   *
+   * @param fieldType - The field type to check
+   * @returns true if the field is a reference type
+   */
   isReferenceFieldType(fieldType: string): boolean {
     return fieldType === 'reference' || fieldType === 'reference-list';
   }
 
+  /**
+   * Checks if an operator is an "empty" operator that doesn't require a value.
+   *
+   * @param operator - The filter operator to check
+   * @returns true if the operator is is-empty or is-not-empty
+   */
   isEmptyOperator(operator: FilterOperator): boolean {
     return operator === 'is-empty' || operator === 'is-not-empty';
   }
 
+  /**
+   * Gets the available options for filtering by a reference field.
+   *
+   * @param field - The reference field
+   * @returns Array of reference options with id and label
+   */
   getReferenceFilterOptions(field: EntityField): { id: string; label: string }[] {
     const options = this.entityRecordService.getReferenceOptions(field);
     return options.map(opt => ({

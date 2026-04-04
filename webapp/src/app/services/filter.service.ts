@@ -5,11 +5,18 @@ import { EntityRecord } from '../models/entity-record.model';
 import { Entity, EntityField, FieldType } from '../models/entity.model';
 import { EntityRecordService } from './entity-record.service';
 
+/**
+ * Service for managing dynamic filters on entity records.
+ * Handles filter state, operations, and applying filters to record sets.
+ */
 @Injectable({ providedIn: 'root' })
 export class FilterService {
     private filtersSignal = signal<Filter[]>([]);
     private nextFilterIdSignal = signal<number>(0);
 
+    /**
+     * Computed signal that maps each field type to its valid filter operators.
+     */
     filterOperatorsMapSignal = computed(() => ({
         'short-text': ['contains', 'equals', 'not-equals', 'starts-with', 'ends-with'] as FilterOperator[],
         'long-text': ['contains', 'equals', 'not-equals'] as FilterOperator[],
@@ -207,8 +214,8 @@ export class FilterService {
             switch (filter.operator) {
                 case 'contains':
                     return refIds.includes(filterValue);
-                // case 'not-contains':
-                //     return !refIds.includes(filterValue);
+                case 'not-contains':
+                    return !refIds.includes(filterValue);
                 default:
                     return true;
             }

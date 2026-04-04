@@ -47,7 +47,7 @@
           <!-- Field Selector Dropdown -->
           <nz-select
             class="filter-field-select"
-            [(ngModel)]="filter.fieldId"
+            [ngModel]="filter.fieldId"
             (ngModelChange)="onFilterFieldChange(filter.id, $event)">
             <nz-option *ngFor="let field of entity$()!.fields"
               [nzLabel]="field.name"
@@ -58,7 +58,7 @@
           <!-- Operator Selector Dropdown -->
           <nz-select
             class="filter-operator-select"
-            [(ngModel)]="filter.operator"
+            [ngModel]="filter.operator"
             (ngModelChange)="onFilterOperatorChange(filter.id, $event)">
             <nz-option *ngFor="let op of filterService.getFilterOperatorsForFieldType(getFieldById(filter.fieldId)!.type)"
               [nzLabel]="getOperatorLabel(op)"
@@ -74,7 +74,8 @@
             class="filter-value-input"
             type="text"
             [(ngModel)]="filter.value"
-            (blur)="onFilterValueChange(filter.id, filter.value)" />
+            (blur)="onFilterValueChange(filter.id, filter.value)"
+            (keydown.enter)="onFilterValueChange(filter.id, filter.value)" />
 
           <!-- Number input for number fields -->
           <input
@@ -83,13 +84,14 @@
             class="filter-value-input"
             type="number"
             [(ngModel)]="filter.value"
-            (blur)="onFilterValueChange(filter.id, filter.value)" />
+            (blur)="onFilterValueChange(filter.id, filter.value)"
+            (keydown.enter)="onFilterValueChange(filter.id, filter.value)" />
 
           <!-- Reference selector (dropdown) -->
           <nz-select
             *ngIf="isReferenceFieldType(getFieldById(filter.fieldId)!.type) && !isEmptyOperator(filter.operator)"
             class="filter-value-select"
-            [(ngModel)]="filter.value"
+            [ngModel]="filter.value"
             (ngModelChange)="onFilterValueChange(filter.id, $event)">
             <nz-option *ngFor="let option of getReferenceFilterOptions(getFieldById(filter.fieldId)!)"
               [nzLabel]="option.label"
@@ -101,7 +103,7 @@
           <nz-select
             *ngIf="getFieldById(filter.fieldId)!.type === 'option' && !isEmptyOperator(filter.operator)"
             class="filter-value-select"
-            [(ngModel)]="filter.value"
+            [ngModel]="filter.value"
             (ngModelChange)="onFilterValueChange(filter.id, $event)">
             <nz-option *ngFor="let optionValue of getFieldById(filter.fieldId)!.optionValues || []"
               [nzLabel]="optionValue"

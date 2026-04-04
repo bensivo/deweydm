@@ -1,5 +1,5 @@
 export type FilterOperator =
-    | 'contains' | 'equals' | 'not-equals' | 'starts-with' | 'ends-with'
+    | 'contains' | 'not-contains' | 'equals' | 'not-equals' | 'starts-with' | 'ends-with'
     | 'greater-than' | 'less-than' | 'greater-or-equal' | 'less-or-equal'
     | 'is-empty' | 'is-not-empty';
 
