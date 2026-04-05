@@ -2,7 +2,7 @@
   <div *ngIf="entity$()" class="entity-list">
     <!-- Header -->
     <div class="list-header">
-      <h1>{{ entity$()!.pluralName }}</h1>
+      <h1>{{ viewNameSignal() }}</h1>
       <div class="header-buttons">
         <button nz-button nzSize="large" (click)="onClickBulkCreateButton()">Bulk Create</button>
         <button nz-button nzType="primary" nzSize="large" (click)="onClickNewButton()">+ New</button>

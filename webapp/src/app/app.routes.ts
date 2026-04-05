@@ -7,6 +7,7 @@ import { EntityCreatePageComponent } from './pages/entity-create/entity-create.p
 import { EntityDetailPageComponent } from './pages/entity-detail/entity-detail.page';
 import { EntityBulkCreatePageComponent } from './pages/entity-bulk-create/entity-bulk-create.page';
 import { ListsPageComponent } from './pages/lists/lists.page';
+import { ViewPageComponent } from './pages/view/view.page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -17,5 +18,6 @@ export const routes: Routes = [
   { path: 'entity-bulk-create/:key', component: EntityBulkCreatePageComponent },
   { path: 'entity/:key/:id', component: EntityDetailPageComponent },
   { path: 'entity/:key', component: EntityListPageComponent },
+  { path: 'view/:viewId', component: ViewPageComponent },
   { path: 'lists/:id', component: ListsPageComponent }
 ];

@@ -10,6 +10,7 @@ import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { EntityService } from './services/entity.service';
 import { EntityRecordService } from './services/entity-record.service';
 import { SearchService } from './services/search.service';
+import { ViewService } from './services/view.service';
 import { generateEntityKey } from './services/entity-key.util';
 import { ListsStore } from './store/lists.store';
 import { SearchStore } from './store/search.store';
@@ -41,6 +42,7 @@ export class App {
         private entityService: EntityService,
         private entityRecordService: EntityRecordService,
         private searchService: SearchService,
+        private viewService: ViewService,
         private listsStore: ListsStore,
         private searchStore: SearchStore,
         private globalCreateStore: GlobalCreateStore,
@@ -53,6 +55,10 @@ export class App {
 
     get lists$() {
         return this.listsStore.lists$;
+    }
+
+    get views$() {
+        return this.viewService.views$;
     }
 
     get isCreateModalOpen$() {

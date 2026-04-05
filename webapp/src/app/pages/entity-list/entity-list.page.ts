@@ -17,11 +17,13 @@ import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
 import { FilterService } from '../../services/filter.service';
 import { ListService } from '../../services/list.service';
+import { ViewService } from '../../services/view.service';
 import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
 import { FilterOperator } from '../../models/filter.model';
 import { generateEntityKey } from '../../services/entity-key.util';
 import { EntityReferenceComponent } from '../../components/entity-reference/entity-reference.component';
+import { SaveViewModalComponent } from '../../components/save-view-modal/save-view-modal.component';
 import { ModalState } from '../../utils/modal-state.util';
 
 @Component({
@@ -40,7 +42,8 @@ import { ModalState } from '../../utils/modal-state.util';
     NzMenuModule,
     NzIconModule,
     NzSelectModule,
-    EntityReferenceComponent
+    EntityReferenceComponent,
+    SaveViewModalComponent
   ],
   templateUrl: './entity-list.page.html',
   styleUrl: './entity-list.page.less'
@@ -65,6 +68,7 @@ export class EntityListPageComponent implements OnInit {
   sortFieldIdSignal = signal<string>('');
   sortOrderSignal = signal<'asc' | 'desc' | null>(null);
   isFiltersVisibleSignal = signal<boolean>(false);
+  isViewSaveModalOpenSignal = signal<boolean>(false);
 
   // Multi-select and add-to-list
   selectedRecordIdsSignal = signal<Set<string>>(new Set());
@@ -131,7 +135,8 @@ export class EntityListPageComponent implements OnInit {
     private entityService: EntityService,
     private entityRecordService: EntityRecordService,
     public filterService: FilterService,
-    private listService: ListService
+    private listService: ListService,
+    private viewService: ViewService
   ) {}
 
   ngOnInit(): void {
@@ -477,5 +482,34 @@ export class EntityListPageComponent implements OnInit {
         id: opt.recordId,
         label: opt.recordName
     }));
+  }
+
+  /**
+   * Opens the save-as-view modal.
+   */
+  onClickSaveAsView(): void {
+    this.isViewSaveModalOpenSignal.set(true);
+  }
+
+  /**
+   * Handles saving the current filters as a new view.
+   *
+   * @param viewName - The name for the new view
+   */
+  onConfirmSaveView(viewName: string): void {
+    const entity = this.entity$();
+    if (!entity) return;
+
+    const currentFilters = this.filterService.getFilters();
+    this.viewService.saveView(entity.id, viewName, currentFilters);
+
+    this.isViewSaveModalOpenSignal.set(false);
+  }
+
+  /**
+   * Closes the save-as-view modal without saving.
+   */
+  onCancelSaveView(): void {
+    this.isViewSaveModalOpenSignal.set(false);
   }
 }

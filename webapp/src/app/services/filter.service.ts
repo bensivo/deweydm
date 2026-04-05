@@ -105,6 +105,25 @@ export class FilterService {
     }
 
     /**
+     * Adds a filter with data from a saved filter (e.g., from a view).
+     * Creates a new filter with a new ID but copies field, operator, and value from the saved filter.
+     *
+     * @param savedFilter - The saved filter to restore
+     */
+    addFilterWithData(savedFilter: Filter): void {
+        const newFilter: Filter = {
+            id: `filter-${this.nextFilterIdSignal()}`,
+            entityId: this.currentEntityIdSignal(),
+            fieldId: savedFilter.fieldId,
+            operator: savedFilter.operator,
+            value: savedFilter.value
+        };
+
+        this.nextFilterIdSignal.update(id => id + 1);
+        this.filtersSignal.update(filters => [...filters, newFilter]);
+    }
+
+    /**
      * Gets the valid operators for a given field type.
      *
      * @param fieldType - The field type to get operators for

@@ -1,0 +1,19 @@
+<nz-modal
+    [nzVisible]="isOpen"
+    nzTitle="Save as View"
+    nzOkText="Save"
+    nzCancelText="Cancel"
+    (nzOnOk)="onSaveClick()"
+    (nzOnCancel)="onCancelClick()">
+    <ng-container *nzModalContent>
+        <div class="save-view-form">
+            <label class="form-label">View Name</label>
+            <input
+                nz-input
+                placeholder="Enter view name"
+                [ngModel]="viewNameSignal()"
+                (ngModelChange)="viewNameSignal.set($event)"
+                nzSize="large" />
+        </div>
+    </ng-container>
+</nz-modal>
