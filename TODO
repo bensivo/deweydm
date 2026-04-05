@@ -1,3 +1,9 @@
+Views:
+- Add 'order by' to views, so you can save sorting by a specific column
+- Add 'column' to views, so you can only show specific columns
+- In filters, add option 'is one of' or 'is not one of' for select options.
+
+
 - Bundling into an electron app with a sqlite database
 - Filters on the all-entities view
 - Sort by on the all-entities view
