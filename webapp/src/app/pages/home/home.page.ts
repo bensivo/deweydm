@@ -9,4 +9,12 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
   templateUrl: './home.page.html',
   styleUrl: './home.page.less'
 })
-export class HomePageComponent {}
+export class HomePageComponent {
+
+  onClickHello(): void {
+    (window as any).electronApi.helloWorld('Benjamin').then((response: string) => {
+      console.log('response', response);
+    });
+  }
+
+}

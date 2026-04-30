@@ -1,0 +1,39 @@
+{
+  "name": "pdms-electron",
+  "version": "1.0.0",
+  "description": "Electron shell for the PDMS / Dewey DM webapp",
+  "main": "dist/main.js",
+  "scripts": {
+    "build:webapp": "rm -rf ./dist/webapp && cd ../webapp && npm run build && cp -r ./dist/dewey-dm/browser ../electron/dist/webapp",
+    "build": "npm run build:webapp && tsc",
+    "start": "npm run build && electron .",
+    "package": "npm run build && electron-builder"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^41.3.0",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.4.0",
+    "@types/node": "^22.0.0"
+  },
+  "build": {
+    "appId": "com.pdms.app",
+    "productName": "PDMS",
+    "directories": {
+      "output": "out"
+    },
+    "files": [
+      "dist/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
