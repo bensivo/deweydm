@@ -5,9 +5,9 @@
  */
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
+
 import { registerIpcHandlers } from './ipc-handlers';
-
-
+import { initializeDb } from './db';
 
 /**
  * Create and configure the main application window.
@@ -35,9 +35,9 @@ function createWindow(): BrowserWindow {
     return browserWindow;
 }
 
-registerIpcHandlers(ipcMain);
-
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+    const db = await initializeDb(app);
+    registerIpcHandlers(ipcMain, db);
     createWindow();
 
     // macOS convention: re-create a window when the dock icon is clicked

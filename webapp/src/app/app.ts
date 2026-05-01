@@ -47,7 +47,9 @@ export class App {
         private searchStore: SearchStore,
         private globalCreateStore: GlobalCreateStore,
         private router: Router
-    ) {}
+    ) {
+        this.entityService.loadAll();
+    }
 
     get entities$() {
         return this.entityService.entities$;

@@ -13,6 +13,10 @@ export class EntityStore {
   }
 
 
+  setAll(entities: Entity[]): void {
+    this.entitiesSignal.set(entities);
+  }
+
   getAll(): Entity[] {
     return this.entitiesSignal();
   }

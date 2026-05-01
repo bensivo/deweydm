@@ -1,79 +1,78 @@
 import { Injectable } from '@angular/core';
+
 import { Entity, EntityField } from '../models/entity.model';
 import { EntityStore } from '../store/entity.store';
 
 @Injectable({ providedIn: 'root' })
 export class EntityService {
-  constructor(private entityStore: EntityStore) {}
+    constructor(private entityStore: EntityStore) {}
 
-  get entities$() {
-    return this.entityStore.entities$;
-  }
+    get entities$() {
+        return this.entityStore.entities$;
+    }
 
-  getAll(): Entity[] {
-    return this.entityStore.getAll();
-  }
+    getAll(): Entity[] {
+        return this.entityStore.getAll();
+    }
 
-  getById(id: string): Entity | undefined {
-    return this.entityStore.getById(id);
-  }
+    getById(id: string): Entity | undefined {
+        return this.entityStore.getById(id);
+    }
 
-  createEntity(name: string, pluralName: string): Entity {
-    const entity: Entity = {
-      id: this.generateId(),
-      name,
-      pluralName,
-      fields: []
-    };
-    this.entityStore.add(entity);
-    return entity;
-  }
+    /**
+     * Loads all entities from the backend and replaces the store contents.
+     * Call this on app init to hydrate state from the database.
+     */
+    async loadAll(): Promise<void> {
+        const entities: Entity[] = await (window as any).electronApi.entityGetAll();
+        this.entityStore.setAll(entities);
+    }
 
-  addField(
-      entityId: string,
-      fieldName: string,
-      fieldType: string,
-      referenceEntityId?: string,
-      backlinkSourceEntityId?: string,
-      backlinkSourceFieldId?: string,
-      optionValues?: string[]
-  ): void {
-    const entity = this.entityStore.getById(entityId);
-    if (!entity) return;
+    async createEntity(name: string, pluralName: string): Promise<Entity> {
+        const entity: Entity = await (window as any).electronApi.entityCreate(name, pluralName);
+        this.entityStore.add(entity);
+        return entity;
+    }
 
-    const field: EntityField = {
-      id: this.generateId(),
-      name: fieldName,
-      type: fieldType as any,
-      referenceEntityId,
-      backlinkSourceEntityId,
-      backlinkSourceFieldId,
-      optionValues
-    };
+    async addField(
+        entityId: string,
+        fieldName: string,
+        fieldType: string,
+        referenceEntityId?: string,
+        backlinkSourceEntityId?: string,
+        backlinkSourceFieldId?: string,
+        optionValues?: string[],
+    ): Promise<void> {
+        const field: EntityField = await (window as any).electronApi.entityAddField(
+            entityId, fieldName, fieldType, referenceEntityId, backlinkSourceEntityId, backlinkSourceFieldId, optionValues
+        );
 
-    this.entityStore.update(entityId, {
-      fields: [...entity.fields, field]
-    });
-  }
+        const entity = this.entityStore.getById(entityId);
+        if (!entity) return;
 
-  removeField(entityId: string, fieldId: string): void {
-    const entity = this.entityStore.getById(entityId);
-    if (!entity) return;
+        this.entityStore.update(entityId, {
+            fields: [...entity.fields, field],
+        });
+    }
 
-    this.entityStore.update(entityId, {
-      fields: entity.fields.filter(f => f.id !== fieldId)
-    });
-  }
+    async removeField(entityId: string, fieldId: string): Promise<void> {
+        await (window as any).electronApi.entityRemoveField(entityId, fieldId);
 
-  deleteEntity(id: string): void {
-    this.entityStore.remove(id);
-  }
+        const entity = this.entityStore.getById(entityId);
+        if (!entity) return;
 
-  setDisplayNameField(entityId: string, fieldId: string): void {
-    this.entityStore.update(entityId, { displayNameFieldId: fieldId });
-  }
+        this.entityStore.update(entityId, {
+            fields: entity.fields.filter(f => f.id !== fieldId),
+        });
+    }
 
-  private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  }
+    async deleteEntity(id: string): Promise<void> {
+        await (window as any).electronApi.entityDelete(id);
+        this.entityStore.remove(id);
+    }
+
+    async setDisplayNameField(entityId: string, fieldId: string): Promise<void> {
+        await (window as any).electronApi.entitySetDisplayNameField(entityId, fieldId);
+        this.entityStore.update(entityId, { displayNameFieldId: fieldId });
+    }
 }

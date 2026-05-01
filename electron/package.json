@@ -12,10 +12,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "electron": "^41.3.0",
     "electron-builder": "^25.1.8",
-    "typescript": "^5.4.0",
-    "@types/node": "^22.0.0"
+    "typescript": "^5.4.0"
   },
   "build": {
     "appId": "com.pdms.app",
@@ -35,5 +35,8 @@
     "linux": {
       "target": "AppImage"
     }
+  },
+  "dependencies": {
+    "sqlite3": "^6.0.1"
   }
 }
