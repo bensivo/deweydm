@@ -13,6 +13,10 @@ export class EntityRecordStore {
         })
     }
 
+    setAll(records: EntityRecord[]): void {
+        this.recordsSignal.set(records);
+    }
+
     getAll(): EntityRecord[] {
         return this.recordsSignal();
     }

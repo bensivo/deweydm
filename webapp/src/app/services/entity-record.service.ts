@@ -30,19 +30,24 @@ export class EntityRecordService {
     }
 
     /**
-     * Creates a new EntityRecord and saves it to the store.
+     * Loads all records from the backend and replaces the store contents.
+     * Call this on app init to hydrate state from the database.
+     */
+    async loadAll(): Promise<void> {
+        const records: EntityRecord[] = await (window as any).electronApi.entityRecordGetAll();
+        this.entityRecordStore.setAll(records);
+    }
+
+    /**
+     * Creates a new EntityRecord in the backend and adds it to the store.
      *
      * @param entityId - The ID of the parent Entity
      * @param data - Field values keyed by EntityField.id
      *
      * @returns The newly created EntityRecord with its generated id
      */
-    createRecord(entityId: string, data: Record<string, string>): EntityRecord {
-        const record: EntityRecord = {
-            id: this.generateId(),
-            entityId,
-            data
-        };
+    async createRecord(entityId: string, data: Record<string, string>): Promise<EntityRecord> {
+        const record: EntityRecord = await (window as any).electronApi.entityRecordCreate(entityId, data);
         this.entityRecordStore.add(record);
         return record;
     }
@@ -53,16 +58,18 @@ export class EntityRecordService {
      * @param id - The record id to update
      * @param data - New field values keyed by EntityField.id
      */
-    updateRecord(id: string, data: Record<string, string>): void {
+    async updateRecord(id: string, data: Record<string, string>): Promise<void> {
+        await (window as any).electronApi.entityRecordUpdate(id, data);
         this.entityRecordStore.update(id, { data });
     }
 
     /**
-     * Permanently deletes a record from the store.
+     * Permanently deletes a record from the backend and the store.
      *
      * @param id - The record id to delete
      */
-    deleteRecord(id: string): void {
+    async deleteRecord(id: string): Promise<void> {
+        await (window as any).electronApi.entityRecordDelete(id);
         this.entityRecordStore.remove(id);
     }
 
@@ -173,9 +180,5 @@ export class EntityRecordService {
         //     label: this.getRecordDisplayName(field.referenceEntityId!, id),
         //     routeKey: this.getReferenceRouteKey(field)
         // }));
-    }
-
-    private generateId(): string {
-        return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     }
 }

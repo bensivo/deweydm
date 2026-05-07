@@ -208,7 +208,7 @@ export class EntityBulkCreatePageComponent implements OnInit {
         }
     }
 
-    onClickSave(): void {
+    async onClickSave(): Promise<void> {
         const entity = this.entity$();
         if (!entity) return;
 
@@ -220,7 +220,7 @@ export class EntityBulkCreatePageComponent implements OnInit {
             // Check if row is completely empty
             const hasAnyValue = Object.values(rowData).some(val => val && val.trim() !== '');
             if (hasAnyValue) {
-                this.entityRecordService.createRecord(entity.id, rowData);
+                await this.entityRecordService.createRecord(entity.id, rowData);
                 createdCount++;
             }
         }

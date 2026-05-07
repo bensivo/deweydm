@@ -49,6 +49,26 @@ const electronApi = {
     entityRemoveField: (entityId: string, fieldId: string): Promise<void> => {
         return ipcRenderer.invoke('entity:removeField', entityId, fieldId);
     },
+
+    // Entity record operations
+    entityRecordGetAll: (): Promise<any[]> => {
+        return ipcRenderer.invoke('entityRecord:getAll');
+    },
+    entityRecordGetById: (id: string): Promise<any> => {
+        return ipcRenderer.invoke('entityRecord:getById', id);
+    },
+    entityRecordGetByEntityId: (entityId: string): Promise<any[]> => {
+        return ipcRenderer.invoke('entityRecord:getByEntityId', entityId);
+    },
+    entityRecordCreate: (entityId: string, data: Record<string, string>): Promise<any> => {
+        return ipcRenderer.invoke('entityRecord:create', entityId, data);
+    },
+    entityRecordUpdate: (id: string, data: Record<string, string>): Promise<void> => {
+        return ipcRenderer.invoke('entityRecord:update', id, data);
+    },
+    entityRecordDelete: (id: string): Promise<void> => {
+        return ipcRenderer.invoke('entityRecord:delete', id);
+    },
 };
 
 contextBridge.exposeInMainWorld('electronApi', electronApi);

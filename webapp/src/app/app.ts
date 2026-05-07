@@ -49,6 +49,7 @@ export class App {
         private router: Router
     ) {
         this.entityService.loadAll();
+        this.entityRecordService.loadAll();
     }
 
     get entities$() {
@@ -107,12 +108,12 @@ export class App {
         this.globalCreateStore.closeCreateFlow();
     }
 
-    onFormSubmit(formData: Record<string, string>): void {
+    async onFormSubmit(formData: Record<string, string>): Promise<void> {
         const entity = this.globalCreateStore.selectedEntity$();
         if (!entity) {
             return;
         }
-        this.entityRecordService.createRecord(entity.id, formData);
+        await this.entityRecordService.createRecord(entity.id, formData);
         this.globalCreateStore.closeCreateFlow();
     }
 

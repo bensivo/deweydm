@@ -96,6 +96,23 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                         UNIQUE(field_id, option_value)
                     )
                 `);
+
+                // Record instances for each entity. The `data` column is a JSON-encoded
+                // Record<string, string> keyed by entity field id.
+                await run(`
+                    CREATE TABLE IF NOT EXISTS entity_records (
+                        id TEXT PRIMARY KEY,
+                        entity_id TEXT NOT NULL,
+                        data TEXT NOT NULL,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE CASCADE
+                    )
+                `);
+
+                await run(`
+                    CREATE INDEX IF NOT EXISTS idx_entity_records_entity_id ON entity_records(entity_id)
+                `);
                 resolve();
             } catch (err) {
                 reject(err);

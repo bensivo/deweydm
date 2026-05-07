@@ -106,10 +106,10 @@ export class EntityDetailPageComponent implements OnInit {
         this.isEditMode.set(false);
     }
 
-    onClickSave(): void {
+    async onClickSave(): Promise<void> {
         const record = this.record$();
         if (!record) return;
-        this.entityRecordService.updateRecord(record.id, this.editData());
+        await this.entityRecordService.updateRecord(record.id, this.editData());
         this.isEditMode.set(false);
     }
 
@@ -117,12 +117,12 @@ export class EntityDetailPageComponent implements OnInit {
         this.isDeleteConfirmModalOpen.set(true);
     }
 
-    onConfirmDelete(): void {
+    async onConfirmDelete(): Promise<void> {
         const record = this.record$();
         const entity = this.entity$();
         if (!record || !entity) return;
 
-        this.entityRecordService.deleteRecord(record.id);
+        await this.entityRecordService.deleteRecord(record.id);
         this.isDeleteConfirmModalOpen.set(false);
         this.router.navigate(['/entity', generateEntityKey(entity.name)]);
     }

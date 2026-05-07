@@ -122,12 +122,12 @@ export class EntityCreatePageComponent implements OnInit, AfterViewInit {
         }
     }
 
-    onClickSubmit(): void {
+    async onClickSubmit(): Promise<void> {
         const entity = this.entity$();
         if (!entity) {
             return;
         }
-        const record = this.entityRecordService.createRecord(entity.id, this.formData());
+        const record = await this.entityRecordService.createRecord(entity.id, this.formData());
         this.router.navigate(['/entity', generateEntityKey(entity.name), record.id]);
     }
 }
