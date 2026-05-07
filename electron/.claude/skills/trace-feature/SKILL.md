@@ -9,9 +9,10 @@ Your task is to create a MD document which traces the data flow of a single feat
 
 
 Use these steps:
-1. Ask the user to describe the feature that they want to trace, and to provide a few key files which will be involved. 
-2. Walk the codebase and follow import paths, function calls, etc. to discover the whole e2e implementation
-3. Write a document with teh format below
+1. Ask the user to describe the feature that they want to trace (if they didn't provide it already)
+2. Ask the user to point you to some key files where the implementation might be, or some relevant docs
+3. Walk the codebase and follow import paths, function calls, etc. to discover the whole e2e implementation
+4. Write a document with the format below
 
 
 Document format (md, with these headings):
