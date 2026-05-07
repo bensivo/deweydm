@@ -152,6 +152,13 @@ export class EntityListPageComponent implements OnInit {
           this.columnModalState.committed$.set(allFieldIds);
           // Set the current entity in the filter service so filters are entity-specific
           this.filterService.setCurrentEntity(entity.id);
+
+          // Clear any filters that may have been left over from a previous page
+          // (e.g., a View page for the same entity). The entity list always starts unfiltered.
+          const existingFilters = this.filterService.getFilters();
+          existingFilters.forEach(filter => {
+            this.filterService.removeFilter(filter.id);
+          });
         }
       }
     });
