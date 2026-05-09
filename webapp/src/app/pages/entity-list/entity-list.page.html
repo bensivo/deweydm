@@ -27,24 +27,32 @@
         <span class="badge">{{ getFiltersSignal()().length }}</span>
       </div>
       </button>
-      <button
+      <!-- <button
         nz-button
         nzSize="large"
         nz-dropdown
         [nzDropdownMenu]="addToListMenu"
         nzTrigger="click"
-        [disabled]="selectedRecordIdsSignal().size === 0">
+        *ngIf="selectedRecordIdsSignal().size > 0">
         Add to List
         <i nz-icon nzType="down" nzTheme="outline"></i>
-      </button>
+      </button> -->
       <button
         nz-button
         nzSize="large"
         (click)="onClickSaveAsView()"
-        [disabled]="getFiltersSignal()().length === 0">
+        *ngIf="getFiltersSignal()().length > 0">
         <i nz-icon nzType="save" nzTheme="outline"></i>
         Save as View
       </button>
+      <button
+        nz-button
+        nzSize="large"
+        (click)="onClickBulkEditButton()"
+        *ngIf="selectedRecordIdsSignal().size > 0">
+        Bulk Edit
+      </button>
+
     </div>
 
     <!-- Filters Section -->
@@ -208,22 +216,14 @@
     </nz-table>
 
     <!-- Column Selection Modal -->
-    <nz-modal
-      [(nzVisible)]="columnModalState.isOpen$"
-      nzTitle="Select Columns"
-      (nzOnOk)="onConfirmColumns()"
-      (nzOnCancel)="onCancelColumns()">
-      <ng-container *nzModalContent>
-        <div class="column-checkbox-list">
-          <div *ngFor="let field of entity$()!.fields" class="column-checkbox-item">
-            <label nz-checkbox
-              [nzChecked]="isPendingFieldVisible(field.id)"
-              (nzCheckedChange)="onTogglePendingColumn(field.id, $event)">
-              {{ field.name }}
-            </label>
-          </div>
-        </div>
-      </ng-container>
-    </nz-modal>
+    <app-field-selection-modal
+      [fields]="entity$()?.fields ?? []"
+      [isOpen]="columnModalState.isOpen$()"
+      [committed]="columnModalState.committed$()"
+      [includeAllFields]="true"
+      title="Select Columns"
+      (commit)="onCommitColumns($event)"
+      (cancel)="onCancelColumns()">
+    </app-field-selection-modal>
   </div>
 </div>

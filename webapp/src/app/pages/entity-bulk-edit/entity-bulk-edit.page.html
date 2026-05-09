@@ -1,0 +1,50 @@
+<div class="entity-bulk-edit-container">
+  <div class="page-header">
+    <button nz-button nzType="text" (click)="onClickBackButton()">← Back</button>
+  </div>
+
+  <div *ngIf="entity$()" class="bulk-edit-content">
+    <div class="content-header">
+      <h1>Bulk Edit {{ entity$()!.pluralName }}</h1>
+      <button nz-button (click)="onClickFieldsButton()">Select Fields</button>
+    </div>
+
+    <nz-card class="bulk-edit-card">
+      <div *ngIf="bulkDataSignal().length === 0" class="empty-state">
+        <nz-empty nzNotFoundContent="No records selected for bulk edit"></nz-empty>
+        <div class="form-actions">
+          <button nz-button nzType="default" (click)="onClickBackButton()">Back</button>
+        </div>
+      </div>
+
+      <ng-container *ngIf="bulkDataSignal().length > 0">
+        <div *ngIf="visibleFields$().length === 0" class="empty-state">
+          <nz-empty nzNotFoundContent="Please select at least one field to continue"></nz-empty>
+        </div>
+
+        <app-bulk-spreadsheet
+          *ngIf="visibleFields$().length > 0"
+          [fields]="visibleFields$()"
+          [rows]="bulkDataSignal()"
+          [allowAddRowOnTab]="false"
+          [showRemoveRowButton]="false"
+          (rowsChange)="onRowsChange($event)">
+        </app-bulk-spreadsheet>
+
+        <div class="form-actions" *ngIf="visibleFields$().length > 0">
+          <button nz-button nzType="default" (click)="onClickBackButton()">Cancel</button>
+          <button nz-button nzType="primary" (click)="onClickSave()">Save All</button>
+        </div>
+      </ng-container>
+    </nz-card>
+  </div>
+
+  <app-field-selection-modal
+    [fields]="entity$()?.fields ?? []"
+    [isOpen]="isFieldModalOpenSignal()"
+    [committed]="selectedFieldIdsSignal()"
+    title="Select Fields"
+    (commit)="onCommitFields($event)"
+    (cancel)="onCancelFields()">
+  </app-field-selection-modal>
+</div>
