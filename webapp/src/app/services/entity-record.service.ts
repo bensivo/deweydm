@@ -64,6 +64,29 @@ export class EntityRecordService {
     }
 
     /**
+     * Updates a batch of records in the backend and the store, sequentially.
+     *
+     * @param rows - Records to update, each with the target id and new field data
+     */
+    async bulkUpdateRecords(rows: { id: string; data: Record<string, string> }[]): Promise<void> {
+        for (const row of rows) {
+            await this.updateRecord(row.id, row.data);
+        }
+    }
+
+    /**
+     * Looks up a list of records by id, preserving order and skipping any ids that don't resolve.
+     *
+     * @param ids - Record ids to fetch
+     * @returns Records found in the store
+     */
+    getRecordsByIds(ids: string[]): EntityRecord[] {
+        return ids
+            .map(id => this.getById(id))
+            .filter((record): record is EntityRecord => record !== undefined);
+    }
+
+    /**
      * Permanently deletes a record from the backend and the store.
      *
      * @param id - The record id to delete

@@ -13,6 +13,7 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
+import { ReferenceListService } from '../../services/reference-list.service';
 import { EntityField } from '../../models/entity.model';
 import { generateEntityKey } from '../../services/entity-key.util';
 import { ModalState } from '../../utils/modal-state.util';
@@ -50,9 +51,6 @@ export class EntityBulkEditPageComponent implements OnInit {
     // Bulk data: array of {id, data} objects, each is a map of fieldId -> value
     bulkDataSignal = signal<{ id: string; data: Record<string, string> }[]>([]);
 
-    // Cache for reference-list values to avoid infinite change detection loops
-    private refListValueCache = new Map<string, { value: string; array: string[] }>();
-
     visibleFields$ = computed(() => {
         const entity = this.entity$();
         if (!entity) return [];
@@ -64,7 +62,8 @@ export class EntityBulkEditPageComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private entityService: EntityService,
-        private entityRecordService: EntityRecordService
+        private entityRecordService: EntityRecordService,
+        private referenceListService: ReferenceListService
     ) {}
 
     ngOnInit(): void {
@@ -88,14 +87,8 @@ export class EntityBulkEditPageComponent implements OnInit {
                 const ids = idsParam ? idsParam.split(',').filter(id => id.length > 0) : [];
                 this.recordIdsSignal.set(ids);
 
-                const allRecords = this.entityRecordService.records$();
-                const rows: { id: string; data: Record<string, string> }[] = [];
-                for (const id of ids) {
-                    const record = allRecords.find(r => r.id === id);
-                    if (record) {
-                        rows.push({ id: record.id, data: { ...record.data } });
-                    }
-                }
+                const records = this.entityRecordService.getRecordsByIds(ids);
+                const rows = records.map(record => ({ id: record.id, data: { ...record.data } }));
                 this.bulkDataSignal.set(rows);
             });
         });
@@ -159,24 +152,11 @@ export class EntityBulkEditPageComponent implements OnInit {
     }
 
     getRefListValues(rowIndex: number, fieldId: string): string[] {
-        const value = this.getCellValue(rowIndex, fieldId);
-        const cacheKey = `${rowIndex}:${fieldId}`;
-        const cached = this.refListValueCache.get(cacheKey);
-
-        // Return cached array if the underlying value hasn't changed
-        if (cached && cached.value === value) {
-            return cached.array;
-        }
-
-        // Create new array and cache it
-        const array = value ? value.split(',') : [];
-        this.refListValueCache.set(cacheKey, { value, array });
-        return array;
+        return this.referenceListService.parseRefList(this.getCellValue(rowIndex, fieldId));
     }
 
     setRefListValues(rowIndex: number, fieldId: string, values: string[]): void {
-        const joined = values.join(',');
-        this.setCellValue(rowIndex, fieldId, joined);
+        this.setCellValue(rowIndex, fieldId, this.referenceListService.stringifyRefList(values));
     }
 
     onKeyDown(event: KeyboardEvent, rowIndex: number, fieldIndex: number): void {
@@ -216,14 +196,9 @@ export class EntityBulkEditPageComponent implements OnInit {
         const entity = this.entity$();
         if (!entity) return;
 
-        const bulkData = this.bulkDataSignal();
+        // Do NOT filter empty rows - bulk edit can intentionally clear values
+        await this.entityRecordService.bulkUpdateRecords(this.bulkDataSignal());
 
-        // Update each row - do NOT filter empty rows, bulk edit can clear values
-        for (const row of bulkData) {
-            await this.entityRecordService.updateRecord(row.id, row.data);
-        }
-
-        // Navigate back to the list page
         this.router.navigate(['/entity', generateEntityKey(entity.name)]);
     }
 }
