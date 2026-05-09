@@ -194,6 +194,17 @@ export class EntityListPageComponent implements OnInit {
     }
   }
 
+  onClickBulkEditButton(): void {
+    const entity = this.entity$();
+    if (!entity) return;
+    const ids = Array.from(this.selectedRecordIdsSignal());
+    if (ids.length === 0) return;
+    this.router.navigate(
+      ['/entity-bulk-edit', generateEntityKey(entity.name)],
+      { queryParams: { ids: ids.join(',') } }
+    );
+  }
+
   onClickRecordRow(recordId: string): void {
     const entity = this.entity$();
     if (entity) {

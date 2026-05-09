@@ -27,24 +27,32 @@
         <span class="badge">{{ getFiltersSignal()().length }}</span>
       </div>
       </button>
-      <button
+      <!-- <button
         nz-button
         nzSize="large"
         nz-dropdown
         [nzDropdownMenu]="addToListMenu"
         nzTrigger="click"
-        [disabled]="selectedRecordIdsSignal().size === 0">
+        *ngIf="selectedRecordIdsSignal().size > 0">
         Add to List
         <i nz-icon nzType="down" nzTheme="outline"></i>
-      </button>
+      </button> -->
       <button
         nz-button
         nzSize="large"
         (click)="onClickSaveAsView()"
-        [disabled]="getFiltersSignal()().length === 0">
+        *ngIf="getFiltersSignal()().length > 0">
         <i nz-icon nzType="save" nzTheme="outline"></i>
         Save as View
       </button>
+      <button
+        nz-button
+        nzSize="large"
+        (click)="onClickBulkEditButton()"
+        *ngIf="selectedRecordIdsSignal().size > 0">
+        Bulk Edit
+      </button>
+
     </div>
 
     <!-- Filters Section -->
