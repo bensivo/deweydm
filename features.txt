@@ -1,14 +1,15 @@
 Features in order:
-- feature: bulk edit view, using the same Ui as bulk-create, but iwth fields pre-populated from selected entities
-- feature: a separate 'backlog' list, which allows users to maintain a custom ordering of items
-- tweak: Global 'new record' form, which lets you select the entity type at top, like Jira. 
-- tweak: Make all selects typeahead selects, for when we're at scale. 
-- feature: a separate 'view' page, which lets users make specific SQL queries and just see that
-- feature: reorder fields in an entity configuration
+- feature: a "Comments" or "Notes" field (or just feature not related to fields).
+- feature: add 'order by' to entity-list page, esp. multiple order-bys stacked. 
+- feature: save column visibility settingsm, esp in views
+- feature: in 'backlink' view, select some columns to show (e.g. in "story" show task name and status)
 - tweak: reference uses plural name of entity, not singular
 - bug: column selection doesn't persist
-- feature: Add a backend
 - feature: Add helpertext/descriptions to fields, for inputs
 - feature: Split panel view, instead of just a table
 - tweak: Make table columns resizable
+- feature: a separate 'backlog' list, which allows users to maintain a custom ordering of items
 - feature: in the entity-list page, if showign a backlink type, let the user expand the list somehow to see all of them?
+- feature: better UI to bulk create a bunch of sub-items from a parent
+- feature: update status fields in less clicks
+- tweak: open entity page in edit mode by default
