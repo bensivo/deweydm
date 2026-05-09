@@ -1,4 +1,5 @@
 Features in order:
+- feature: 'Workspaces' to have entirely differnet sets of data hierarchies. 
 - feature: a "Comments" or "Notes" field (or just feature not related to fields).
 - feature: add 'order by' to entity-list page, esp. multiple order-bys stacked. 
 - feature: save column visibility settingsm, esp in views
