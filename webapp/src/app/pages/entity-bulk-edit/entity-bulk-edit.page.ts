@@ -1,22 +1,16 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
-import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
-import { ReferenceListService } from '../../services/reference-list.service';
-import { EntityField } from '../../models/entity.model';
 import { generateEntityKey } from '../../services/entity-key.util';
-import { ModalState } from '../../utils/modal-state.util';
+import { BulkSpreadsheetComponent, BulkSpreadsheetRow } from '../../components/bulk-spreadsheet/bulk-spreadsheet.component';
+import { FieldSelectionModalComponent } from '../../components/field-selection-modal/field-selection-modal.component';
 
 @Component({
     selector: 'app-entity-bulk-edit-page',
@@ -24,19 +18,17 @@ import { ModalState } from '../../utils/modal-state.util';
         CommonModule,
         FormsModule,
         NzButtonModule,
-        NzInputModule,
-        NzFormModule,
         NzCardModule,
-        NzSelectModule,
-        NzModalModule,
         NzEmptyModule,
-        NzCheckboxModule
+        BulkSpreadsheetComponent,
+        FieldSelectionModalComponent
     ],
     templateUrl: './entity-bulk-edit.page.html',
     styleUrl: './entity-bulk-edit.page.less'
 })
 export class EntityBulkEditPageComponent implements OnInit {
     private entityKeySignal = signal<string>('');
+    private hasInitializedFieldsSignal = signal<boolean>(false);
 
     entity$ = computed(() => {
         const key = this.entityKeySignal();
@@ -44,17 +36,18 @@ export class EntityBulkEditPageComponent implements OnInit {
         return entities.find(e => generateEntityKey(e.name) === key);
     });
 
-    fieldModalState = new ModalState<Set<string>>(new Set(), (set) => new Set(set));
+    selectedFieldIdsSignal = signal<Set<string>>(new Set());
+    isFieldModalOpenSignal = signal<boolean>(false);
 
     recordIdsSignal = signal<string[]>([]);
 
-    // Bulk data: array of {id, data} objects, each is a map of fieldId -> value
-    bulkDataSignal = signal<{ id: string; data: Record<string, string> }[]>([]);
+    // Bulk data: array of {id, data} objects
+    bulkDataSignal = signal<BulkSpreadsheetRow[]>([]);
 
     visibleFields$ = computed(() => {
         const entity = this.entity$();
         if (!entity) return [];
-        const selected = this.fieldModalState.committed$();
+        const selected = this.selectedFieldIdsSignal();
         return entity.fields.filter(f => selected.has(f.id));
     });
 
@@ -62,36 +55,47 @@ export class EntityBulkEditPageComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private entityService: EntityService,
-        private entityRecordService: EntityRecordService,
-        private referenceListService: ReferenceListService
-    ) {}
+        private entityRecordService: EntityRecordService
+    ) {
+        // Resolve the entity type, based on the entity-configs in teh store and the URL param.
+        // This then gives us what fields are available for bulk create/edit
+        effect(() => {
+            const key = this.entityKeySignal();
+            const entities = this.entityService.entities$();
 
-    ngOnInit(): void {
-        this.route.params.subscribe(params => {
-            const key = params['key'];
-            this.entityKeySignal.set(key);
-            const entity = this.entity$();
+            if (!key) return;
+            // Wait for entities to load before deciding to redirect
+            if (entities.length === 0) return;
+
+            const entity = entities.find(e => generateEntityKey(e.name) === key);
             if (!entity) {
                 this.router.navigate(['/']);
                 return;
             }
-            // Initialize field selection - select all non-backlink fields by default
-            const initialFields = new Set<string>(
-                entity.fields.filter(f => f.type !== 'backlink').map(f => f.id)
-            );
-            this.fieldModalState.committed$.set(initialFields);
 
-            // Read ids from query params and seed bulk data
-            this.route.queryParams.subscribe(queryParams => {
-                const idsParam: string = queryParams['ids'] || '';
-                const ids = idsParam ? idsParam.split(',').filter(id => id.length > 0) : [];
-                this.recordIdsSignal.set(ids);
-
-                const records = this.entityRecordService.getRecordsByIds(ids);
-                const rows = records.map(record => ({ id: record.id, data: { ...record.data } }));
-                this.bulkDataSignal.set(rows);
-            });
+            // Initialize field selection once entity is found
+            if (!this.hasInitializedFieldsSignal()) {
+                const initialFields = new Set<string>(
+                    entity.fields.filter(f => f.type !== 'backlink').map(f => f.id)
+                );
+                this.selectedFieldIdsSignal.set(initialFields);
+                this.hasInitializedFieldsSignal.set(true);
+            }
         });
+    }
+
+    ngOnInit(): void {
+        // Read route params synchronously from snapshot — no nested subscriptions needed.
+        const key = this.route.snapshot.params['key'];
+        this.entityKeySignal.set(key);
+
+        const idsParam = this.route.snapshot.queryParamMap.get('ids') || '';
+        const ids = idsParam ? idsParam.split(',').filter(id => id.length > 0) : [];
+        this.recordIdsSignal.set(ids);
+
+        const records = this.entityRecordService.getRecordsByIds(ids);
+        const rows: BulkSpreadsheetRow[] = records.map(record => ({ id: record.id, data: { ...record.data } }));
+        this.bulkDataSignal.set(rows);
     }
 
     onClickBackButton(): void {
@@ -104,92 +108,20 @@ export class EntityBulkEditPageComponent implements OnInit {
     }
 
     onClickFieldsButton(): void {
-        this.fieldModalState.open();
+        this.isFieldModalOpenSignal.set(true);
     }
 
-    onConfirmFields(): void {
-        this.fieldModalState.confirm();
+    onCommitFields(selected: Set<string>): void {
+        this.selectedFieldIdsSignal.set(selected);
+        this.isFieldModalOpenSignal.set(false);
     }
 
     onCancelFields(): void {
-        this.fieldModalState.cancel();
+        this.isFieldModalOpenSignal.set(false);
     }
 
-    onTogglePendingField(fieldId: string, checked: boolean): void {
-        const pending = new Set(this.fieldModalState.pending$());
-        if (checked) {
-            pending.add(fieldId);
-        } else {
-            pending.delete(fieldId);
-        }
-        this.fieldModalState.pending$.set(pending);
-    }
-
-    isPendingFieldVisible(fieldId: string): boolean {
-        return this.fieldModalState.pending$().has(fieldId);
-    }
-
-    isFieldSelectable(field: EntityField): boolean {
-        // Exclude backlink fields since they're read-only
-        return field.type !== 'backlink';
-    }
-
-    getCellValue(rowIndex: number, fieldId: string): string {
-        const row = this.bulkDataSignal()[rowIndex];
-        return row ? (row.data[fieldId] ?? '') : '';
-    }
-
-    setCellValue(rowIndex: number, fieldId: string, value: string): void {
-        const bulkData = this.bulkDataSignal();
-        const newData = [...bulkData];
-        if (!newData[rowIndex]) return;
-        newData[rowIndex].data[fieldId] = value;
-        this.bulkDataSignal.set(newData);
-    }
-
-    getReferenceOptions(field: EntityField){
-        return this.entityRecordService.getReferenceOptions(field);
-    }
-
-    getRefListValues(rowIndex: number, fieldId: string): string[] {
-        return this.referenceListService.parseRefList(this.getCellValue(rowIndex, fieldId));
-    }
-
-    setRefListValues(rowIndex: number, fieldId: string, values: string[]): void {
-        this.setCellValue(rowIndex, fieldId, this.referenceListService.stringifyRefList(values));
-    }
-
-    onKeyDown(event: KeyboardEvent, rowIndex: number, fieldIndex: number): void {
-        if (event.key === 'Tab') {
-            const visibleFields = this.visibleFields$();
-            const isLastField = fieldIndex === visibleFields.length - 1;
-            const bulkData = this.bulkDataSignal();
-            const isLastRow = rowIndex === bulkData.length - 1;
-
-            if (isLastField && isLastRow) {
-                // Bulk edit has a fixed set of rows - allow natural tab behavior
-                return;
-            }
-
-            event.preventDefault();
-            if (isLastField) {
-                // Move to first field of next row
-                setTimeout(() => {
-                    const nextInput = document.querySelector(
-                        `input[data-row="${rowIndex + 1}"][data-field-index="0"]`
-                    ) as HTMLInputElement;
-                    nextInput?.focus();
-                }, 0);
-            } else {
-                // Move to next field in same row
-                setTimeout(() => {
-                    const nextInput = document.querySelector(
-                        `input[data-row="${rowIndex}"][data-field-index="${fieldIndex + 1}"]`
-                    ) as HTMLInputElement;
-                    nextInput?.focus();
-                }, 0);
-            }
-        }
+    onRowsChange(rows: BulkSpreadsheetRow[]): void {
+        this.bulkDataSignal.set(rows);
     }
 
     async onClickSave(): Promise<void> {
@@ -197,7 +129,9 @@ export class EntityBulkEditPageComponent implements OnInit {
         if (!entity) return;
 
         // Do NOT filter empty rows - bulk edit can intentionally clear values
-        await this.entityRecordService.bulkUpdateRecords(this.bulkDataSignal());
+        const rows = this.bulkDataSignal()
+            .filter((r): r is { id: string; data: Record<string, string> } => !!r.id);
+        await this.entityRecordService.bulkUpdateRecords(rows);
 
         this.router.navigate(['/entity', generateEntityKey(entity.name)]);
     }

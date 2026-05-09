@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +7,6 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
-import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -24,6 +23,7 @@ import { FilterOperator } from '../../models/filter.model';
 import { generateEntityKey } from '../../services/entity-key.util';
 import { EntityReferenceComponent } from '../../components/entity-reference/entity-reference.component';
 import { SaveViewModalComponent } from '../../components/save-view-modal/save-view-modal.component';
+import { FieldSelectionModalComponent } from '../../components/field-selection-modal/field-selection-modal.component';
 import { ModalState } from '../../utils/modal-state.util';
 
 @Component({
@@ -37,13 +37,13 @@ import { ModalState } from '../../utils/modal-state.util';
     NzEmptyModule,
     NzTableModule,
     NzCheckboxModule,
-    NzModalModule,
     NzDropDownModule,
     NzMenuModule,
     NzIconModule,
     NzSelectModule,
     EntityReferenceComponent,
-    SaveViewModalComponent
+    SaveViewModalComponent,
+    FieldSelectionModalComponent
   ],
   templateUrl: './entity-list.page.html',
   styleUrl: './entity-list.page.less'
@@ -162,18 +162,20 @@ export class EntityListPageComponent implements OnInit {
         }
       }
     });
+  }
 
-    // Track shift key state
-    window.addEventListener('keydown', (event) => {
-      if (event.shiftKey) {
-        this.isShiftHeldSignal.set(true);
-      }
-    });
-    window.addEventListener('keyup', (event) => {
-      if (event.key === 'Shift') {
-        this.isShiftHeldSignal.set(false);
-      }
-    });
+  @HostListener('window:keydown', ['$event'])
+  onWindowKeyDown(event: KeyboardEvent): void {
+    if (event.shiftKey) {
+      this.isShiftHeldSignal.set(true);
+    }
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  onWindowKeyUp(event: KeyboardEvent): void {
+    if (event.key === 'Shift') {
+      this.isShiftHeldSignal.set(false);
+    }
   }
 
   onClickBackButton(): void {
@@ -216,26 +218,13 @@ export class EntityListPageComponent implements OnInit {
     this.columnModalState.open();
   }
 
-  onConfirmColumns(): void {
-    this.columnModalState.confirm();
+  onCommitColumns(selected: Set<string>): void {
+    this.columnModalState.committed$.set(selected);
+    this.columnModalState.isOpen$.set(false);
   }
 
   onCancelColumns(): void {
     this.columnModalState.cancel();
-  }
-
-  onTogglePendingColumn(fieldId: string, checked: boolean): void {
-    const pending = new Set(this.columnModalState.pending$());
-    if (checked) {
-      pending.add(fieldId);
-    } else {
-      pending.delete(fieldId);
-    }
-    this.columnModalState.pending$.set(pending);
-  }
-
-  isPendingFieldVisible(fieldId: string): boolean {
-    return this.columnModalState.pending$().has(fieldId);
   }
 
   onFilterChange(event: Event): void {

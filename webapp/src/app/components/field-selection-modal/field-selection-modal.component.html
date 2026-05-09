@@ -1,0 +1,19 @@
+<nz-modal
+  [nzVisible]="isOpenSignal()"
+  [nzTitle]="title"
+  (nzOnOk)="onClickOk()"
+  (nzOnCancel)="onClickCancel()">
+  <ng-container *nzModalContent>
+    <div class="field-checkbox-list">
+      <ng-container *ngFor="let field of fields">
+        <div *ngIf="isFieldSelectable(field)" class="field-checkbox-item">
+          <label nz-checkbox
+            [nzChecked]="isPendingFieldVisible(field.id)"
+            (nzCheckedChange)="onTogglePendingField(field.id, $event)">
+            {{ field.name }}
+          </label>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+</nz-modal>

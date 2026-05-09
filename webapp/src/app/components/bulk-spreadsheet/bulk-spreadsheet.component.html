@@ -1,0 +1,96 @@
+<div class="spreadsheet-container">
+  <table class="bulk-spreadsheet-table">
+    <thead>
+      <tr>
+        <th *ngIf="showRemoveRowButton" class="action-column"></th>
+        <th *ngFor="let field of fieldsSignal()">{{ field.name }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of rowsSignal(); let rowIndex = index" class="data-row">
+        <td *ngIf="showRemoveRowButton" class="action-column">
+          <button
+            nz-button
+            nzType="text"
+            nzDanger
+            nzSize="small"
+            (click)="onClickRemoveRow(rowIndex)"
+            *ngIf="rowsSignal().length > 1"
+            title="Remove row"
+            class="remove-button">
+            −
+          </button>
+        </td>
+        <td *ngFor="let field of fieldsSignal(); let fieldIndex = index" class="data-cell">
+          <!-- Text input for short-text and long-text -->
+          <input
+            *ngIf="field.type === 'short-text' || field.type === 'long-text'"
+            #cellInput
+            nz-input
+            type="text"
+            [ngModel]="getCellValue(rowIndex, field.id)"
+            (ngModelChange)="setCellValue(rowIndex, field.id, $event)"
+            (keydown)="onKeyDown($event, rowIndex, fieldIndex)"
+            class="cell-input"
+            [placeholder]="field.name" />
+          <!-- Number input for number type -->
+          <input
+            *ngIf="field.type === 'number'"
+            #cellInput
+            nz-input
+            type="number"
+            [ngModel]="getCellValue(rowIndex, field.id)"
+            (ngModelChange)="setCellValue(rowIndex, field.id, $event)"
+            (keydown)="onKeyDown($event, rowIndex, fieldIndex)"
+            class="cell-input"
+            [placeholder]="field.name" />
+          <!-- Select for reference type -->
+          <nz-select
+            *ngIf="field.type === 'reference'"
+            #cellInput
+            nzPlaceHolder="Select..."
+            [ngModel]="getCellValue(rowIndex, field.id)"
+            (ngModelChange)="setCellValue(rowIndex, field.id, $event)"
+            (keydown)="onKeyDown($event, rowIndex, fieldIndex)"
+            class="cell-select">
+            <nz-option
+              *ngFor="let opt of getReferenceOptions(field)"
+              [nzValue]="opt.recordId"
+              [nzLabel]="opt.recordName">
+            </nz-option>
+          </nz-select>
+          <!-- Select for option type -->
+          <nz-select
+            *ngIf="field.type === 'option'"
+            #cellInput
+            nzPlaceHolder="Select..."
+            [ngModel]="getCellValue(rowIndex, field.id)"
+            (ngModelChange)="setCellValue(rowIndex, field.id, $event)"
+            (keydown)="onKeyDown($event, rowIndex, fieldIndex)"
+            class="cell-select">
+            <nz-option *ngFor="let val of field.optionValues" [nzValue]="val" [nzLabel]="val"></nz-option>
+          </nz-select>
+          <!-- Multi-select for reference-list type -->
+          <nz-select
+            *ngIf="field.type === 'reference-list'"
+            #cellInput
+            nzMode="multiple"
+            nzPlaceHolder="Select..."
+            [ngModel]="getRefListValues(rowIndex, field.id)"
+            (ngModelChange)="setRefListValues(rowIndex, field.id, $event)"
+            (keydown)="onKeyDown($event, rowIndex, fieldIndex)"
+            class="cell-select">
+            <nz-option
+              *ngFor="let opt of getReferenceOptions(field)"
+              [nzValue]="opt.recordId"
+              [nzLabel]="opt.recordName">
+            </nz-option>
+          </nz-select>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="table-actions" *ngIf="showRemoveRowButton">
+    <button nz-button (click)="onClickAddRow()">+ Add Row</button>
+  </div>
+</div>

@@ -216,22 +216,14 @@
     </nz-table>
 
     <!-- Column Selection Modal -->
-    <nz-modal
-      [(nzVisible)]="columnModalState.isOpen$"
-      nzTitle="Select Columns"
-      (nzOnOk)="onConfirmColumns()"
-      (nzOnCancel)="onCancelColumns()">
-      <ng-container *nzModalContent>
-        <div class="column-checkbox-list">
-          <div *ngFor="let field of entity$()!.fields" class="column-checkbox-item">
-            <label nz-checkbox
-              [nzChecked]="isPendingFieldVisible(field.id)"
-              (nzCheckedChange)="onTogglePendingColumn(field.id, $event)">
-              {{ field.name }}
-            </label>
-          </div>
-        </div>
-      </ng-container>
-    </nz-modal>
+    <app-field-selection-modal
+      [fields]="entity$()?.fields ?? []"
+      [isOpen]="columnModalState.isOpen$()"
+      [committed]="columnModalState.committed$()"
+      [includeAllFields]="true"
+      title="Select Columns"
+      (commit)="onCommitColumns($event)"
+      (cancel)="onCancelColumns()">
+    </app-field-selection-modal>
   </div>
 </div>

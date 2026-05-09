@@ -22,90 +22,14 @@
           <nz-empty nzNotFoundContent="Please select at least one field to continue"></nz-empty>
         </div>
 
-        <div *ngIf="visibleFields$().length > 0" class="spreadsheet-container">
-          <table class="bulk-edit-table">
-            <thead>
-              <tr>
-                <th *ngFor="let field of visibleFields$()">{{ field.name }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of bulkDataSignal(); let rowIndex = index" class="data-row">
-                <td *ngFor="let field of visibleFields$(); let fieldIndex = index" class="data-cell">
-                  <!-- Text input for short-text and long-text -->
-                  <input
-                    *ngIf="field.type === 'short-text' || field.type === 'long-text'"
-                    nz-input
-                    type="text"
-                    [ngModel]="getCellValue(rowIndex, field.id)"
-                    (ngModelChange)="setCellValue(rowIndex, field.id, $event)"
-                    (keydown)="onKeyDown($event, rowIndex, fieldIndex)"
-                    [attr.data-row]="rowIndex"
-                    [attr.data-field-index]="fieldIndex"
-                    class="cell-input"
-                    [placeholder]="field.name" />
-                  <!-- Number input for number type -->
-                  <input
-                    *ngIf="field.type === 'number'"
-                    nz-input
-                    type="number"
-                    [ngModel]="getCellValue(rowIndex, field.id)"
-                    (ngModelChange)="setCellValue(rowIndex, field.id, $event)"
-                    (keydown)="onKeyDown($event, rowIndex, fieldIndex)"
-                    [attr.data-row]="rowIndex"
-                    [attr.data-field-index]="fieldIndex"
-                    class="cell-input"
-                    [placeholder]="field.name" />
-                  <!-- Select for reference type -->
-                  <nz-select
-                    *ngIf="field.type === 'reference'"
-                    nzPlaceHolder="Select..."
-                    [ngModel]="getCellValue(rowIndex, field.id)"
-                    (ngModelChange)="setCellValue(rowIndex, field.id, $event)"
-                    (keydown)="onKeyDown($event, rowIndex, fieldIndex)"
-                    [attr.data-row]="rowIndex"
-                    [attr.data-field-index]="fieldIndex"
-                    class="cell-select">
-                    <nz-option
-                      *ngFor="let opt of getReferenceOptions(field)"
-                      [nzValue]="opt.recordId"
-                      [nzLabel]="opt.recordName">
-                    </nz-option>
-                  </nz-select>
-                  <!-- Select for option type -->
-                  <nz-select
-                    *ngIf="field.type === 'option'"
-                    nzPlaceHolder="Select..."
-                    [ngModel]="getCellValue(rowIndex, field.id)"
-                    (ngModelChange)="setCellValue(rowIndex, field.id, $event)"
-                    (keydown)="onKeyDown($event, rowIndex, fieldIndex)"
-                    [attr.data-row]="rowIndex"
-                    [attr.data-field-index]="fieldIndex"
-                    class="cell-select">
-                    <nz-option *ngFor="let val of field.optionValues" [nzValue]="val" [nzLabel]="val"></nz-option>
-                  </nz-select>
-                  <!-- Multi-select for reference-list type -->
-                  <nz-select
-                    *ngIf="field.type === 'reference-list'"
-                    nzMode="multiple"
-                    nzPlaceHolder="Select..."
-                    [ngModel]="getRefListValues(rowIndex, field.id)"
-                    (ngModelChange)="setRefListValues(rowIndex, field.id, $event)"
-                    (keydown)="onKeyDown($event, rowIndex, fieldIndex)"
-                    [attr.data-row]="rowIndex"
-                    [attr.data-field-index]="fieldIndex"
-                    class="cell-select">
-                    <nz-option
-                      *ngFor="let opt of getReferenceOptions(field)"
-                      [nzValue]="opt.recordId"
-                      [nzLabel]="opt.recordName">
-                    </nz-option>
-                  </nz-select>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <app-bulk-spreadsheet
+          *ngIf="visibleFields$().length > 0"
+          [fields]="visibleFields$()"
+          [rows]="bulkDataSignal()"
+          [allowAddRowOnTab]="false"
+          [showRemoveRowButton]="false"
+          (rowsChange)="onRowsChange($event)">
+        </app-bulk-spreadsheet>
 
         <div class="form-actions" *ngIf="visibleFields$().length > 0">
           <button nz-button nzType="default" (click)="onClickBackButton()">Cancel</button>
@@ -115,24 +39,12 @@
     </nz-card>
   </div>
 
-  <!-- Field Selection Modal -->
-  <nz-modal
-    [(nzVisible)]="fieldModalState.isOpen$"
-    nzTitle="Select Fields"
-    (nzOnOk)="onConfirmFields()"
-    (nzOnCancel)="onCancelFields()">
-    <ng-container *nzModalContent>
-      <div class="field-checkbox-list">
-        <ng-container *ngFor="let field of entity$()!.fields">
-          <div *ngIf="isFieldSelectable(field)" class="field-checkbox-item">
-            <label nz-checkbox
-              [nzChecked]="isPendingFieldVisible(field.id)"
-              (nzCheckedChange)="onTogglePendingField(field.id, $event)">
-              {{ field.name }}
-            </label>
-          </div>
-        </ng-container>
-      </div>
-    </ng-container>
-  </nz-modal>
+  <app-field-selection-modal
+    [fields]="entity$()?.fields ?? []"
+    [isOpen]="isFieldModalOpenSignal()"
+    [committed]="selectedFieldIdsSignal()"
+    title="Select Fields"
+    (commit)="onCommitFields($event)"
+    (cancel)="onCancelFields()">
+  </app-field-selection-modal>
 </div>
