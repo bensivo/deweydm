@@ -139,10 +139,17 @@ export class EntityService {
     ): Promise<EntityField> {
         const fieldId = this.generateId();
 
+        // Compute next display_order (max+1) for this entity
+        const maxRow = await this.getQuery<{ max_order: number | null }>(
+            'SELECT MAX(display_order) AS max_order FROM entity_fields WHERE entity_id = ?',
+            [entityId]
+        );
+        const nextOrder = (maxRow?.max_order ?? -1) + 1;
+
         await this.runQuery(
-            `INSERT INTO entity_fields (id, entity_id, name, type, reference_entity_id, backlink_source_entity_id, backlink_source_field_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [fieldId, entityId, fieldName, fieldType, referenceEntityId ?? null, backlinkSourceEntityId ?? null, backlinkSourceFieldId ?? null]
+            `INSERT INTO entity_fields (id, entity_id, name, type, reference_entity_id, backlink_source_entity_id, backlink_source_field_id, display_order)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [fieldId, entityId, fieldName, fieldType, referenceEntityId ?? null, backlinkSourceEntityId ?? null, backlinkSourceFieldId ?? null, nextOrder]
         );
 
         if (fieldType === 'option' && optionValues && optionValues.length > 0) {
@@ -178,6 +185,28 @@ export class EntityService {
     }
 
     /**
+     * Reorders fields for an entity by assigning display_order based on the position
+     * in the provided id list.
+     * @param entityId - The entity ID.
+     * @param orderedFieldIds - Field IDs in the desired order.
+     */
+    async reorderFields(entityId: string, orderedFieldIds: string[]): Promise<void> {
+        await this.runQuery('BEGIN');
+        try {
+            for (let i = 0; i < orderedFieldIds.length; i++) {
+                await this.runQuery(
+                    'UPDATE entity_fields SET display_order = ? WHERE id = ? AND entity_id = ?',
+                    [i, orderedFieldIds[i], entityId]
+                );
+            }
+            await this.runQuery('COMMIT');
+        } catch (err) {
+            await this.runQuery('ROLLBACK');
+            throw err;
+        }
+    }
+
+    /**
      * Fetches all fields for a given entity, including option values.
      */
     private async getFieldsForEntity(entityId: string): Promise<EntityField[]> {
@@ -189,7 +218,7 @@ export class EntityService {
             backlink_source_entity_id: string | null;
             backlink_source_field_id: string | null;
         }>(
-            'SELECT id, name, type, reference_entity_id, backlink_source_entity_id, backlink_source_field_id FROM entity_fields WHERE entity_id = ?',
+            'SELECT id, name, type, reference_entity_id, backlink_source_entity_id, backlink_source_field_id FROM entity_fields WHERE entity_id = ? ORDER BY display_order ASC, created_at ASC',
             [entityId]
         );
 

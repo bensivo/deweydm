@@ -71,6 +71,33 @@ export class EntityService {
         this.entityStore.remove(id);
     }
 
+    async reorderFields(entityId: string, orderedFieldIds: string[]): Promise<void> {
+        await (window as any).electronApi.entityReorderFields(entityId, orderedFieldIds);
+        const entity = this.entityStore.getById(entityId);
+        if (!entity) return;
+
+        // Re-sort the in-memory fields array to match the new order
+        const fieldById = new Map(entity.fields.map(f => [f.id, f]));
+        const reordered = orderedFieldIds
+            .map(id => fieldById.get(id))
+            .filter((f): f is EntityField => !!f);
+
+        this.entityStore.update(entityId, { fields: reordered });
+    }
+
+    async moveField(entityId: string, fieldId: string, direction: 'up' | 'down'): Promise<void> {
+        const entity = this.entityStore.getById(entityId);
+        if (!entity) return;
+        const idx = entity.fields.findIndex(f => f.id === fieldId);
+        if (idx < 0) return;
+        const swapWith = direction === 'up' ? idx - 1 : idx + 1;
+        if (swapWith < 0 || swapWith >= entity.fields.length) return;
+
+        const newOrder = entity.fields.map(f => f.id);
+        [newOrder[idx], newOrder[swapWith]] = [newOrder[swapWith], newOrder[idx]];
+        await this.reorderFields(entityId, newOrder);
+    }
+
     async setDisplayNameField(entityId: string, fieldId: string): Promise<void> {
         await (window as any).electronApi.entitySetDisplayNameField(entityId, fieldId);
         this.entityStore.update(entityId, { displayNameFieldId: fieldId });

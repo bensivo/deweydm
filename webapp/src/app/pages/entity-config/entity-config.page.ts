@@ -8,6 +8,7 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 import { FieldType } from '../../models/entity.model';
 import { generateEntityKey } from '../../services/entity-key.util';
 import { EntityService } from '../../services/entity.service';
@@ -22,7 +23,8 @@ import { EntityService } from '../../services/entity.service';
     NzInputModule,
     NzSelectModule,
     NzModalModule,
-    NzEmptyModule
+    NzEmptyModule,
+    NzIconModule
   ],
   templateUrl: './entity-config.page.html',
   styleUrl: './entity-config.page.less'
@@ -123,6 +125,18 @@ export class EntityConfigPageComponent implements OnInit {
         optionValues
     );
     this.showAddFieldModal.set(false);
+  }
+
+  onClickMoveFieldUpButton(fieldId: string): void {
+    const entity = this.entity$();
+    if (!entity) return;
+    this.entityService.moveField(entity.id, fieldId, 'up');
+  }
+
+  onClickMoveFieldDownButton(fieldId: string): void {
+    const entity = this.entity$();
+    if (!entity) return;
+    this.entityService.moveField(entity.id, fieldId, 'down');
   }
 
   onClickRemoveFieldButton(fieldId: string): void {

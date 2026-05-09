@@ -49,6 +49,9 @@ const electronApi = {
     entityRemoveField: (entityId: string, fieldId: string): Promise<void> => {
         return ipcRenderer.invoke('entity:removeField', entityId, fieldId);
     },
+    entityReorderFields: (entityId: string, orderedFieldIds: string[]): Promise<void> => {
+        return ipcRenderer.invoke('entity:reorderFields', entityId, orderedFieldIds);
+    },
 
     // Entity record operations
     entityRecordGetAll: (): Promise<any[]> => {

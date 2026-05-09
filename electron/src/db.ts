@@ -76,6 +76,7 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                         reference_entity_id TEXT,
                         backlink_source_entity_id TEXT,
                         backlink_source_field_id TEXT,
+                        display_order INTEGER,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE CASCADE,
                         FOREIGN KEY (reference_entity_id) REFERENCES entities(id),
@@ -120,6 +121,26 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
         });
     });
 
-    // Placeholder for future migration logic. For now we just return a resolved promise.
+    // Add display_order column to entity_fields if it doesn't already exist (defensive migration for existing DBs)
+    await new Promise<void>((resolve) => {
+        db.all("PRAGMA table_info(entity_fields)", (err, rows: any[]) => {
+            if (err || !rows) { resolve(); return; }
+            const hasDisplayOrder = rows.some(r => r.name === 'display_order');
+            if (hasDisplayOrder) { resolve(); return; }
+            db.run('ALTER TABLE entity_fields ADD COLUMN display_order INTEGER', () => {
+                // Backfill existing rows in insertion (created_at) order, per entity.
+                db.run(
+                    `UPDATE entity_fields SET display_order = (
+                        SELECT COUNT(*) FROM entity_fields ef2
+                        WHERE ef2.entity_id = entity_fields.entity_id
+                          AND ef2.created_at <= entity_fields.created_at
+                          AND ef2.id != entity_fields.id
+                    ) WHERE display_order IS NULL`,
+                    () => resolve()
+                );
+            });
+        });
+    });
+
     return Promise.resolve();
 }

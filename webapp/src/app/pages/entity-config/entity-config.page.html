@@ -24,13 +24,34 @@
           <tr>
             <th>Field Name</th>
             <th>Type</th>
+            <th>Order</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let field of entity$()!.fields">
+          <tr *ngFor="let field of entity$()!.fields; let isFirst = first; let isLast = last">
             <td>{{ field.name }}</td>
             <td>{{ getFieldTypeLabel(field.type) }}</td>
+            <td>
+              <div class="reorder-buttons">
+                <button
+                  nz-button
+                  nzType="text"
+                  nzSize="small"
+                  [disabled]="isFirst"
+                  (click)="onClickMoveFieldUpButton(field.id)">
+                  <span nz-icon nzType="arrow-up"></span>
+                </button>
+                <button
+                  nz-button
+                  nzType="text"
+                  nzSize="small"
+                  [disabled]="isLast"
+                  (click)="onClickMoveFieldDownButton(field.id)">
+                  <span nz-icon nzType="arrow-down"></span>
+                </button>
+              </div>
+            </td>
             <td>
               <button
                 nz-button

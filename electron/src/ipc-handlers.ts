@@ -50,6 +50,10 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         return entityService.removeField(entityId, fieldId);
     });
 
+    ipcMain.handle('entity:reorderFields', async (_event: Electron.IpcMainInvokeEvent, entityId: string, orderedFieldIds: string[]) => {
+        return entityService.reorderFields(entityId, orderedFieldIds);
+    });
+
     // Entity record handlers
     ipcMain.handle('entityRecord:getAll', async () => {
         return entityRecordService.getAll();
