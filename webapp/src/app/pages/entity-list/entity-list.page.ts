@@ -17,6 +17,7 @@ import { EntityRecordService } from '../../services/entity-record.service';
 import { FilterService } from '../../services/filter.service';
 import { ListService } from '../../services/list.service';
 import { ViewService } from '../../services/view.service';
+import { ColumnVisibilityService } from '../../services/column-visibility.service';
 import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
 import { FilterOperator } from '../../models/filter.model';
@@ -136,11 +137,12 @@ export class EntityListPageComponent implements OnInit {
     private entityRecordService: EntityRecordService,
     public filterService: FilterService,
     private listService: ListService,
-    private viewService: ViewService
+    private viewService: ViewService,
+    private columnVisibilityService: ColumnVisibilityService
   ) {}
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe(async params => {
       const key = params['key'];
       this.entityKeySignal.set(key);
       if (!this.entity$()) {
@@ -148,8 +150,9 @@ export class EntityListPageComponent implements OnInit {
       } else {
         const entity = this.entity$();
         if (entity) {
-          const allFieldIds = new Set(entity.fields.map(f => f.id));
-          this.columnModalState.committed$.set(allFieldIds);
+          const saved = await this.columnVisibilityService.load('entity-list', entity.id);
+          const initialVisible = saved ?? new Set(entity.fields.map(f => f.id));
+          this.columnModalState.committed$.set(initialVisible);
           // Set the current entity in the filter service so filters are entity-specific
           this.filterService.setCurrentEntity(entity.id);
 
@@ -219,6 +222,10 @@ export class EntityListPageComponent implements OnInit {
   }
 
   onCommitColumns(selected: Set<string>): void {
+    const entity = this.entity$();
+    if (entity) {
+      this.columnVisibilityService.save('entity-list', entity.id, selected);
+    }
     this.columnModalState.committed$.set(selected);
     this.columnModalState.isOpen$.set(false);
   }

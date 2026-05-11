@@ -86,6 +86,14 @@ const electronApi = {
     entityRecordDelete: (id: string): Promise<void> => {
         return ipcRenderer.invoke('entityRecord:delete', id);
     },
+
+    // Column visibility operations
+    columnVisibilityGet: (contextType: string, contextId: string): Promise<string[] | null> => {
+        return ipcRenderer.invoke('columnVisibility:get', contextType, contextId);
+    },
+    columnVisibilitySet: (contextType: string, contextId: string, fieldIds: string[]): Promise<void> => {
+        return ipcRenderer.invoke('columnVisibility:set', contextType, contextId, fieldIds);
+    },
 };
 
 contextBridge.exposeInMainWorld('electronApi', electronApi);

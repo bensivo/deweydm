@@ -4,6 +4,7 @@ import sqlite3 from 'sqlite3';
 import { EntityService, FieldType } from './service/entity.service';
 import { EntityRecordService } from './service/entity-record.service';
 import { WorkspaceService } from './service/workspace.service';
+import { ColumnVisibilityService } from './service/column-visibility.service';
 
 // Register all IPC handlers before any window is created so they are
 // available as soon as the renderer sends its first message.
@@ -11,6 +12,7 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
     const entityService = new EntityService(db);
     const entityRecordService = new EntityRecordService(db);
     const workspaceService = new WorkspaceService(db);
+    const columnVisibilityService = new ColumnVisibilityService(db);
 
     ipcMain.handle('hello-world', onHelloWorld);
 
@@ -96,6 +98,15 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
 
     ipcMain.handle('entityRecord:delete', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
         return entityRecordService.deleteRecord(id);
+    });
+
+    // Column visibility handlers
+    ipcMain.handle('columnVisibility:get', async (_event: Electron.IpcMainInvokeEvent, contextType: string, contextId: string) => {
+        return columnVisibilityService.get(contextType, contextId);
+    });
+
+    ipcMain.handle('columnVisibility:set', async (_event: Electron.IpcMainInvokeEvent, contextType: string, contextId: string, fieldIds: string[]) => {
+        return columnVisibilityService.set(contextType, contextId, fieldIds);
     });
 }
 

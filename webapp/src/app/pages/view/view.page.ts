@@ -17,6 +17,7 @@ import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
 import { FilterService } from '../../services/filter.service';
 import { ViewService } from '../../services/view.service';
+import { ColumnVisibilityService } from '../../services/column-visibility.service';
 import { ListService } from '../../services/list.service';
 import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
@@ -50,6 +51,7 @@ import { ModalState } from '../../utils/modal-state.util';
 })
 export class ViewPageComponent implements OnInit {
     private entityKeySignal = signal<string>('');
+    private viewIdSignal = signal<string>('');
     viewNameSignal = signal<string>('');
 
     entity$ = computed(() => {
@@ -137,11 +139,12 @@ export class ViewPageComponent implements OnInit {
         private entityRecordService: EntityRecordService,
         public filterService: FilterService,
         private listService: ListService,
-        private viewService: ViewService
+        private viewService: ViewService,
+        private columnVisibilityService: ColumnVisibilityService
     ) {}
 
     ngOnInit(): void {
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe(async params => {
             const viewId = params['viewId'];
 
             const view = this.viewService.getViewById(viewId);
@@ -176,9 +179,10 @@ export class ViewPageComponent implements OnInit {
             // Set entity key to load the entity list
             const entityKey = generateEntityKey(entity.name);
             this.entityKeySignal.set(entityKey);
+            this.viewIdSignal.set(viewId);
 
             // Initialize the entity list
-            this.initializeEntity();
+            await this.initializeEntity(viewId);
         });
 
         // Track shift key state
@@ -194,16 +198,15 @@ export class ViewPageComponent implements OnInit {
         });
     }
 
-    private initializeEntity(): void {
-        if (!this.entity$()) {
+    private async initializeEntity(viewId: string): Promise<void> {
+        const entity = this.entity$();
+        if (!entity) {
             this.router.navigate(['/']);
-        } else {
-            const entity = this.entity$();
-            if (entity) {
-                const allFieldIds = new Set(entity.fields.map(f => f.id));
-                this.columnModalState.committed$.set(allFieldIds);
-            }
+            return;
         }
+        const saved = await this.columnVisibilityService.load('view', viewId);
+        const initialVisible = saved ?? new Set(entity.fields.map(f => f.id));
+        this.columnModalState.committed$.set(initialVisible);
     }
 
     onClickBackButton(): void {
@@ -237,6 +240,10 @@ export class ViewPageComponent implements OnInit {
 
     onConfirmColumns(): void {
         this.columnModalState.confirm();
+        const viewId = this.viewIdSignal();
+        if (viewId) {
+            this.columnVisibilityService.save('view', viewId, this.columnModalState.committed$());
+        }
     }
 
     onCancelColumns(): void {

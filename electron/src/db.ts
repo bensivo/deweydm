@@ -124,6 +124,15 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                 await run(`
                     CREATE INDEX IF NOT EXISTS idx_entity_records_entity_id ON entity_records(entity_id)
                 `);
+
+                await run(`
+                    CREATE TABLE IF NOT EXISTS column_visibility (
+                        context_type TEXT NOT NULL,
+                        context_id TEXT NOT NULL,
+                        field_ids TEXT NOT NULL,
+                        PRIMARY KEY (context_type, context_id)
+                    )
+                `);
                 resolve();
             } catch (err) {
                 reject(err);
