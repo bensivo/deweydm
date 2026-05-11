@@ -9,6 +9,7 @@ import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 
 import { EntityService } from './services/entity.service';
 import { EntityRecordService } from './services/entity-record.service';
+import { WorkspaceService } from './services/workspace.service';
 import { SearchService } from './services/search.service';
 import { ViewService } from './services/view.service';
 import { generateEntityKey } from './services/entity-key.util';
@@ -46,10 +47,10 @@ export class App {
         private listsStore: ListsStore,
         private searchStore: SearchStore,
         private globalCreateStore: GlobalCreateStore,
-        private router: Router
+        private router: Router,
+        private workspaceService: WorkspaceService
     ) {
-        this.entityService.loadAll();
-        this.entityRecordService.loadAll();
+        this.workspaceService.loadAll();
     }
 
     get entities$() {

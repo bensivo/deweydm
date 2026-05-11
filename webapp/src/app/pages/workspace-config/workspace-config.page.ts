@@ -17,6 +17,7 @@ import { EntityRecordStore } from '../../store/entity-record.store';
 import { ImportExportService } from '../../services/import-export.service';
 import { ListService } from '../../services/list.service';
 import { ListsStore } from '../../store/lists.store';
+import { WorkspaceStore } from '../../store/workspace.store';
 
 @Component({
   selector: 'app-workspace-config-page',
@@ -53,7 +54,8 @@ export class WorkspaceConfigPageComponent {
     private entityRecordStore: EntityRecordStore,
     private importExportService: ImportExportService,
     private listService: ListService,
-    private listsStore: ListsStore
+    private listsStore: ListsStore,
+    private workspaceStore: WorkspaceStore
   ) {
     this.availableTemplates.set(this.templateService.getAvailableTemplates());
   }
@@ -76,7 +78,8 @@ export class WorkspaceConfigPageComponent {
     if (!this.newEntityName || !this.newEntityPluralName) {
       return;
     }
-    this.entityService.createEntity(this.newEntityName, this.newEntityPluralName);
+    const activeWorkspaceId = this.workspaceStore.getActive()?.id;
+    this.entityService.createEntity(this.newEntityName, this.newEntityPluralName, activeWorkspaceId);
     this.showCreateEntityModal.set(false);
   }
 

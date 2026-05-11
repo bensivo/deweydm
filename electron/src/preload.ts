@@ -19,15 +19,29 @@ const electronApi = {
         return ipcRenderer.invoke('hello-world', name);
     },
 
+    // Workspace operations
+    workspaceGetAll: (): Promise<any[]> => {
+        return ipcRenderer.invoke('workspace:getAll');
+    },
+    workspaceCreate: (name: string): Promise<any> => {
+        return ipcRenderer.invoke('workspace:create', name);
+    },
+    workspaceDelete: (id: string): Promise<void> => {
+        return ipcRenderer.invoke('workspace:delete', id);
+    },
+    workspaceSetDefault: (id: string): Promise<void> => {
+        return ipcRenderer.invoke('workspace:setDefault', id);
+    },
+
     // Entity operations
-    entityGetAll: (): Promise<any[]> => {
-        return ipcRenderer.invoke('entity:getAll');
+    entityGetAll: (workspaceId?: string): Promise<any[]> => {
+        return ipcRenderer.invoke('entity:getAll', workspaceId);
     },
     entityGetById: (id: string): Promise<any> => {
         return ipcRenderer.invoke('entity:getById', id);
     },
-    entityCreate: (name: string, pluralName: string): Promise<any> => {
-        return ipcRenderer.invoke('entity:create', name, pluralName);
+    entityCreate: (name: string, pluralName: string, workspaceId?: string): Promise<any> => {
+        return ipcRenderer.invoke('entity:create', name, pluralName, workspaceId);
     },
     entityDelete: (id: string): Promise<void> => {
         return ipcRenderer.invoke('entity:delete', id);

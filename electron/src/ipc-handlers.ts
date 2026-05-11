@@ -3,26 +3,45 @@ import sqlite3 from 'sqlite3';
 
 import { EntityService, FieldType } from './service/entity.service';
 import { EntityRecordService } from './service/entity-record.service';
+import { WorkspaceService } from './service/workspace.service';
 
 // Register all IPC handlers before any window is created so they are
 // available as soon as the renderer sends its first message.
 export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Database): void {
     const entityService = new EntityService(db);
     const entityRecordService = new EntityRecordService(db);
+    const workspaceService = new WorkspaceService(db);
 
     ipcMain.handle('hello-world', onHelloWorld);
 
+    // Workspace handlers
+    ipcMain.handle('workspace:getAll', async () => {
+        return workspaceService.getAll();
+    });
+
+    ipcMain.handle('workspace:create', async (_event: Electron.IpcMainInvokeEvent, name: string) => {
+        return workspaceService.create(name);
+    });
+
+    ipcMain.handle('workspace:delete', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+        return workspaceService.delete(id);
+    });
+
+    ipcMain.handle('workspace:setDefault', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+        return workspaceService.setDefault(id);
+    });
+
     // Entity handlers
-    ipcMain.handle('entity:getAll', async () => {
-        return entityService.getAll();
+    ipcMain.handle('entity:getAll', async (_event: Electron.IpcMainInvokeEvent, workspaceId?: string) => {
+        return entityService.getAll(workspaceId);
     });
 
     ipcMain.handle('entity:getById', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
         return entityService.getById(id);
     });
 
-    ipcMain.handle('entity:create', async (_event: Electron.IpcMainInvokeEvent, name: string, pluralName: string) => {
-        return entityService.createEntity(name, pluralName);
+    ipcMain.handle('entity:create', async (_event: Electron.IpcMainInvokeEvent, name: string, pluralName: string, workspaceId?: string) => {
+        return entityService.createEntity(name, pluralName, workspaceId);
     });
 
     ipcMain.handle('entity:delete', async (_event: Electron.IpcMainInvokeEvent, id: string) => {

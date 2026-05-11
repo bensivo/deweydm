@@ -31,9 +31,12 @@ export class EntityService {
      * Fetches all entities with their fields and option values.
      * @returns A promise resolving to an array of Entity objects.
      */
-    async getAll(): Promise<Entity[]> {
+    async getAll(workspaceId?: string): Promise<Entity[]> {
         const entityRows = await this.allQuery<{ id: string; name: string; plural_name: string; display_name_field_id: string | null }>(
-            'SELECT id, name, plural_name, display_name_field_id FROM entities'
+            workspaceId
+                ? 'SELECT id, name, plural_name, display_name_field_id FROM entities WHERE workspace_id = ?'
+                : 'SELECT id, name, plural_name, display_name_field_id FROM entities',
+            workspaceId ? [workspaceId] : []
         );
 
         const entities: Entity[] = [];
@@ -82,11 +85,11 @@ export class EntityService {
      * @param pluralName - The plural name of the entity.
      * @returns A promise resolving to the created Entity.
      */
-    async createEntity(name: string, pluralName: string): Promise<Entity> {
+    async createEntity(name: string, pluralName: string, workspaceId?: string): Promise<Entity> {
         const id = this.generateId();
         await this.runQuery(
-            'INSERT INTO entities (id, name, plural_name) VALUES (?, ?, ?)',
-            [id, name, pluralName]
+            'INSERT INTO entities (id, name, plural_name, workspace_id) VALUES (?, ?, ?, ?)',
+            [id, name, pluralName, workspaceId ?? null]
         );
 
         return {

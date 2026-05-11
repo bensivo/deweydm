@@ -1,0 +1,59 @@
+<div class="workspaces-page">
+    <div class="workspaces-header">
+        <h2>Workspaces</h2>
+        <button nz-button nzType="primary" (click)="onClickAddWorkspace()">+ Add Workspace</button>
+    </div>
+
+    <nz-list [nzDataSource]="workspaces$()" [nzRenderItem]="workspaceItem" nzBordered>
+        <ng-template #workspaceItem let-workspace>
+            <nz-list-item class="workspace-item">
+                <div class="workspace-item-content">
+                    <span class="workspace-name">{{ workspace.name }}</span>
+                    <div class="workspace-badges">
+                        <nz-tag *ngIf="workspace.id === activeWorkspaceId$()" nzColor="blue">Active</nz-tag>
+                        <nz-tag *ngIf="workspace.isDefault" nzColor="green">Default</nz-tag>
+                    </div>
+                </div>
+                <div class="workspace-actions">
+                    <button
+                        nz-button
+                        nzSize="small"
+                        *ngIf="workspace.id !== activeWorkspaceId$()"
+                        (click)="onClickSwitch(workspace)">
+                        Switch
+                    </button>
+                    <button
+                        nz-button
+                        nzSize="small"
+                        *ngIf="!workspace.isDefault"
+                        (click)="onClickSetDefault(workspace)">
+                        Set Default
+                    </button>
+                    <button
+                        nz-button
+                        nzSize="small"
+                        nzDanger
+                        [disabled]="workspace.id === activeWorkspaceId$()"
+                        (click)="onClickDelete(workspace)">
+                        Delete
+                    </button>
+                </div>
+            </nz-list-item>
+        </ng-template>
+    </nz-list>
+</div>
+
+<nz-modal
+    [nzVisible]="isAddModalOpen()"
+    nzTitle="Add Workspace"
+    (nzOnOk)="onConfirmAddWorkspace()"
+    (nzOnCancel)="onCancelAddWorkspace()">
+    <ng-container *nzModalContent>
+        <nz-form-item>
+            <nz-form-label>Name</nz-form-label>
+            <nz-form-control>
+                <input nz-input [(ngModel)]="newWorkspaceName" placeholder="Workspace name" />
+            </nz-form-control>
+        </nz-form-item>
+    </ng-container>
+</nz-modal>

@@ -56,11 +56,21 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
             try {
                 // Entity definitions
                 await run(`
+                    CREATE TABLE IF NOT EXISTS workspaces (
+                        id TEXT PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        is_default INTEGER NOT NULL DEFAULT 0,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                `);
+
+                await run(`
                     CREATE TABLE IF NOT EXISTS entities (
                         id TEXT PRIMARY KEY,
                         name TEXT NOT NULL,
                         plural_name TEXT NOT NULL,
                         display_name_field_id TEXT,
+                        workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     )
@@ -118,6 +128,29 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
             } catch (err) {
                 reject(err);
             }
+        });
+    });
+
+    // Seed a default workspace if none exist, so existing entity data isn't orphaned
+    await new Promise<void>((resolve) => {
+        db.run(
+            `INSERT INTO workspaces (id, name, is_default)
+             SELECT 'default', 'Default', 1
+             WHERE NOT EXISTS (SELECT 1 FROM workspaces)`,
+            () => {
+                db.run(`UPDATE entities SET workspace_id = 'default' WHERE workspace_id IS NULL`, () => resolve());
+            }
+        );
+    });
+
+    // Add workspace_id column to entities if it doesn't already exist (defensive migration for existing DBs)
+    await new Promise<void>((resolve) => {
+        db.all("PRAGMA table_info(entities)", (err, rows: any[]) => {
+            if (err || !rows) { resolve(); return; }
+            if (rows.some(r => r.name === 'workspace_id')) { resolve(); return; }
+            db.run('ALTER TABLE entities ADD COLUMN workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL', () => {
+                db.run(`UPDATE entities SET workspace_id = 'default' WHERE workspace_id IS NULL`, () => resolve());
+            });
         });
     });
 

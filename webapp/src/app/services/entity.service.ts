@@ -23,13 +23,13 @@ export class EntityService {
      * Loads all entities from the backend and replaces the store contents.
      * Call this on app init to hydrate state from the database.
      */
-    async loadAll(): Promise<void> {
-        const entities: Entity[] = await (window as any).electronApi.entityGetAll();
+    async loadAll(workspaceId?: string): Promise<void> {
+        const entities: Entity[] = await (window as any).electronApi.entityGetAll(workspaceId);
         this.entityStore.setAll(entities);
     }
 
-    async createEntity(name: string, pluralName: string): Promise<Entity> {
-        const entity: Entity = await (window as any).electronApi.entityCreate(name, pluralName);
+    async createEntity(name: string, pluralName: string, workspaceId?: string): Promise<Entity> {
+        const entity: Entity = await (window as any).electronApi.entityCreate(name, pluralName, workspaceId);
         this.entityStore.add(entity);
         return entity;
     }

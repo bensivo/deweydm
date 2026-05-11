@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { HomePageComponent } from './pages/home/home.page';
 import { WorkspaceConfigPageComponent } from './pages/workspace-config/workspace-config.page';
+import { WorkspacesPageComponent } from './pages/workspaces/workspaces.page';
 import { EntityConfigPageComponent } from './pages/entity-config/entity-config.page';
 import { EntityListPageComponent } from './pages/entity-list/entity-list.page';
 import { EntityCreatePageComponent } from './pages/entity-create/entity-create.page';
@@ -13,6 +14,7 @@ import { ViewPageComponent } from './pages/view/view.page';
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomePageComponent },
+  { path: 'workspaces', component: WorkspacesPageComponent },
   { path: 'workspace-config', component: WorkspaceConfigPageComponent },
   { path: 'workspace-config/entity/:key', component: EntityConfigPageComponent },
   { path: 'entity-create/:key', component: EntityCreatePageComponent },
