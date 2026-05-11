@@ -185,6 +185,7 @@ export class ViewPageComponent implements OnInit {
             this.entityKeySignal.set(entityKey);
             this.viewIdSignal.set(viewId);
             this.pageIndexSignal.set(this.entityListPaginationStore.getPageIndex(viewId));
+            this.pageSizeSignal.set(this.entityListPaginationStore.getPageSize(viewId));
 
             // Initialize the entity list
             await this.initializeEntity(viewId);
@@ -217,6 +218,11 @@ export class ViewPageComponent implements OnInit {
     onPageIndexChange(pageIndex: number): void {
         this.pageIndexSignal.set(pageIndex);
         this.entityListPaginationStore.setPageIndex(this.viewIdSignal(), pageIndex);
+    }
+
+    onPageSizeChange(pageSize: number): void {
+        this.pageSizeSignal.set(pageSize);
+        this.entityListPaginationStore.setPageSize(this.viewIdSignal(), pageSize);
     }
 
     onClickBackButton(): void {

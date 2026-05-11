@@ -150,6 +150,7 @@ export class EntityListPageComponent implements OnInit {
       const key = params['key'];
       this.entityKeySignal.set(key);
       this.pageIndexSignal.set(this.entityListPaginationStore.getPageIndex(key));
+      this.pageSizeSignal.set(this.entityListPaginationStore.getPageSize(key));
       if (!this.entity$()) {
         this.router.navigate(['/']);
       } else {
@@ -189,6 +190,11 @@ export class EntityListPageComponent implements OnInit {
   onPageIndexChange(pageIndex: number): void {
     this.pageIndexSignal.set(pageIndex);
     this.entityListPaginationStore.setPageIndex(this.entityKeySignal(), pageIndex);
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.pageSizeSignal.set(pageSize);
+    this.entityListPaginationStore.setPageSize(this.entityKeySignal(), pageSize);
   }
 
   onClickBackButton(): void {

@@ -160,7 +160,7 @@
       [nzPageIndex]="pageIndexSignal()"
       (nzPageIndexChange)="onPageIndexChange($event)"
       [nzPageSize]="pageSizeSignal()"
-      (nzPageSizeChange)="pageSizeSignal.set($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
       nzSize="small"
       class="records-table">
       <thead>
