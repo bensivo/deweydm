@@ -19,6 +19,7 @@ import { FilterService } from '../../services/filter.service';
 import { ViewService } from '../../services/view.service';
 import { ColumnVisibilityService } from '../../services/column-visibility.service';
 import { ListService } from '../../services/list.service';
+import { EntityListPaginationStore } from '../../store/entity-list-pagination.store';
 import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
 import { FilterOperator } from '../../models/filter.model';
@@ -67,6 +68,8 @@ export class ViewPageComponent implements OnInit {
     });
 
     columnModalState = new ModalState<Set<string>>(new Set(), (set) => new Set(set));
+    pageIndexSignal = signal<number>(1);
+    pageSizeSignal = signal<number>(10);
     filterTextSignal = signal<string>('');
     sortFieldIdSignal = signal<string>('');
     sortOrderSignal = signal<'asc' | 'desc' | null>(null);
@@ -140,7 +143,8 @@ export class ViewPageComponent implements OnInit {
         public filterService: FilterService,
         private listService: ListService,
         private viewService: ViewService,
-        private columnVisibilityService: ColumnVisibilityService
+        private columnVisibilityService: ColumnVisibilityService,
+        private entityListPaginationStore: EntityListPaginationStore
     ) {}
 
     ngOnInit(): void {
@@ -180,6 +184,7 @@ export class ViewPageComponent implements OnInit {
             const entityKey = generateEntityKey(entity.name);
             this.entityKeySignal.set(entityKey);
             this.viewIdSignal.set(viewId);
+            this.pageIndexSignal.set(this.entityListPaginationStore.getPageIndex(viewId));
 
             // Initialize the entity list
             await this.initializeEntity(viewId);
@@ -207,6 +212,11 @@ export class ViewPageComponent implements OnInit {
         const saved = await this.columnVisibilityService.load('view', viewId);
         const initialVisible = saved ?? new Set(entity.fields.map(f => f.id));
         this.columnModalState.committed$.set(initialVisible);
+    }
+
+    onPageIndexChange(pageIndex: number): void {
+        this.pageIndexSignal.set(pageIndex);
+        this.entityListPaginationStore.setPageIndex(this.viewIdSignal(), pageIndex);
     }
 
     onClickBackButton(): void {

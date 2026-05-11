@@ -165,6 +165,10 @@
       [nzShowPagination]="filteredAndSortedRecords$().length > 10"
       [nzShowSizeChanger]="true"
       [nzPageSizeOptions]="[10, 25, 50, 100]"
+      [nzPageIndex]="pageIndexSignal()"
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      [nzPageSize]="pageSizeSignal()"
+      (nzPageSizeChange)="pageSizeSignal.set($event)"
       nzSize="small"
       class="records-table">
       <thead>

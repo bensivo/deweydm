@@ -18,6 +18,7 @@ import { FilterService } from '../../services/filter.service';
 import { ListService } from '../../services/list.service';
 import { ViewService } from '../../services/view.service';
 import { ColumnVisibilityService } from '../../services/column-visibility.service';
+import { EntityListPaginationStore } from '../../store/entity-list-pagination.store';
 import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
 import { FilterOperator } from '../../models/filter.model';
@@ -65,6 +66,8 @@ export class EntityListPageComponent implements OnInit {
   });
 
   columnModalState = new ModalState<Set<string>>(new Set(), (set) => new Set(set));
+  pageIndexSignal = signal<number>(1);
+  pageSizeSignal = signal<number>(10);
   filterTextSignal = signal<string>('');
   sortFieldIdSignal = signal<string>('');
   sortOrderSignal = signal<'asc' | 'desc' | null>(null);
@@ -138,13 +141,15 @@ export class EntityListPageComponent implements OnInit {
     public filterService: FilterService,
     private listService: ListService,
     private viewService: ViewService,
-    private columnVisibilityService: ColumnVisibilityService
+    private columnVisibilityService: ColumnVisibilityService,
+    private entityListPaginationStore: EntityListPaginationStore
   ) {}
 
   ngOnInit(): void {
     this.route.params.subscribe(async params => {
       const key = params['key'];
       this.entityKeySignal.set(key);
+      this.pageIndexSignal.set(this.entityListPaginationStore.getPageIndex(key));
       if (!this.entity$()) {
         this.router.navigate(['/']);
       } else {
@@ -179,6 +184,11 @@ export class EntityListPageComponent implements OnInit {
     if (event.key === 'Shift') {
       this.isShiftHeldSignal.set(false);
     }
+  }
+
+  onPageIndexChange(pageIndex: number): void {
+    this.pageIndexSignal.set(pageIndex);
+    this.entityListPaginationStore.setPageIndex(this.entityKeySignal(), pageIndex);
   }
 
   onClickBackButton(): void {
