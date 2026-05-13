@@ -1,0 +1,47 @@
+<div class="documents-page">
+    <div class="page-header">
+        <h1 class="page-title">Documents</h1>
+        <button nz-button nzType="primary" (click)="onClickUpload()">+ Upload</button>
+    </div>
+
+    <div class="page-toolbar">
+        <input
+            nz-input
+            placeholder="Search by name..."
+            [(ngModel)]="searchQuery"
+            class="search-input" />
+    </div>
+
+    <nz-table
+        [nzData]="filteredDocuments"
+        [nzShowPagination]="true"
+        [nzPageSize]="20"
+        nzSize="middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Original File</th>
+                <th>Description</th>
+                <th>Linked Records</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let doc of filteredDocuments" class="table-row" (click)="onClickRow(doc)">
+                <td>{{ doc.name }}</td>
+                <td>{{ doc.originalFileName }}</td>
+                <td class="description-cell">{{ doc.description }}</td>
+                <td>{{ doc.linkedRecords.length }}</td>
+                <td>{{ doc.createdAt | date:'medium' }}</td>
+            </tr>
+        </tbody>
+    </nz-table>
+
+    <nz-empty *ngIf="filteredDocuments.length === 0" nzNotFoundContent="No documents found"></nz-empty>
+</div>
+
+<app-document-upload-modal
+    [isOpen]="isUploadModalOpen"
+    (onSubmit)="onUploadSubmit($event)"
+    (onCancel)="onUploadCancel()">
+</app-document-upload-modal>

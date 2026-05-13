@@ -58,6 +58,10 @@
           {{ list.name }}
         </a>
       </li> -->
+      <li nz-menu-divider class="nav-divider"></li>
+      <li nz-menu-item nzMatchRouter>
+        <a routerLink="/documents">Documents</a>
+      </li>
       <li *ngIf="entities$().length > 0" nz-menu-divider class="nav-divider"></li>
       <li nz-menu-item
           *ngFor="let entity of entities$()"

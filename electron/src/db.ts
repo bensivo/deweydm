@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs';
 import * as sqlite3 from 'sqlite3';
 
 /**
@@ -7,6 +8,23 @@ import * as sqlite3 from 'sqlite3';
 export function getDbPath(app: Electron.App): string {
     const dbDir = path.join(app.getPath('userData'), 'db');
     return path.join(dbDir, 'dewey.db');
+}
+
+/**
+ * Returns the directory used to store uploaded document files.
+ */
+export function getDocumentsDir(app: Electron.App): string {
+    return path.join(app.getPath('userData'), 'documents');
+}
+
+/**
+ * Ensures the documents storage directory exists.
+ */
+export function ensureDocumentsDir(app: Electron.App): void {
+    const dir = getDocumentsDir(app);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
 }
 
 export async function initializeDb(app: Electron.App): Promise<sqlite3.Database> {
@@ -133,6 +151,29 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                         PRIMARY KEY (context_type, context_id)
                     )
                 `);
+
+                // Documents and document links
+                await run(`
+                    CREATE TABLE IF NOT EXISTS documents (
+                        id TEXT PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        description TEXT NOT NULL DEFAULT '',
+                        original_file_name TEXT NOT NULL,
+                        mime_type TEXT NOT NULL,
+                        file_path TEXT NOT NULL,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                `);
+
+                await run(`
+                    CREATE TABLE IF NOT EXISTS document_links (
+                        id TEXT PRIMARY KEY,
+                        document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+                        entity_id TEXT NOT NULL,
+                        record_id TEXT NOT NULL
+                    )
+                `);
+
                 resolve();
             } catch (err) {
                 reject(err);

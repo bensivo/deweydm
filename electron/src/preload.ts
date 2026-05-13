@@ -94,6 +94,35 @@ const electronApi = {
     columnVisibilitySet: (contextType: string, contextId: string, fieldIds: string[]): Promise<void> => {
         return ipcRenderer.invoke('columnVisibility:set', contextType, contextId, fieldIds);
     },
+
+    // Document operations
+    documentGetAll: (): Promise<any[]> => {
+        return ipcRenderer.invoke('document:getAll');
+    },
+    documentGetById: (id: string): Promise<any> => {
+        return ipcRenderer.invoke('document:getById', id);
+    },
+    documentCreate: (
+        name: string,
+        description: string,
+        originalFileName: string,
+        mimeType: string,
+        fileBuffer: ArrayBuffer,
+    ): Promise<any> => {
+        return ipcRenderer.invoke('document:create', name, description, originalFileName, mimeType, Buffer.from(fileBuffer));
+    },
+    documentDelete: (id: string): Promise<void> => {
+        return ipcRenderer.invoke('document:delete', id);
+    },
+    documentAddLink: (documentId: string, entityId: string, recordId: string): Promise<void> => {
+        return ipcRenderer.invoke('document:addLink', documentId, entityId, recordId);
+    },
+    documentRemoveLink: (documentId: string, entityId: string, recordId: string): Promise<void> => {
+        return ipcRenderer.invoke('document:removeLink', documentId, entityId, recordId);
+    },
+    documentGetFile: (id: string): Promise<string> => {
+        return ipcRenderer.invoke('document:getFile', id);
+    },
 };
 
 contextBridge.exposeInMainWorld('electronApi', electronApi);

@@ -1,0 +1,136 @@
+.document-detail-page {
+    padding: 24px;
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+
+        .page-title {
+            flex: 1;
+            margin: 0;
+            font-size: 24px;
+            color: #262626;
+        }
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #262626;
+        margin-bottom: 12px;
+    }
+
+    .metadata-section {
+        margin-bottom: 16px;
+
+        .metadata-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .metadata-row {
+            display: flex;
+            gap: 16px;
+
+            .metadata-label {
+                width: 140px;
+                font-weight: 500;
+                color: #595959;
+                flex-shrink: 0;
+            }
+
+            .metadata-value {
+                color: #262626;
+            }
+        }
+    }
+
+    .linked-records-section {
+        margin-bottom: 16px;
+
+        .linked-records-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+
+            .linked-record-item {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+        }
+
+        .no-links {
+            color: #8c8c8c;
+            font-style: italic;
+        }
+
+        .add-link-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #595959;
+            margin-bottom: 8px;
+        }
+
+        .add-link-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+
+            .entity-select {
+                width: 200px;
+            }
+
+            .record-select {
+                width: 200px;
+            }
+        }
+    }
+
+    .viewer-section {
+        .pdf-viewer {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+        }
+
+        .image-viewer {
+            max-width: 100%;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+        }
+
+        .text-viewer {
+            background-color: #f5f5f5;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            padding: 16px;
+            overflow: auto;
+            max-height: 600px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .download-section {
+            padding: 16px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .no-preview {
+            color: #8c8c8c;
+        }
+    }
+}
+
+.loading-state {
+    padding: 48px;
+    text-align: center;
+    color: #8c8c8c;
+}

@@ -5,14 +5,16 @@ import { EntityService, FieldType } from './service/entity.service';
 import { EntityRecordService } from './service/entity-record.service';
 import { WorkspaceService } from './service/workspace.service';
 import { ColumnVisibilityService } from './service/column-visibility.service';
+import { DocumentService } from './service/document.service';
 
 // Register all IPC handlers before any window is created so they are
 // available as soon as the renderer sends its first message.
-export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Database): void {
+export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Database, documentsDir: string): void {
     const entityService = new EntityService(db);
     const entityRecordService = new EntityRecordService(db);
     const workspaceService = new WorkspaceService(db);
     const columnVisibilityService = new ColumnVisibilityService(db);
+    const documentService = new DocumentService(db, documentsDir);
 
     ipcMain.handle('hello-world', onHelloWorld);
 
@@ -107,6 +109,56 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
 
     ipcMain.handle('columnVisibility:set', async (_event: Electron.IpcMainInvokeEvent, contextType: string, contextId: string, fieldIds: string[]) => {
         return columnVisibilityService.set(contextType, contextId, fieldIds);
+    });
+
+    // Document handlers
+    ipcMain.handle('document:getAll', async () => {
+        return documentService.getAll();
+    });
+
+    ipcMain.handle('document:getById', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+        return documentService.getById(id);
+    });
+
+    ipcMain.handle('document:create', async (
+        _event: Electron.IpcMainInvokeEvent,
+        name: string,
+        description: string,
+        originalFileName: string,
+        mimeType: string,
+        fileBuffer: Buffer,
+    ) => {
+        return documentService.create(name, description, originalFileName, mimeType, fileBuffer);
+    });
+
+    ipcMain.handle('document:delete', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+        return documentService.delete(id);
+    });
+
+    ipcMain.handle('document:addLink', async (
+        _event: Electron.IpcMainInvokeEvent,
+        documentId: string,
+        entityId: string,
+        recordId: string,
+    ) => {
+        return documentService.addLink(documentId, entityId, recordId);
+    });
+
+    ipcMain.handle('document:removeLink', async (
+        _event: Electron.IpcMainInvokeEvent,
+        documentId: string,
+        entityId: string,
+        recordId: string,
+    ) => {
+        return documentService.removeLink(documentId, entityId, recordId);
+    });
+
+    ipcMain.handle('document:getFile', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+        const buffer = await documentService.getFileBuffer(id);
+        const document = await documentService.getById(id);
+        const mimeType = document?.mimeType ?? 'application/octet-stream';
+        const base64 = buffer.toString('base64');
+        return `data:${mimeType};base64,${base64}`;
     });
 }
 

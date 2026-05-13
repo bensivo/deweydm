@@ -1,0 +1,30 @@
+<nz-modal
+    [nzVisible]="isOpen"
+    nzTitle="Upload Document"
+    (nzOnCancel)="onClickCancel()">
+    <ng-container *nzModalContent>
+        <nz-form-item>
+            <nz-form-label [nzSpan]="6" nzRequired>Name</nz-form-label>
+            <nz-form-control [nzSpan]="18">
+                <input nz-input [(ngModel)]="nameValue" placeholder="Document name" />
+            </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+            <nz-form-label [nzSpan]="6">Description</nz-form-label>
+            <nz-form-control [nzSpan]="18">
+                <textarea nz-input [(ngModel)]="descriptionValue" placeholder="Optional description" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+            </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+            <nz-form-label [nzSpan]="6" nzRequired>File</nz-form-label>
+            <nz-form-control [nzSpan]="18">
+                <input type="file" class="file-input" (change)="onFileChange($event)" />
+                <div *ngIf="selectedFile" class="file-selected">{{ selectedFile.name }}</div>
+            </nz-form-control>
+        </nz-form-item>
+    </ng-container>
+    <ng-container *nzModalFooter>
+        <button nz-button (click)="onClickCancel()">Cancel</button>
+        <button nz-button nzType="primary" [disabled]="isSubmitDisabled" (click)="onClickSubmit()">Upload</button>
+    </ng-container>
+</nz-modal>
