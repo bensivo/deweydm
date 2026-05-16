@@ -110,7 +110,44 @@
         </div>
       </ng-container>
     </nz-card>
+
+    <!-- Documents Section -->
+    <nz-card class="documents-card" [nzTitle]="documentCardTitle">
+      <ng-template #documentCardTitle>
+        <div class="documents-card-header">
+          <span>Documents</span>
+          <div class="documents-card-btn-container">
+            <button nz-button nzType="primary" nzSize="small" (click)="onClickUploadDocument()">+ Upload</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="onClickLinkExisting()">+ Link Existing</button>
+          </div>
+        </div>
+      </ng-template>
+
+      <div *ngIf="linkedDocuments$().length === 0" class="no-documents">No documents</div>
+
+      <div *ngFor="let doc of linkedDocuments$()" class="document-row">
+        <a [routerLink]="['/documents', doc.id]" class="document-name">{{ doc.name }}</a>
+        <button nz-button nzType="text" nzDanger nzSize="small"
+                nz-tooltip nzTooltipTitle="Unlink document"
+                (click)="onClickUnlinkDocument(doc.id)">
+          <span nz-icon nzType="disconnect"></span>
+        </button>
+      </div>
+    </nz-card>
   </div>
+
+  <app-document-upload-modal
+    [isOpen]="isUploadModalOpen()"
+    (onSubmit)="onUploadDocumentSubmit($event)"
+    (onCancel)="onUploadDocumentCancel()">
+  </app-document-upload-modal>
+
+  <app-document-link-modal
+    [isOpen]="isLinkModalOpen()"
+    [documents]="allDocuments$()"
+    (onSelect)="onLinkDocumentSelect($event)"
+    (onCancel)="onLinkDocumentCancel()">
+  </app-document-link-modal>
 
   <!-- Delete Confirmation Modal -->
   <nz-modal

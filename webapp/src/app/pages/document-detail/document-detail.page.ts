@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -53,6 +53,7 @@ export class DocumentDetailPageComponent implements OnInit {
         private router: Router,
         private documentService: DocumentService,
         private entityService: EntityService,
+        private location: Location,
         private entityRecordService: EntityRecordService,
         private nzMessageService: NzMessageService,
         private sanitizer: DomSanitizer,
@@ -146,7 +147,7 @@ export class DocumentDetailPageComponent implements OnInit {
     }
 
     onClickBack(): void {
-        this.router.navigate(['/documents']);
+        this.location.back();
     }
 
     async onClickRemoveLink(entityId: string, recordId: string): Promise<void> {
