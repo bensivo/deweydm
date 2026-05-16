@@ -8,6 +8,9 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
@@ -16,6 +19,10 @@ import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
 import { generateEntityKey } from '../../services/entity-key.util';
 import { EntityReferenceComponent } from '../../components/entity-reference/entity-reference.component';
+import { DocumentService } from '../../services/document.service';
+import { DocumentUploadModalComponent, DocumentUploadData } from '../documents/document-upload-modal/document-upload-modal.component';
+import { DocumentLinkModalComponent } from '../documents/document-link-modal/document-link-modal.component';
+import { Document } from '../../models/document.model';
 
 @Component({
     selector: 'app-entity-detail-page',
@@ -29,7 +36,11 @@ import { EntityReferenceComponent } from '../../components/entity-reference/enti
         NzCardModule,
         NzSelectModule,
         NzModalModule,
-        EntityReferenceComponent
+        NzIconModule,
+        NzTooltipModule,
+        EntityReferenceComponent,
+        DocumentUploadModalComponent,
+        DocumentLinkModalComponent,
     ],
     templateUrl: './entity-detail.page.html',
     styleUrl: './entity-detail.page.less'
@@ -49,8 +60,21 @@ export class EntityDetailPageComponent implements OnInit {
         return this.entityRecordService.records$().find(r => r.id === id);
     });
 
+    allDocuments$ = computed(() => this.documentService.documents$());
+
+    linkedDocuments$ = computed(() => {
+        const entity = this.entity$();
+        const record = this.record$();
+        if (!entity || !record) return [];
+        return this.documentService.documents$().filter(doc =>
+            doc.linkedRecords.some(link => link.entityId === entity.id && link.recordId === record.id)
+        );
+    });
+
     isEditMode = signal(false);
     isDeleteConfirmModalOpen = signal(false);
+    isUploadModalOpen = signal(false);
+    isLinkModalOpen = signal(false);
 
     // Working copy of data during edit. Initialized when edit mode is entered.
     editData = signal<Record<string, string>>({});
@@ -65,7 +89,9 @@ export class EntityDetailPageComponent implements OnInit {
         private location: Location,
         private entityService: EntityService,
         public entityRecordService: EntityRecordService,
-        private entityStore: EntityStore
+        private entityStore: EntityStore,
+        private documentService: DocumentService,
+        private messageService: NzMessageService
     ) {}
 
     ngOnInit(): void {
@@ -76,6 +102,7 @@ export class EntityDetailPageComponent implements OnInit {
                 this.router.navigate(['/']);
             }
         });
+        this.documentService.loadAll();
     }
 
     getFieldValue(fieldId: string): string {
@@ -129,6 +156,64 @@ export class EntityDetailPageComponent implements OnInit {
 
     onCancelDelete(): void {
         this.isDeleteConfirmModalOpen.set(false);
+    }
+
+    onClickUploadDocument(): void {
+        this.isUploadModalOpen.set(true);
+    }
+
+    async onUploadDocumentSubmit(data: DocumentUploadData): Promise<void> {
+        const entity = this.entity$();
+        const record = this.record$();
+        if (!entity || !record) return;
+
+        try {
+            const newDoc = await this.documentService.createDocument(data.name, data.description, data.file);
+            await this.documentService.addLink(newDoc.id, entity.id, record.id);
+            this.messageService.success('Document uploaded and linked successfully');
+        } catch (error) {
+            this.messageService.error('Failed to upload document');
+        }
+
+        this.isUploadModalOpen.set(false);
+    }
+
+    onUploadDocumentCancel(): void {
+        this.isUploadModalOpen.set(false);
+    }
+
+    onClickLinkExisting(): void {
+        this.isLinkModalOpen.set(true);
+    }
+
+    async onLinkDocumentSelect(doc: Document): Promise<void> {
+        this.isLinkModalOpen.set(false);
+        const entity = this.entity$();
+        const record = this.record$();
+        if (!entity || !record) return;
+        try {
+            await this.documentService.addLink(doc.id, entity.id, record.id);
+            this.messageService.success('Document linked');
+        } catch (error) {
+            this.messageService.error('Failed to link document');
+        }
+    }
+
+    onLinkDocumentCancel(): void {
+        this.isLinkModalOpen.set(false);
+    }
+
+    async onClickUnlinkDocument(documentId: string): Promise<void> {
+        const entity = this.entity$();
+        const record = this.record$();
+        if (!entity || !record) return;
+
+        try {
+            await this.documentService.removeLink(documentId, entity.id, record.id);
+            this.messageService.success('Document unlinked');
+        } catch (error) {
+            this.messageService.error('Failed to unlink document');
+        }
     }
 
     getReferenceOptions(field: EntityField) {

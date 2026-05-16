@@ -10,6 +10,8 @@ import { EntityBulkCreatePageComponent } from './pages/entity-bulk-create/entity
 import { EntityBulkEditPageComponent } from './pages/entity-bulk-edit/entity-bulk-edit.page';
 import { ListsPageComponent } from './pages/lists/lists.page';
 import { ViewPageComponent } from './pages/view/view.page';
+import { DocumentsPageComponent } from './pages/documents/documents.page';
+import { DocumentDetailPageComponent } from './pages/document-detail/document-detail.page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -23,5 +25,7 @@ export const routes: Routes = [
   { path: 'entity/:key/:id', component: EntityDetailPageComponent },
   { path: 'entity/:key', component: EntityListPageComponent },
   { path: 'view/:viewId', component: ViewPageComponent },
-  { path: 'lists/:id', component: ListsPageComponent }
+  { path: 'lists/:id', component: ListsPageComponent },
+  { path: 'documents', component: DocumentsPageComponent },
+  { path: 'documents/:id', component: DocumentDetailPageComponent },
 ];

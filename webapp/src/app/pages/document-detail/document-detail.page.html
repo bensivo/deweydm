@@ -1,0 +1,156 @@
+<div class="document-detail-page" *ngIf="!isLoading() && document()">
+    <div class="page-header">
+        <button nz-button nzType="text" (click)="onClickBack()">← Back</button>
+    </div>
+
+    <div class="detail-header">
+      <h1 class="page-title">{{ document()!.name }}</h1>
+      <button nz-button nzType="text" nzDanger nz-popconfirm nzPopconfirmTitle="Delete this document?" (nzOnConfirm)="onClickDelete()">Delete</button>
+    </div>
+
+    <!-- Metadata -->
+    <nz-card class="metadata-card" [nzTitle]="metadataCardTitle">
+        <ng-template #metadataCardTitle>
+            <div class="metadata-card-header">
+                <span>Details</span>
+                <div class="metadata-card-actions">
+                    <ng-container *ngIf="!isEditMode()">
+                        <button nz-button nzType="default" nzSize="small" (click)="onClickEdit()">Edit</button>
+                    </ng-container>
+                    <ng-container *ngIf="isEditMode()">
+                        <button nz-button nzType="default" nzSize="small" (click)="onClickCancelEdit()">Cancel</button>
+                        <button nz-button nzType="primary" nzSize="small" (click)="onClickSave()">Save</button>
+                    </ng-container>
+                </div>
+            </div>
+        </ng-template>
+
+        <div class="field-row">
+            <div class="field-label">Name</div>
+            <div class="field-value">
+                <span *ngIf="!isEditMode()">{{ document()!.name|| '—' }}</span>
+                <input
+                    *ngIf="isEditMode()"
+                    nz-input
+                    type="text"
+                    [(ngModel)]="editName" />
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Original Filename</div>
+            <div class="field-value">{{ document()!.originalFileName }}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">MIME Type</div>
+            <div class="field-value">{{ document()!.mimeType }}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Created At</div>
+            <div class="field-value">{{ document()!.createdAt | date:'medium' }}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Description</div>
+            <div class="field-value">
+                <span *ngIf="!isEditMode()">{{ document()!.description || '—' }}</span>
+                <textarea
+                    *ngIf="isEditMode()"
+                    nz-input
+                    [nzAutosize]="{ minRows: 2, maxRows: 6 }"
+                    [(ngModel)]="editDescription">
+                </textarea>
+            </div>
+        </div>
+    </nz-card>
+
+    <!-- Linked Records -->
+    <section class="linked-records-section">
+        <h2 class="section-title">Linked Records</h2>
+
+        <div class="linked-records-list">
+            <div *ngFor="let link of linkedRecordLabels" class="linked-record-item">
+                <nz-tag>{{ link.entityName }} / {{ link.recordName }}</nz-tag>
+                <button nz-button nzType="text" nzSize="small" nz-popconfirm nzPopconfirmTitle="Remove this link?" (nzOnConfirm)="onClickRemoveLink(link.entityId, link.recordId)">
+                    &#x2715;
+                </button>
+            </div>
+            <div *ngIf="linkedRecordLabels.length === 0" class="no-links">No linked records.</div>
+        </div>
+
+        <div class="add-link-form">
+            <h3 class="add-link-title">Add Link</h3>
+            <div class="add-link-controls">
+                <nz-select
+                    [(ngModel)]="selectedEntityId"
+                    nzPlaceHolder="Select entity"
+                    class="entity-select"
+                    (ngModelChange)="selectedRecordId = ''">
+                    <nz-option
+                        *ngFor="let entity of entities$()"
+                        [nzValue]="entity.id"
+                        [nzLabel]="entity.name">
+                    </nz-option>
+                </nz-select>
+
+                <nz-select
+                    [(ngModel)]="selectedRecordId"
+                    nzPlaceHolder="Select record"
+                    class="record-select"
+                    [nzDisabled]="!selectedEntityId">
+                    <nz-option
+                        *ngFor="let r of recordsForSelectedEntity"
+                        [nzValue]="r.recordId"
+                        [nzLabel]="r.recordName">
+                    </nz-option>
+                </nz-select>
+
+                <button
+                    nz-button
+                    nzType="primary"
+                    [disabled]="!selectedEntityId || !selectedRecordId"
+                    (click)="onClickAddLink()">
+                    Add
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <nz-divider></nz-divider>
+
+    <!-- Document Viewer -->
+    <section class="viewer-section">
+        <h2 class="section-title">Preview</h2>
+
+        <ng-container *ngIf="fileDataUrl(); else noPreview">
+            <!-- PDF -->
+            <iframe
+                *ngIf="isPdf"
+                [src]="safeFileUrl"
+                class="pdf-viewer">
+            </iframe>
+
+            <!-- Image -->
+            <img
+                *ngIf="isImage"
+                [src]="fileDataUrl()"
+                class="image-viewer"
+                [alt]="document()!.name" />
+
+            <!-- Text / Markdown -->
+            <pre *ngIf="isText" class="text-viewer">{{ textContent() }}</pre>
+
+            <!-- Other -->
+            <div *ngIf="!isPdf && !isImage && !isText" class="download-section">
+                <p>Preview not available for this file type.</p>
+                <a [href]="fileDataUrl()" [download]="document()!.originalFileName" nz-button nzType="default">
+                    Download {{ document()!.originalFileName }}
+                </a>
+            </div>
+        </ng-container>
+
+        <ng-template #noPreview>
+            <p class="no-preview">File preview unavailable.</p>
+        </ng-template>
+    </section>
+</div>
+
+<div *ngIf="isLoading()" class="loading-state">Loading...</div>
