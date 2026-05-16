@@ -1,16 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 
 import { EntityRecord } from '../models/entity-record.model';
 import { EntityField } from '../models/entity.model';
 import { EntityRecordStore } from '../store/entity-record.store';
 import { EntityStore } from '../store/entity.store';
+import { BACKEND_API } from '../backend/backend-api.token';
+import { Backend } from '../backend/backend-api.interface';
 import { generateEntityKey } from './entity-key.util';
 
 @Injectable({ providedIn: 'root' })
 export class EntityRecordService {
     constructor(
         private entityRecordStore: EntityRecordStore,
-        private entityStore: EntityStore
+        private entityStore: EntityStore,
+        @Inject(BACKEND_API) private backend: Backend,
     ) {}
 
     get records$() {
@@ -34,7 +37,7 @@ export class EntityRecordService {
      * Call this on app init to hydrate state from the database.
      */
     async loadAll(): Promise<void> {
-        const records: EntityRecord[] = await (window as any).electronApi.entityRecordGetAll();
+        const records: EntityRecord[] = await this.backend.entityRecordGetAll();
         this.entityRecordStore.setAll(records);
     }
 
@@ -47,7 +50,7 @@ export class EntityRecordService {
      * @returns The newly created EntityRecord with its generated id
      */
     async createRecord(entityId: string, data: Record<string, string>): Promise<EntityRecord> {
-        const record: EntityRecord = await (window as any).electronApi.entityRecordCreate(entityId, data);
+        const record: EntityRecord = await this.backend.entityRecordCreate(entityId, data);
         this.entityRecordStore.add(record);
         return record;
     }
@@ -59,7 +62,7 @@ export class EntityRecordService {
      * @param data - New field values keyed by EntityField.id
      */
     async updateRecord(id: string, data: Record<string, string>): Promise<void> {
-        await (window as any).electronApi.entityRecordUpdate(id, data);
+        await this.backend.entityRecordUpdate(id, data);
         this.entityRecordStore.update(id, { data });
     }
 
@@ -92,7 +95,7 @@ export class EntityRecordService {
      * @param id - The record id to delete
      */
     async deleteRecord(id: string): Promise<void> {
-        await (window as any).electronApi.entityRecordDelete(id);
+        await this.backend.entityRecordDelete(id);
         this.entityRecordStore.remove(id);
     }
 

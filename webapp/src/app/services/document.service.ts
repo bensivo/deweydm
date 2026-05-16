@@ -1,14 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 
 import { Document, DocumentLink } from '../models/document.model';
 import { DocumentStore } from '../store/document.store';
+import { BACKEND_API } from '../backend/backend-api.token';
+import { Backend } from '../backend/backend-api.interface';
 
 /**
  * Service for all document business logic, including IPC communication with the Electron backend.
  */
 @Injectable({ providedIn: 'root' })
 export class DocumentService {
-    constructor(private documentStore: DocumentStore) {}
+    constructor(
+        private documentStore: DocumentStore,
+        @Inject(BACKEND_API) private backend: Backend,
+    ) {}
 
     get documents$() {
         return this.documentStore.documents$;
@@ -18,7 +23,7 @@ export class DocumentService {
      * Loads all documents from the backend and replaces the store contents.
      */
     async loadAll(): Promise<void> {
-        const documents: Document[] = await (window as any).electronApi.documentGetAll();
+        const documents: Document[] = await this.backend.documentGetAll();
         this.documentStore.setAll(documents);
     }
 
@@ -32,7 +37,7 @@ export class DocumentService {
      */
     async createDocument(name: string, description: string, file: File): Promise<Document> {
         const arrayBuffer = await file.arrayBuffer();
-        const document: Document = await (window as any).electronApi.documentCreate(
+        const document: Document = await this.backend.documentCreate(
             name,
             description,
             file.name,
@@ -50,7 +55,7 @@ export class DocumentService {
      * @param fields - Partial object with name and/or description
      */
     async updateDocument(id: string, fields: { name?: string; description?: string }): Promise<void> {
-        await (window as any).electronApi.documentUpdate(id, fields);
+        await this.backend.documentUpdate(id, fields);
         this.documentStore.update(id, fields);
     }
 
@@ -60,7 +65,7 @@ export class DocumentService {
      * @param id - The document ID to delete
      */
     async deleteDocument(id: string): Promise<void> {
-        await (window as any).electronApi.documentDelete(id);
+        await this.backend.documentDelete(id);
         this.documentStore.remove(id);
     }
 
@@ -72,7 +77,7 @@ export class DocumentService {
      * @param recordId - The record ID
      */
     async addLink(documentId: string, entityId: string, recordId: string): Promise<void> {
-        await (window as any).electronApi.documentAddLink(documentId, entityId, recordId);
+        await this.backend.documentAddLink(documentId, entityId, recordId);
         const document = this.documentStore.getById(documentId);
         if (document) {
             const newLink: DocumentLink = { entityId, recordId };
@@ -90,7 +95,7 @@ export class DocumentService {
      * @param recordId - The record ID
      */
     async removeLink(documentId: string, entityId: string, recordId: string): Promise<void> {
-        await (window as any).electronApi.documentRemoveLink(documentId, entityId, recordId);
+        await this.backend.documentRemoveLink(documentId, entityId, recordId);
         const document = this.documentStore.getById(documentId);
         if (document) {
             this.documentStore.update(documentId, {
@@ -108,7 +113,7 @@ export class DocumentService {
      * @returns A data URL string
      */
     async getFileDataUrl(id: string): Promise<string> {
-        const base64: string = await (window as any).electronApi.documentGetFile(id);
+        const base64: string = await this.backend.documentGetFile(id);
         return base64;
     }
 }

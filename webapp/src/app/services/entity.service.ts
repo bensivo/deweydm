@@ -1,11 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 
-import { Entity, EntityField } from '../models/entity.model';
+import { Entity, EntityField, FieldType } from '../models/entity.model';
 import { EntityStore } from '../store/entity.store';
+import { BACKEND_API } from '../backend/backend-api.token';
+import { Backend } from '../backend/backend-api.interface';
 
 @Injectable({ providedIn: 'root' })
 export class EntityService {
-    constructor(private entityStore: EntityStore) {}
+    constructor(
+        private entityStore: EntityStore,
+        @Inject(BACKEND_API) private backend: Backend,
+    ) {}
 
     get entities$() {
         return this.entityStore.entities$;
@@ -24,12 +29,12 @@ export class EntityService {
      * Call this on app init to hydrate state from the database.
      */
     async loadAll(workspaceId?: string): Promise<void> {
-        const entities: Entity[] = await (window as any).electronApi.entityGetAll(workspaceId);
+        const entities: Entity[] = await this.backend.entityGetAll(workspaceId);
         this.entityStore.setAll(entities);
     }
 
     async createEntity(name: string, pluralName: string, workspaceId?: string): Promise<Entity> {
-        const entity: Entity = await (window as any).electronApi.entityCreate(name, pluralName, workspaceId);
+        const entity: Entity = await this.backend.entityCreate(name, pluralName, workspaceId);
         this.entityStore.add(entity);
         return entity;
     }
@@ -43,8 +48,8 @@ export class EntityService {
         backlinkSourceFieldId?: string,
         optionValues?: string[],
     ): Promise<void> {
-        const field: EntityField = await (window as any).electronApi.entityAddField(
-            entityId, fieldName, fieldType, referenceEntityId, backlinkSourceEntityId, backlinkSourceFieldId, optionValues
+        const field: EntityField = await this.backend.entityAddField(
+            entityId, fieldName, fieldType as FieldType, referenceEntityId, backlinkSourceEntityId, backlinkSourceFieldId, optionValues
         );
 
         const entity = this.entityStore.getById(entityId);
@@ -56,7 +61,7 @@ export class EntityService {
     }
 
     async removeField(entityId: string, fieldId: string): Promise<void> {
-        await (window as any).electronApi.entityRemoveField(entityId, fieldId);
+        await this.backend.entityRemoveField(entityId, fieldId);
 
         const entity = this.entityStore.getById(entityId);
         if (!entity) return;
@@ -67,12 +72,12 @@ export class EntityService {
     }
 
     async deleteEntity(id: string): Promise<void> {
-        await (window as any).electronApi.entityDelete(id);
+        await this.backend.entityDelete(id);
         this.entityStore.remove(id);
     }
 
     async reorderFields(entityId: string, orderedFieldIds: string[]): Promise<void> {
-        await (window as any).electronApi.entityReorderFields(entityId, orderedFieldIds);
+        await this.backend.entityReorderFields(entityId, orderedFieldIds);
         const entity = this.entityStore.getById(entityId);
         if (!entity) return;
 
@@ -99,7 +104,7 @@ export class EntityService {
     }
 
     async setDisplayNameField(entityId: string, fieldId: string): Promise<void> {
-        await (window as any).electronApi.entitySetDisplayNameField(entityId, fieldId);
+        await this.backend.entitySetDisplayNameField(entityId, fieldId);
         this.entityStore.update(entityId, { displayNameFieldId: fieldId });
     }
 }

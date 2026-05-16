@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 
 import { Workspace } from '../models/workspace.model';
 import { WorkspaceStore } from '../store/workspace.store';
+import { BACKEND_API } from '../backend/backend-api.token';
+import { Backend } from '../backend/backend-api.interface';
 import { EntityService } from './entity.service';
 import { EntityRecordService } from './entity-record.service';
 
@@ -11,6 +13,7 @@ export class WorkspaceService {
         private workspaceStore: WorkspaceStore,
         private entityService: EntityService,
         private entityRecordService: EntityRecordService,
+        @Inject(BACKEND_API) private backend: Backend,
     ) {}
 
     get workspaces$() {
@@ -27,7 +30,7 @@ export class WorkspaceService {
      * and record loading for that workspace.
      */
     async loadAll(): Promise<void> {
-        const workspaces: Workspace[] = await (window as any).electronApi.workspaceGetAll();
+        const workspaces: Workspace[] = await this.backend.workspaceGetAll();
         this.workspaceStore.setAll(workspaces);
 
         const defaultWorkspace = workspaces.find(w => w.isDefault) ?? workspaces[0];
@@ -41,7 +44,7 @@ export class WorkspaceService {
      * @param name - The display name of the workspace.
      */
     async createWorkspace(name: string): Promise<void> {
-        const workspace: Workspace = await (window as any).electronApi.workspaceCreate(name);
+        const workspace: Workspace = await this.backend.workspaceCreate(name);
         this.workspaceStore.add(workspace);
     }
 
@@ -50,7 +53,7 @@ export class WorkspaceService {
      * @param id - The workspace ID to delete.
      */
     async deleteWorkspace(id: string): Promise<void> {
-        await (window as any).electronApi.workspaceDelete(id);
+        await this.backend.workspaceDelete(id);
         this.workspaceStore.remove(id);
     }
 
@@ -70,7 +73,7 @@ export class WorkspaceService {
      * @param id - The workspace ID to mark as default.
      */
     async setDefaultWorkspace(id: string): Promise<void> {
-        await (window as any).electronApi.workspaceSetDefault(id);
+        await this.backend.workspaceSetDefault(id);
         this.workspaceStore.setDefault(id);
     }
 }

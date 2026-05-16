@@ -1,7 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
+
+import { BACKEND_API } from '../backend/backend-api.token';
+import { Backend } from '../backend/backend-api.interface';
 
 @Injectable({ providedIn: 'root' })
 export class ColumnVisibilityService {
+
+    constructor(@Inject(BACKEND_API) private backend: Backend) {}
 
     /**
      * Returns the persisted set of visible field IDs for a context, or null if none saved.
@@ -11,7 +16,7 @@ export class ColumnVisibilityService {
      * @returns Set of visible field IDs, or null if no preference saved
      */
     async load(contextType: 'entity-list' | 'view', contextId: string): Promise<Set<string> | null> {
-        const fieldIds: string[] | null = await (window as any).electronApi.columnVisibilityGet(contextType, contextId);
+        const fieldIds: string[] | null = await this.backend.columnVisibilityGet(contextType, contextId);
         if (!fieldIds) return null;
         return new Set<string>(fieldIds);
     }
@@ -24,6 +29,6 @@ export class ColumnVisibilityService {
      * @param fieldIds - The field IDs currently visible
      */
     async save(contextType: 'entity-list' | 'view', contextId: string, fieldIds: Set<string>): Promise<void> {
-        await (window as any).electronApi.columnVisibilitySet(contextType, contextId, Array.from(fieldIds));
+        await this.backend.columnVisibilitySet(contextType, contextId, Array.from(fieldIds));
     }
 }
