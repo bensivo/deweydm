@@ -36,28 +36,51 @@
         margin-bottom: 12px;
     }
 
-    .metadata-section {
+    .metadata-card {
+        max-width: 640px;
         margin-bottom: 16px;
 
-        .metadata-grid {
+        .metadata-card-header {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+            justify-content: space-between;
+            align-items: center;
 
-        .metadata-row {
-            display: flex;
-            gap: 16px;
-
-            .metadata-label {
-                width: 140px;
-                font-weight: 500;
-                color: #595959;
-                flex-shrink: 0;
+            span {
+                font-size: 13px;
             }
 
-            .metadata-value {
-                color: #262626;
+            .metadata-card-actions {
+                display: flex;
+                gap: 8px;
+            }
+        }
+
+        .field-row {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            .field-label {
+                width: 160px;
+                flex-shrink: 0;
+                font-weight: 500;
+                font-size: 13px;
+                color: #595959;
+                padding-top: 4px;
+            }
+
+            .field-value {
+                flex: 1;
+                font-size: 13px;
+
+                textarea {
+                    width: 100%;
+                }
             }
         }
     }

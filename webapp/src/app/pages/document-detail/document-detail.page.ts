@@ -10,6 +10,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzCardModule } from 'ng-zorro-antd/card';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { DocumentService } from '../../services/document.service';
@@ -33,6 +34,7 @@ import { Document } from '../../models/document.model';
         NzDividerModule,
         NzTagModule,
         NzPopconfirmModule,
+        NzCardModule,
     ],
     templateUrl: './document-detail.page.html',
     styleUrl: './document-detail.page.less',
@@ -43,6 +45,10 @@ export class DocumentDetailPageComponent implements OnInit {
     fileDataUrl = signal<SafeResourceUrl | string | null>(null);
     textContent = signal<string | null>(null);
     isLoading = signal(true);
+
+    isEditMode = signal(false);
+    editName = ''; // Holds input for name field when in edit mode
+    editDescription = ''; // Holds input for description field when in edit mode
 
     // Add link form state
     selectedEntityId = '';
@@ -148,6 +154,28 @@ export class DocumentDetailPageComponent implements OnInit {
 
     onClickBack(): void {
         this.location.back();
+    }
+
+    onClickEdit(): void {
+        this.editName = this.document()?.name ?? '';
+        this.editDescription = this.document()?.description ?? '';
+        this.isEditMode.set(true);
+    }
+
+    onClickCancelEdit(): void {
+        this.isEditMode.set(false);
+    }
+
+    async onClickSave(): Promise<void> {
+        try {
+            await this.documentService.updateDocument(this.documentId, { name: this.editName, description: this.editDescription });
+            this.document.set(this.documentService.documents$().find(d => d.id === this.documentId) ?? null);
+            this.isEditMode.set(false);
+            this.nzMessageService.success('Document updated');
+        } catch (err) {
+            console.error('Failed to update document:', err);
+            this.nzMessageService.error('Failed to update document');
+        }
     }
 
     async onClickRemoveLink(entityId: string, recordId: string): Promise<void> {

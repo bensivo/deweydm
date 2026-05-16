@@ -135,6 +135,14 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         return documentService.delete(id);
     });
 
+    ipcMain.handle('document:update', async (
+        _event: Electron.IpcMainInvokeEvent,
+        id: string,
+        fields: { name?: string; description?: string },
+    ) => {
+        return documentService.update(id, fields);
+    });
+
     ipcMain.handle('document:addLink', async (
         _event: Electron.IpcMainInvokeEvent,
         documentId: string,

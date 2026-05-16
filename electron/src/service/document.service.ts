@@ -136,6 +136,22 @@ export class DocumentService {
     }
 
     /**
+     * Updates mutable fields (name, description) for a document.
+     *
+     * @param id - The document ID
+     * @param fields - Partial object with name and/or description
+     */
+    async update(id: string, fields: { name?: string; description?: string }): Promise<void> {
+        if (fields.name !== undefined && fields.description !== undefined) {
+            await this.runQuery('UPDATE documents SET name = ?, description = ? WHERE id = ?', [fields.name, fields.description, id]);
+        } else if (fields.name !== undefined) {
+            await this.runQuery('UPDATE documents SET name = ? WHERE id = ?', [fields.name, id]);
+        } else if (fields.description !== undefined) {
+            await this.runQuery('UPDATE documents SET description = ? WHERE id = ?', [fields.description, id]);
+        }
+    }
+
+    /**
      * Adds a link between a document and an entity record.
      *
      * @param documentId - The document ID

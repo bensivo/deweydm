@@ -44,6 +44,17 @@ export class DocumentService {
     }
 
     /**
+     * Updates mutable fields (name, description) for a document.
+     *
+     * @param id - The document ID
+     * @param fields - Partial object with name and/or description
+     */
+    async updateDocument(id: string, fields: { name?: string; description?: string }): Promise<void> {
+        await (window as any).electronApi.documentUpdate(id, fields);
+        this.documentStore.update(id, fields);
+    }
+
+    /**
      * Deletes a document by ID, removing it from the store.
      *
      * @param id - The document ID to delete

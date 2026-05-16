@@ -8,32 +8,59 @@
       <button nz-button nzType="text" nzDanger nz-popconfirm nzPopconfirmTitle="Delete this document?" (nzOnConfirm)="onClickDelete()">Delete</button>
     </div>
 
-    <nz-divider></nz-divider>
-
     <!-- Metadata -->
-    <section class="metadata-section">
-        <h2 class="section-title">Metadata</h2>
-        <div class="metadata-grid">
-            <div class="metadata-row">
-                <span class="metadata-label">Original File</span>
-                <span class="metadata-value">{{ document()!.originalFileName }}</span>
+    <nz-card class="metadata-card" [nzTitle]="metadataCardTitle">
+        <ng-template #metadataCardTitle>
+            <div class="metadata-card-header">
+                <span>Details</span>
+                <div class="metadata-card-actions">
+                    <ng-container *ngIf="!isEditMode()">
+                        <button nz-button nzType="default" nzSize="small" (click)="onClickEdit()">Edit</button>
+                    </ng-container>
+                    <ng-container *ngIf="isEditMode()">
+                        <button nz-button nzType="default" nzSize="small" (click)="onClickCancelEdit()">Cancel</button>
+                        <button nz-button nzType="primary" nzSize="small" (click)="onClickSave()">Save</button>
+                    </ng-container>
+                </div>
             </div>
-            <div class="metadata-row">
-                <span class="metadata-label">MIME Type</span>
-                <span class="metadata-value">{{ document()!.mimeType }}</span>
-            </div>
-            <div class="metadata-row">
-                <span class="metadata-label">Created At</span>
-                <span class="metadata-value">{{ document()!.createdAt | date:'medium' }}</span>
-            </div>
-            <div class="metadata-row">
-                <span class="metadata-label">Description</span>
-                <span class="metadata-value">{{ document()!.description || '—' }}</span>
+        </ng-template>
+
+        <div class="field-row">
+            <div class="field-label">Name</div>
+            <div class="field-value">
+                <span *ngIf="!isEditMode()">{{ document()!.name|| '—' }}</span>
+                <input
+                    *ngIf="isEditMode()"
+                    nz-input
+                    type="text"
+                    [(ngModel)]="editName" />
             </div>
         </div>
-    </section>
-
-    <nz-divider></nz-divider>
+        <div class="field-row">
+            <div class="field-label">Original Filename</div>
+            <div class="field-value">{{ document()!.originalFileName }}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">MIME Type</div>
+            <div class="field-value">{{ document()!.mimeType }}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Created At</div>
+            <div class="field-value">{{ document()!.createdAt | date:'medium' }}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Description</div>
+            <div class="field-value">
+                <span *ngIf="!isEditMode()">{{ document()!.description || '—' }}</span>
+                <textarea
+                    *ngIf="isEditMode()"
+                    nz-input
+                    [nzAutosize]="{ minRows: 2, maxRows: 6 }"
+                    [(ngModel)]="editDescription">
+                </textarea>
+            </div>
+        </div>
+    </nz-card>
 
     <!-- Linked Records -->
     <section class="linked-records-section">

@@ -114,6 +114,9 @@ const electronApi = {
     documentDelete: (id: string): Promise<void> => {
         return ipcRenderer.invoke('document:delete', id);
     },
+    documentUpdate: (id: string, fields: { name?: string; description?: string }): Promise<void> => {
+        return ipcRenderer.invoke('document:update', id, fields);
+    },
     documentAddLink: (documentId: string, entityId: string, recordId: string): Promise<void> => {
         return ipcRenderer.invoke('document:addLink', documentId, entityId, recordId);
     },
