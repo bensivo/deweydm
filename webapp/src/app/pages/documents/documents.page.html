@@ -1,12 +1,13 @@
 <div class="documents-page">
     <div class="page-header">
-        <h1 class="page-title">Documents</h1>
-        <button nz-button nzType="primary" (click)="onClickUpload()">+ Upload</button>
+        <h1>Documents</h1>
+        <button nz-button nzType="primary" nzSize="large" (click)="onClickUpload()">+ Upload</button>
     </div>
 
     <div class="page-toolbar">
         <input
             nz-input
+            nzSize="large"
             placeholder="Search by name..."
             [(ngModel)]="searchQuery"
             class="search-input" />
