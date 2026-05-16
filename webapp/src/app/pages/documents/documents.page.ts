@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -37,6 +37,7 @@ export class DocumentsPageComponent implements OnInit {
     constructor(
         private documentService: DocumentService,
         private router: Router,
+        private location: Location,
         private nzMessageService: NzMessageService,
     ) {}
 

@@ -16,10 +16,6 @@
                 font-weight: 500;
             }
 
-            .detail-actions {
-                display: flex;
-                gap: 8px;
-            }
         }
     }
 
@@ -31,6 +27,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+
+            span {
+                font-size: 13px;
+            }
         }
 
         .no-documents {
@@ -69,6 +69,21 @@
 
     .fields-card {
         max-width: 640px;
+
+        .details-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            span {
+                font-size: 13px;
+            }
+
+            .details-card-actions {
+                display: flex;
+                gap: 8px;
+            }
+        }
 
         .field-row {
             display: flex;
