@@ -1,8 +1,11 @@
 <div class="document-detail-page" *ngIf="!isLoading() && document()">
     <div class="page-header">
         <button nz-button nzType="text" (click)="onClickBack()">← Back</button>
-        <h1 class="page-title">{{ document()!.name }}</h1>
-        <button nz-button nzType="default" nzDanger nz-popconfirm nzPopconfirmTitle="Delete this document?" (nzOnConfirm)="onClickDelete()">Delete</button>
+    </div>
+
+    <div class="detail-header">
+      <h1 class="page-title">{{ document()!.name }}</h1>
+      <button nz-button nzType="text" nzDanger nz-popconfirm nzPopconfirmTitle="Delete this document?" (nzOnConfirm)="onClickDelete()">Delete</button>
     </div>
 
     <nz-divider></nz-divider>
