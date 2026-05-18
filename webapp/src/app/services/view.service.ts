@@ -1,15 +1,28 @@
-import { Injectable, computed } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 
 import { View } from '../models/view.model';
 import { Filter } from '../models/filter.model';
 import { ViewStore } from '../store/view.store';
+import { BACKEND_API } from '../backend/backend-api.token';
+import { Backend } from '../backend/backend-api.interface';
 
 @Injectable({ providedIn: 'root' })
 export class ViewService {
-    constructor(private viewStore: ViewStore) {}
+    constructor(
+        private viewStore: ViewStore,
+        @Inject(BACKEND_API) private backend: Backend,
+    ) {}
 
     get views$() {
         return this.viewStore.views$;
+    }
+
+    /**
+     * Load all views from the backend and hydrate the store.
+     */
+    async loadAll(): Promise<void> {
+        const views = await this.backend.viewGetAll();
+        this.viewStore.setAll(views);
     }
 
     /**
@@ -38,14 +51,14 @@ export class ViewService {
      * @param entityId - The entity this view is for
      * @param viewName - The name for the view
      * @param filters - The filters to save in this view
-     * @returns The created view
+     * @returns A promise resolving to the created view
      */
-    saveView(entityId: string, viewName: string, filters: Filter[]): View {
+    async saveView(entityId: string, viewName: string, filters: Filter[]): Promise<View> {
         const viewId = this.generateViewId();
         // Deep copy the filters to avoid mutations
         const filtersCopy = filters.map(f => ({ ...f }));
-        const view: View = { id: viewId, name: viewName, entityId, filters: filtersCopy };
-        this.viewStore.createView(viewId, viewName, entityId, filtersCopy);
+        const view = await this.backend.viewCreate(viewId, viewName, entityId, filtersCopy);
+        this.viewStore.createView(view.id, view.name, view.entityId, view.filters);
         return view;
     }
 
@@ -54,7 +67,8 @@ export class ViewService {
      *
      * @param viewId - The view ID to delete
      */
-    deleteView(viewId: string): void {
+    async deleteView(viewId: string): Promise<void> {
+        await this.backend.viewDelete(viewId);
         this.viewStore.deleteView(viewId);
     }
 

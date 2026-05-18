@@ -12,6 +12,7 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
@@ -45,7 +46,8 @@ import { ModalState } from '../../utils/modal-state.util';
         NzIconModule,
         NzSelectModule,
         EntityReferenceComponent,
-        SaveViewModalComponent
+        SaveViewModalComponent,
+        NzPopconfirmModule
     ],
     templateUrl: './view.page.html',
     styleUrl: './view.page.less'
@@ -477,17 +479,23 @@ export class ViewPageComponent implements OnInit {
         this.isViewSaveModalOpenSignal.set(true);
     }
 
-    onConfirmSaveView(viewName: string): void {
+    async onConfirmSaveView(viewName: string): Promise<void> {
         const entity = this.entity$();
         if (!entity) return;
 
         const currentFilters = this.filterService.getFilters();
-        this.viewService.saveView(entity.id, viewName, currentFilters);
+        await this.viewService.saveView(entity.id, viewName, currentFilters);
 
         this.isViewSaveModalOpenSignal.set(false);
     }
 
     onCancelSaveView(): void {
         this.isViewSaveModalOpenSignal.set(false);
+    }
+
+    async onClickDelete(): Promise<void> {
+        const viewId = this.viewIdSignal();
+        await this.viewService.deleteView(viewId);
+        this.router.navigate(['/']);
     }
 }

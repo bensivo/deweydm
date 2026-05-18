@@ -54,6 +54,7 @@ export class App {
     ) {
         this.workspaceService.loadAll();
         this.documentService.loadAll();
+        this.viewService.loadAll();
     }
 
     get entities$() {

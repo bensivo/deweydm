@@ -34,6 +34,16 @@ export class ViewStore {
     }
 
     /**
+     * Replace all views in the store with the provided list.
+     * Used during app initialization to hydrate from the backend.
+     *
+     * @param views - The full list of views to set
+     */
+    setAll(views: View[]): void {
+        this.viewsSignal.set(views);
+    }
+
+    /**
      * Create a new view.
      *
      * @param id - The unique ID for the view

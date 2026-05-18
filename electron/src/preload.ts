@@ -126,6 +126,17 @@ const electronApi = {
     documentGetFile: (id: string): Promise<string> => {
         return ipcRenderer.invoke('document:getFile', id);
     },
+
+    // View operations
+    viewGetAll: (): Promise<any[]> => {
+        return ipcRenderer.invoke('view:getAll');
+    },
+    viewCreate: (id: string, name: string, entityId: string, filters: any[]): Promise<any> => {
+        return ipcRenderer.invoke('view:create', id, name, entityId, filters);
+    },
+    viewDelete: (id: string): Promise<void> => {
+        return ipcRenderer.invoke('view:delete', id);
+    },
 };
 
 contextBridge.exposeInMainWorld('electronApi', electronApi);

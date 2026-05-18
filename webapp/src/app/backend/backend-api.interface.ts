@@ -2,6 +2,8 @@ import { Entity, EntityField, FieldType } from '../models/entity.model';
 import { EntityRecord } from '../models/entity-record.model';
 import { Workspace } from '../models/workspace.model';
 import { Document } from '../models/document.model';
+import { View } from '../models/view.model';
+import { Filter } from '../models/filter.model';
 
 /**
  * Contract describing every backend operation the webapp needs.
@@ -63,4 +65,9 @@ export interface Backend {
     documentAddLink(documentId: string, entityId: string, recordId: string): Promise<void>;
     documentRemoveLink(documentId: string, entityId: string, recordId: string): Promise<void>;
     documentGetFile(id: string): Promise<string>;
+
+    // Views
+    viewGetAll(): Promise<View[]>;
+    viewCreate(id: string, name: string, entityId: string, filters: Filter[]): Promise<View>;
+    viewDelete(id: string): Promise<void>;
 }

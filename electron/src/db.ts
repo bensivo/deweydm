@@ -174,6 +174,21 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                     )
                 `);
 
+                await run(`
+                    CREATE TABLE IF NOT EXISTS entity_views (
+                        id TEXT PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        entity_id TEXT NOT NULL,
+                        filters TEXT NOT NULL DEFAULT '[]',
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE CASCADE
+                    )
+                `);
+
+                await run(`
+                    CREATE INDEX IF NOT EXISTS idx_entity_views_entity_id ON entity_views(entity_id)
+                `);
+
                 resolve();
             } catch (err) {
                 reject(err);

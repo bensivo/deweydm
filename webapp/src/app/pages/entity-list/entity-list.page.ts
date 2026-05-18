@@ -526,12 +526,12 @@ export class EntityListPageComponent implements OnInit {
    *
    * @param viewName - The name for the new view
    */
-  onConfirmSaveView(viewName: string): void {
+  async onConfirmSaveView(viewName: string): Promise<void> {
     const entity = this.entity$();
     if (!entity) return;
 
     const currentFilters = this.filterService.getFilters();
-    this.viewService.saveView(entity.id, viewName, currentFilters);
+    await this.viewService.saveView(entity.id, viewName, currentFilters);
 
     this.isViewSaveModalOpenSignal.set(false);
   }

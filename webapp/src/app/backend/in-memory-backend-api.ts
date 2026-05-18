@@ -3,6 +3,8 @@ import { Entity, EntityField, FieldType } from '../models/entity.model';
 import { EntityRecord } from '../models/entity-record.model';
 import { Workspace } from '../models/workspace.model';
 import { Document, DocumentLink } from '../models/document.model';
+import { View } from '../models/view.model';
+import { Filter } from '../models/filter.model';
 
 /**
  * Backend implementation that stores everything in in-process JavaScript Maps.
@@ -18,6 +20,7 @@ export class InMemoryBackend implements Backend {
     private columnVisibility: Map<string, string[]> = new Map();
     private documents: Map<string, Document> = new Map();
     private documentFiles: Map<string, string> = new Map();
+    private views: Map<string, View> = new Map();
 
     constructor() {
         console.log('[InMemoryBackend] constructor');
@@ -312,5 +315,25 @@ export class InMemoryBackend implements Backend {
     documentGetFile(id: string): Promise<string> {
         console.log('[InMemoryBackend] documentGetFile', { id });
         return Promise.resolve(this.documentFiles.get(id) ?? '');
+    }
+
+    // Views
+
+    viewGetAll(): Promise<View[]> {
+        console.log('[InMemoryBackend] viewGetAll');
+        return Promise.resolve(Array.from(this.views.values()));
+    }
+
+    viewCreate(id: string, name: string, entityId: string, filters: Filter[]): Promise<View> {
+        console.log('[InMemoryBackend] viewCreate', { id, name, entityId, filters });
+        const view: View = { id, name, entityId, filters: filters.map(f => ({ ...f })) };
+        this.views.set(id, view);
+        return Promise.resolve(view);
+    }
+
+    viewDelete(id: string): Promise<void> {
+        console.log('[InMemoryBackend] viewDelete', { id });
+        this.views.delete(id);
+        return Promise.resolve();
     }
 }

@@ -6,6 +6,7 @@ import { EntityRecordService } from './service/entity-record.service';
 import { WorkspaceService } from './service/workspace.service';
 import { ColumnVisibilityService } from './service/column-visibility.service';
 import { DocumentService } from './service/document.service';
+import { ViewService, Filter } from './service/view.service';
 
 // Register all IPC handlers before any window is created so they are
 // available as soon as the renderer sends its first message.
@@ -15,6 +16,7 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
     const workspaceService = new WorkspaceService(db);
     const columnVisibilityService = new ColumnVisibilityService(db);
     const documentService = new DocumentService(db, documentsDir);
+    const viewService = new ViewService(db);
 
     ipcMain.handle('hello-world', onHelloWorld);
 
@@ -167,6 +169,19 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         const mimeType = document?.mimeType ?? 'application/octet-stream';
         const base64 = buffer.toString('base64');
         return `data:${mimeType};base64,${base64}`;
+    });
+
+    // View handlers
+    ipcMain.handle('view:getAll', async () => {
+        return viewService.getAll();
+    });
+
+    ipcMain.handle('view:create', async (_event: Electron.IpcMainInvokeEvent, id: string, name: string, entityId: string, filters: Filter[]) => {
+        return viewService.create(id, name, entityId, filters);
+    });
+
+    ipcMain.handle('view:delete', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+        return viewService.delete(id);
     });
 }
 
