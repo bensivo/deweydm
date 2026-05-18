@@ -20,6 +20,7 @@ export class InMemoryBackend implements Backend {
     private documentFiles: Map<string, string> = new Map();
 
     constructor() {
+        console.log('[InMemoryBackend] constructor');
         // Seed a default workspace so the app has something to show on first load
         const defaultWorkspace: Workspace = {
             id: crypto.randomUUID(),
@@ -33,10 +34,12 @@ export class InMemoryBackend implements Backend {
     // Workspaces
 
     workspaceGetAll(): Promise<Workspace[]> {
+        console.log('[InMemoryBackend] workspaceGetAll');
         return Promise.resolve(Array.from(this.workspaces.values()));
     }
 
     workspaceCreate(name: string): Promise<Workspace> {
+        console.log('[InMemoryBackend] workspaceCreate', { name });
         const workspace: Workspace = {
             id: crypto.randomUUID(),
             name,
@@ -48,11 +51,13 @@ export class InMemoryBackend implements Backend {
     }
 
     workspaceDelete(id: string): Promise<void> {
+        console.log('[InMemoryBackend] workspaceDelete', { id });
         this.workspaces.delete(id);
         return Promise.resolve();
     }
 
     workspaceSetDefault(id: string): Promise<void> {
+        console.log('[InMemoryBackend] workspaceSetDefault', { id });
         for (const ws of this.workspaces.values()) {
             ws.isDefault = ws.id === id;
         }
@@ -62,15 +67,18 @@ export class InMemoryBackend implements Backend {
     // Entities
 
     entityGetAll(_workspaceId?: string): Promise<Entity[]> {
+        console.log('[InMemoryBackend] entityGetAll', { workspaceId: _workspaceId });
         // The in-memory backend does not yet scope entities by workspace
         return Promise.resolve(Array.from(this.entities.values()));
     }
 
     entityGetById(id: string): Promise<Entity | null> {
+        console.log('[InMemoryBackend] entityGetById', { id });
         return Promise.resolve(this.entities.get(id) ?? null);
     }
 
     entityCreate(name: string, pluralName: string, _workspaceId?: string): Promise<Entity> {
+        console.log('[InMemoryBackend] entityCreate', { name, pluralName, workspaceId: _workspaceId });
         const entity: Entity = {
             id: crypto.randomUUID(),
             name,
@@ -82,11 +90,13 @@ export class InMemoryBackend implements Backend {
     }
 
     entityDelete(id: string): Promise<void> {
+        console.log('[InMemoryBackend] entityDelete', { id });
         this.entities.delete(id);
         return Promise.resolve();
     }
 
     entitySetDisplayNameField(entityId: string, fieldId: string): Promise<void> {
+        console.log('[InMemoryBackend] entitySetDisplayNameField', { entityId, fieldId });
         const entity = this.entities.get(entityId);
         if (entity) {
             entity.displayNameFieldId = fieldId;
@@ -103,6 +113,10 @@ export class InMemoryBackend implements Backend {
         backlinkSourceFieldId?: string,
         optionValues?: string[],
     ): Promise<EntityField> {
+        console.log('[InMemoryBackend] entityAddField', {
+            entityId, fieldName, fieldType, referenceEntityId,
+            backlinkSourceEntityId, backlinkSourceFieldId, optionValues,
+        });
         const entity = this.entities.get(entityId);
         if (!entity) {
             return Promise.reject(new Error(`Entity not found: ${entityId}`));
@@ -122,6 +136,7 @@ export class InMemoryBackend implements Backend {
     }
 
     entityRemoveField(entityId: string, fieldId: string): Promise<void> {
+        console.log('[InMemoryBackend] entityRemoveField', { entityId, fieldId });
         const entity = this.entities.get(entityId);
         if (entity) {
             entity.fields = entity.fields.filter(f => f.id !== fieldId);
@@ -130,6 +145,7 @@ export class InMemoryBackend implements Backend {
     }
 
     entityReorderFields(entityId: string, orderedFieldIds: string[]): Promise<void> {
+        console.log('[InMemoryBackend] entityReorderFields', { entityId, orderedFieldIds });
         const entity = this.entities.get(entityId);
         if (!entity) return Promise.resolve();
 
@@ -143,20 +159,24 @@ export class InMemoryBackend implements Backend {
     // Entity Records
 
     entityRecordGetAll(): Promise<EntityRecord[]> {
+        console.log('[InMemoryBackend] entityRecordGetAll');
         return Promise.resolve(Array.from(this.records.values()));
     }
 
     entityRecordGetById(id: string): Promise<EntityRecord | null> {
+        console.log('[InMemoryBackend] entityRecordGetById', { id });
         return Promise.resolve(this.records.get(id) ?? null);
     }
 
     entityRecordGetByEntityId(entityId: string): Promise<EntityRecord[]> {
+        console.log('[InMemoryBackend] entityRecordGetByEntityId', { entityId });
         return Promise.resolve(
             Array.from(this.records.values()).filter(r => r.entityId === entityId),
         );
     }
 
     entityRecordCreate(entityId: string, data: Record<string, string>): Promise<EntityRecord> {
+        console.log('[InMemoryBackend] entityRecordCreate', { entityId, data });
         const record: EntityRecord = {
             id: crypto.randomUUID(),
             entityId,
@@ -167,6 +187,7 @@ export class InMemoryBackend implements Backend {
     }
 
     entityRecordUpdate(id: string, data: Record<string, string>): Promise<void> {
+        console.log('[InMemoryBackend] entityRecordUpdate', { id, data });
         const record = this.records.get(id);
         if (record) {
             record.data = { ...data };
@@ -175,6 +196,7 @@ export class InMemoryBackend implements Backend {
     }
 
     entityRecordDelete(id: string): Promise<void> {
+        console.log('[InMemoryBackend] entityRecordDelete', { id });
         this.records.delete(id);
         return Promise.resolve();
     }
@@ -186,11 +208,13 @@ export class InMemoryBackend implements Backend {
     }
 
     columnVisibilityGet(contextType: string, contextId: string): Promise<string[] | null> {
+        console.log('[InMemoryBackend] columnVisibilityGet', { contextType, contextId });
         const key = this.columnVisibilityKey(contextType, contextId);
         return Promise.resolve(this.columnVisibility.get(key) ?? null);
     }
 
     columnVisibilitySet(contextType: string, contextId: string, fieldIds: string[]): Promise<void> {
+        console.log('[InMemoryBackend] columnVisibilitySet', { contextType, contextId, fieldIds });
         const key = this.columnVisibilityKey(contextType, contextId);
         this.columnVisibility.set(key, [...fieldIds]);
         return Promise.resolve();
@@ -199,10 +223,12 @@ export class InMemoryBackend implements Backend {
     // Documents
 
     documentGetAll(): Promise<Document[]> {
+        console.log('[InMemoryBackend] documentGetAll');
         return Promise.resolve(Array.from(this.documents.values()));
     }
 
     documentGetById(id: string): Promise<Document | null> {
+        console.log('[InMemoryBackend] documentGetById', { id });
         return Promise.resolve(this.documents.get(id) ?? null);
     }
 
@@ -213,6 +239,9 @@ export class InMemoryBackend implements Backend {
         mimeType: string,
         fileBuffer: ArrayBuffer,
     ): Promise<Document> {
+        console.log('[InMemoryBackend] documentCreate', {
+            name, description, originalFileName, mimeType, fileSize: fileBuffer.byteLength,
+        });
         const doc: Document = {
             id: crypto.randomUUID(),
             name,
@@ -238,12 +267,14 @@ export class InMemoryBackend implements Backend {
     }
 
     documentDelete(id: string): Promise<void> {
+        console.log('[InMemoryBackend] documentDelete', { id });
         this.documents.delete(id);
         this.documentFiles.delete(id);
         return Promise.resolve();
     }
 
     documentUpdate(id: string, fields: { name?: string; description?: string }): Promise<void> {
+        console.log('[InMemoryBackend] documentUpdate', { id, fields });
         const doc = this.documents.get(id);
         if (doc) {
             if (fields.name !== undefined) doc.name = fields.name;
@@ -253,6 +284,7 @@ export class InMemoryBackend implements Backend {
     }
 
     documentAddLink(documentId: string, entityId: string, recordId: string): Promise<void> {
+        console.log('[InMemoryBackend] documentAddLink', { documentId, entityId, recordId });
         const doc = this.documents.get(documentId);
         if (doc) {
             const exists = doc.linkedRecords.some(
@@ -267,6 +299,7 @@ export class InMemoryBackend implements Backend {
     }
 
     documentRemoveLink(documentId: string, entityId: string, recordId: string): Promise<void> {
+        console.log('[InMemoryBackend] documentRemoveLink', { documentId, entityId, recordId });
         const doc = this.documents.get(documentId);
         if (doc) {
             doc.linkedRecords = doc.linkedRecords.filter(
@@ -277,6 +310,7 @@ export class InMemoryBackend implements Backend {
     }
 
     documentGetFile(id: string): Promise<string> {
+        console.log('[InMemoryBackend] documentGetFile', { id });
         return Promise.resolve(this.documentFiles.get(id) ?? '');
     }
 }

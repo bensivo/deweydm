@@ -8,7 +8,7 @@
       <button nz-button nzType="text" nzDanger nz-popconfirm nzPopconfirmTitle="Delete this document?" (nzOnConfirm)="onClickDelete()">Delete</button>
     </div>
 
-    <!-- Metadata -->
+    <!-- Document Details Card -->
     <nz-card class="metadata-card" [nzTitle]="metadataCardTitle">
         <ng-template #metadataCardTitle>
             <div class="metadata-card-header">
@@ -62,61 +62,21 @@
         </div>
     </nz-card>
 
-    <!-- Linked Records -->
-    <section class="linked-records-section">
-        <h2 class="section-title">Linked Records</h2>
-
-        <div class="linked-records-list">
-            <div *ngFor="let link of linkedRecordLabels" class="linked-record-item">
-                <nz-tag>{{ link.entityName }} / {{ link.recordName }}</nz-tag>
-                <button nz-button nzType="text" nzSize="small" nz-popconfirm nzPopconfirmTitle="Remove this link?" (nzOnConfirm)="onClickRemoveLink(link.entityId, link.recordId)">
-                    &#x2715;
-                </button>
-            </div>
-            <div *ngIf="linkedRecordLabels.length === 0" class="no-links">No linked records.</div>
+    <!-- Linked Records Card -->
+     <app-card title="Linked Records">
+        <div *ngFor="let link of linkedRecordLabels()" class="linked-record-item">
+            <app-entity-reference [recordId]="link.recordId"></app-entity-reference>
+            <button nz-button nzType="text" nzDanger nzSize="small"
+                    nz-tooltip nzTooltipTitle="Unlink record"
+                    (click)="onClickRemoveLink(link.entityId, link.recordId)">
+                <span nz-icon nzType="disconnect"></span>
+            </button>
         </div>
-
-        <div class="add-link-form">
-            <h3 class="add-link-title">Add Link</h3>
-            <div class="add-link-controls">
-                <nz-select
-                    [(ngModel)]="selectedEntityId"
-                    nzPlaceHolder="Select entity"
-                    class="entity-select"
-                    (ngModelChange)="selectedRecordId = ''">
-                    <nz-option
-                        *ngFor="let entity of entities$()"
-                        [nzValue]="entity.id"
-                        [nzLabel]="entity.name">
-                    </nz-option>
-                </nz-select>
-
-                <nz-select
-                    [(ngModel)]="selectedRecordId"
-                    nzPlaceHolder="Select record"
-                    class="record-select"
-                    [nzDisabled]="!selectedEntityId">
-                    <nz-option
-                        *ngFor="let r of recordsForSelectedEntity"
-                        [nzValue]="r.recordId"
-                        [nzLabel]="r.recordName">
-                    </nz-option>
-                </nz-select>
-
-                <button
-                    nz-button
-                    nzType="primary"
-                    [disabled]="!selectedEntityId || !selectedRecordId"
-                    (click)="onClickAddLink()">
-                    Add
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <nz-divider></nz-divider>
+        <div *ngIf="linkedRecordLabels().length === 0" class="no-links">No linked records.</div>
+     </app-card>
 
     <!-- Document Viewer -->
+    <nz-divider></nz-divider>
     <section class="viewer-section">
         <h2 class="section-title">Preview</h2>
 

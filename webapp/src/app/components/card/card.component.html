@@ -1,0 +1,11 @@
+<nz-card class="card" [nzTitle]="cardTitle">
+    <ng-template #cardTitle>
+        <div class="card-header">
+            <span>{{ title }}</span>
+        </div>
+    </ng-template>
+
+    <div class="card-content">
+        <ng-content></ng-content>
+    </div>
+</nz-card>

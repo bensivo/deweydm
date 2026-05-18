@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,12 +11,16 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { DocumentService } from '../../services/document.service';
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
 import { Document } from '../../models/document.model';
+import { CardComponent } from '../../components/card/card.component';
+import { EntityReferenceComponent } from '../../components/entity-reference/entity-reference.component';
 
 /**
  * Detail page for a single document. Shows metadata, linked records, and a preview of the file.
@@ -35,6 +39,10 @@ import { Document } from '../../models/document.model';
         NzTagModule,
         NzPopconfirmModule,
         NzCardModule,
+        NzIconModule,
+        NzTooltipModule,
+        CardComponent,
+        EntityReferenceComponent,
     ],
     templateUrl: './document-detail.page.html',
     styleUrl: './document-detail.page.less',
@@ -79,12 +87,14 @@ export class DocumentDetailPageComponent implements OnInit {
         }));
     }
 
-    get linkedRecordLabels(): { entityName: string; recordName: string; entityId: string; recordId: string }[] {
-        if (!this.document()) {
+    linkedRecordLabels = computed<{ entityName: string; recordName: string; entityId: string; recordId: string }[]>(() => {
+        const doc = this.document();
+        if (!doc) {
             return [];
         }
-        return this.document()!.linkedRecords.map(link => {
-            const entity = this.entityService.entities$().find(e => e.id === link.entityId);
+        const entities = this.entityService.entities$();
+        return doc.linkedRecords.map(link => {
+            const entity = entities.find(e => e.id === link.entityId);
             return {
                 entityName: entity?.name ?? link.entityId,
                 recordName: this.entityRecordService.getRecordDisplayName(link.entityId, link.recordId),
@@ -92,7 +102,7 @@ export class DocumentDetailPageComponent implements OnInit {
                 recordId: link.recordId,
             };
         });
-    }
+    });
 
     get isPdf(): boolean {
         return this.document()?.mimeType === 'application/pdf';

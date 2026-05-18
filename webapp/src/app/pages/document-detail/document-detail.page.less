@@ -1,6 +1,4 @@
 .document-detail-page {
-    // padding: 24px;
-
     .page-header {
         display: flex;
         align-items: center;
@@ -85,49 +83,17 @@
         }
     }
 
-    .linked-records-section {
-        margin-bottom: 16px;
-
-        .linked-records-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
-
-            .linked-record-item {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-            }
-        }
-
-        .no-links {
-            color: #8c8c8c;
-            font-style: italic;
-        }
-
-        .add-link-title {
-            font-size: 14px;
-            font-weight: 500;
-            color: #595959;
-            margin-bottom: 8px;
-        }
-
-        .add-link-controls {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-
-            .entity-select {
-                width: 200px;
-            }
-
-            .record-select {
-                width: 200px;
-            }
-        }
+    .no-links {
+        color: #8c8c8c;
+        font-style: italic;
     }
 
+    .linked-record-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+       
     .viewer-section {
         .pdf-viewer {
             width: 100%;
