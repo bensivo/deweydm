@@ -180,6 +180,7 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                         name TEXT NOT NULL,
                         entity_id TEXT NOT NULL,
                         filters TEXT NOT NULL DEFAULT '[]',
+                        order_by TEXT NOT NULL DEFAULT '[]',
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE CASCADE
                     )
@@ -237,6 +238,16 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                     () => resolve()
                 );
             });
+        });
+    });
+
+    // Add order_by column to entity_views if it doesn't already exist (defensive migration for existing DBs)
+    await new Promise<void>((resolve) => {
+        db.all("PRAGMA table_info(entity_views)", (err, rows: any[]) => {
+            if (err || !rows) { resolve(); return; }
+            const hasOrderBy = rows.some(r => r.name === 'order_by');
+            if (hasOrderBy) { resolve(); return; }
+            db.run("ALTER TABLE entity_views ADD COLUMN order_by TEXT NOT NULL DEFAULT '[]'", () => resolve());
         });
     });
 

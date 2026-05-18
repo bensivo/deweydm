@@ -13,11 +13,19 @@ export interface Filter {
     value: string | string[];
 }
 
+export interface OrderBy {
+    id: string;
+    entityId: string;
+    fieldId: string;
+    order: 'asc' | 'desc';
+}
+
 export interface View {
     id: string;
     name: string;
     entityId: string;
     filters: Filter[];
+    orderBy: OrderBy[];
 }
 
 /**
@@ -35,14 +43,15 @@ export class ViewService {
      * @returns A promise resolving to an array of View objects.
      */
     async getAll(): Promise<View[]> {
-        const rows = await this.allQuery<{ id: string; name: string; entity_id: string; filters: string }>(
-            'SELECT id, name, entity_id, filters FROM entity_views'
+        const rows = await this.allQuery<{ id: string; name: string; entity_id: string; filters: string; order_by: string | null }>(
+            'SELECT id, name, entity_id, filters, order_by FROM entity_views'
         );
         return rows.map(row => ({
             id: row.id,
             name: row.name,
             entityId: row.entity_id,
             filters: JSON.parse(row.filters),
+            orderBy: this.parseOrderBy(row.order_by),
         }));
     }
 
@@ -52,8 +61,8 @@ export class ViewService {
      * @returns A promise resolving to the View, or undefined if not found.
      */
     async getById(id: string): Promise<View | undefined> {
-        const row = await this.getQuery<{ id: string; name: string; entity_id: string; filters: string }>(
-            'SELECT id, name, entity_id, filters FROM entity_views WHERE id = ?',
+        const row = await this.getQuery<{ id: string; name: string; entity_id: string; filters: string; order_by: string | null }>(
+            'SELECT id, name, entity_id, filters, order_by FROM entity_views WHERE id = ?',
             [id]
         );
         if (!row) {
@@ -64,6 +73,7 @@ export class ViewService {
             name: row.name,
             entityId: row.entity_id,
             filters: JSON.parse(row.filters),
+            orderBy: this.parseOrderBy(row.order_by),
         };
     }
 
@@ -73,15 +83,17 @@ export class ViewService {
      * @param name - The display name for the view.
      * @param entityId - The entity this view belongs to.
      * @param filters - The filter conditions to persist.
+     * @param orderBy - The order-by rows to persist.
      * @returns A promise resolving to the created View.
      */
-    async create(id: string, name: string, entityId: string, filters: Filter[]): Promise<View> {
+    async create(id: string, name: string, entityId: string, filters: Filter[], orderBy: OrderBy[]): Promise<View> {
         const filtersJson = JSON.stringify(filters);
+        const orderByJson = JSON.stringify(orderBy ?? []);
         await this.runQuery(
-            'INSERT INTO entity_views (id, name, entity_id, filters) VALUES (?, ?, ?, ?)',
-            [id, name, entityId, filtersJson]
+            'INSERT INTO entity_views (id, name, entity_id, filters, order_by) VALUES (?, ?, ?, ?, ?)',
+            [id, name, entityId, filtersJson, orderByJson]
         );
-        return { id, name, entityId, filters };
+        return { id, name, entityId, filters, orderBy: orderBy ?? [] };
     }
 
     /**
@@ -90,6 +102,19 @@ export class ViewService {
      */
     async delete(id: string): Promise<void> {
         await this.runQuery('DELETE FROM entity_views WHERE id = ?', [id]);
+    }
+
+    /**
+     * Parses the order_by JSON column, tolerating null/missing values.
+     */
+    private parseOrderBy(raw: string | null | undefined): OrderBy[] {
+        if (!raw) return [];
+        try {
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
     }
 
     private runQuery(sql: string, params: any[] = []): Promise<void> {

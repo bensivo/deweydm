@@ -176,6 +176,11 @@ export class ViewPageComponent implements OnInit {
                 this.orderByService.removeOrderByRow(row.id);
             });
 
+            // Restore all order-by rows from the saved view (tolerate missing field on older views).
+            (view.orderBy ?? []).forEach(row => {
+                this.orderByService.addOrderByRowWithData(row);
+            });
+
             // Set entity key to load the entity list
             const entityKey = generateEntityKey(entity.name);
             this.entityKeySignal.set(entityKey);
@@ -451,7 +456,8 @@ export class ViewPageComponent implements OnInit {
         if (!entity) return;
 
         const currentFilters = this.filterService.getFilters();
-        await this.viewService.saveView(entity.id, viewName, currentFilters);
+        const currentOrderBy = this.orderByService.getOrderByRows();
+        await this.viewService.saveView(entity.id, viewName, currentFilters, currentOrderBy);
 
         this.isViewSaveModalOpenSignal.set(false);
     }

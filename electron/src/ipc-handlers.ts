@@ -6,7 +6,7 @@ import { EntityRecordService } from './service/entity-record.service';
 import { WorkspaceService } from './service/workspace.service';
 import { ColumnVisibilityService } from './service/column-visibility.service';
 import { DocumentService } from './service/document.service';
-import { ViewService, Filter } from './service/view.service';
+import { ViewService, Filter, OrderBy } from './service/view.service';
 
 // Register all IPC handlers before any window is created so they are
 // available as soon as the renderer sends its first message.
@@ -176,8 +176,8 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         return viewService.getAll();
     });
 
-    ipcMain.handle('view:create', async (_event: Electron.IpcMainInvokeEvent, id: string, name: string, entityId: string, filters: Filter[]) => {
-        return viewService.create(id, name, entityId, filters);
+    ipcMain.handle('view:create', async (_event: Electron.IpcMainInvokeEvent, id: string, name: string, entityId: string, filters: Filter[], orderBy: OrderBy[]) => {
+        return viewService.create(id, name, entityId, filters, orderBy);
     });
 
     ipcMain.handle('view:delete', async (_event: Electron.IpcMainInvokeEvent, id: string) => {

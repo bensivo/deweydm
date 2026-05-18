@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 
 import { View } from '../models/view.model';
 import { Filter } from '../models/filter.model';
+import { OrderBy } from '../models/order-by.model';
 
 /**
  * Store for managing saved views (filtered entity lists).
@@ -50,9 +51,10 @@ export class ViewStore {
      * @param name - The display name for the view
      * @param entityId - The entity this view is for
      * @param filters - The filters to apply in this view
+     * @param orderBy - The order-by rows to apply in this view
      */
-    createView(id: string, name: string, entityId: string, filters: Filter[]): void {
-        this.viewsSignal.update(views => [...views, { id, name, entityId, filters }]);
+    createView(id: string, name: string, entityId: string, filters: Filter[], orderBy: OrderBy[]): void {
+        this.viewsSignal.update(views => [...views, { id, name, entityId, filters, orderBy }]);
     }
 
     /**

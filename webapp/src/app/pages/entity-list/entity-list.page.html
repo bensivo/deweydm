@@ -48,7 +48,7 @@
         nz-button
         nzSize="large"
         (click)="onClickSaveAsView()"
-        *ngIf="getFiltersSignal()().length > 0">
+        *ngIf="getFiltersSignal()().length > 0 || getOrderByRowsSignal()().length > 0">
         <i nz-icon nzType="save" nzTheme="outline"></i>
         Save as View
       </button>

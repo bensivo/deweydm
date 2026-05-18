@@ -5,6 +5,7 @@ import { Workspace } from '../models/workspace.model';
 import { Document, DocumentLink } from '../models/document.model';
 import { View } from '../models/view.model';
 import { Filter } from '../models/filter.model';
+import { OrderBy } from '../models/order-by.model';
 
 /**
  * Backend implementation that stores everything in in-process JavaScript Maps.
@@ -321,12 +322,29 @@ export class InMemoryBackend implements Backend {
 
     viewGetAll(): Promise<View[]> {
         console.log('[InMemoryBackend] viewGetAll');
-        return Promise.resolve(Array.from(this.views.values()));
+        return Promise.resolve(
+            Array.from(this.views.values()).map(v => ({
+                ...v,
+                orderBy: v.orderBy ?? [],
+            })),
+        );
     }
 
-    viewCreate(id: string, name: string, entityId: string, filters: Filter[]): Promise<View> {
-        console.log('[InMemoryBackend] viewCreate', { id, name, entityId, filters });
-        const view: View = { id, name, entityId, filters: filters.map(f => ({ ...f })) };
+    viewCreate(
+        id: string,
+        name: string,
+        entityId: string,
+        filters: Filter[],
+        orderBy: OrderBy[],
+    ): Promise<View> {
+        console.log('[InMemoryBackend] viewCreate', { id, name, entityId, filters, orderBy });
+        const view: View = {
+            id,
+            name,
+            entityId,
+            filters: filters.map(f => ({ ...f })),
+            orderBy: orderBy.map(o => ({ ...o })),
+        };
         this.views.set(id, view);
         return Promise.resolve(view);
     }

@@ -131,8 +131,8 @@ const electronApi = {
     viewGetAll: (): Promise<any[]> => {
         return ipcRenderer.invoke('view:getAll');
     },
-    viewCreate: (id: string, name: string, entityId: string, filters: any[]): Promise<any> => {
-        return ipcRenderer.invoke('view:create', id, name, entityId, filters);
+    viewCreate: (id: string, name: string, entityId: string, filters: any[], orderBy: any[]): Promise<any> => {
+        return ipcRenderer.invoke('view:create', id, name, entityId, filters, orderBy);
     },
     viewDelete: (id: string): Promise<void> => {
         return ipcRenderer.invoke('view:delete', id);

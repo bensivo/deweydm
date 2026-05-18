@@ -1,4 +1,5 @@
 import { Filter } from './filter.model';
+import { OrderBy } from './order-by.model';
 
 /**
  * Represents a saved set of filters tied to a specific entity.
@@ -9,4 +10,5 @@ export interface View {
     name: string;
     entityId: string;
     filters: Filter[];
+    orderBy: OrderBy[];
 }

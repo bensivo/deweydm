@@ -4,6 +4,7 @@ import { Workspace } from '../models/workspace.model';
 import { Document } from '../models/document.model';
 import { View } from '../models/view.model';
 import { Filter } from '../models/filter.model';
+import { OrderBy } from '../models/order-by.model';
 
 /**
  * Contract describing every backend operation the webapp needs.
@@ -68,6 +69,12 @@ export interface Backend {
 
     // Views
     viewGetAll(): Promise<View[]>;
-    viewCreate(id: string, name: string, entityId: string, filters: Filter[]): Promise<View>;
+    viewCreate(
+        id: string,
+        name: string,
+        entityId: string,
+        filters: Filter[],
+        orderBy: OrderBy[],
+    ): Promise<View>;
     viewDelete(id: string): Promise<void>;
 }

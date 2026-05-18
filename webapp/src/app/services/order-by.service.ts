@@ -66,6 +66,28 @@ export class OrderByService {
     }
 
     /**
+     * Adds an order-by row using data from a saved view row.
+     * Pushes a copy of the saved row (preserving its id) and bumps the next-id
+     * counter past any existing numeric suffix so newly added rows don't collide.
+     *
+     * @param savedRow - The saved order-by row to restore
+     */
+    addOrderByRowWithData(savedRow: OrderBy): void {
+        const copy: OrderBy = { ...savedRow };
+        this.orderByRowsSignal.update(rows => [...rows, copy]);
+
+        // Parse numeric suffix from row id (e.g., "order-by-3" -> 3) and ensure
+        // the next id counter is strictly greater so subsequent additions don't collide.
+        const match = /(\d+)$/.exec(savedRow.id);
+        if (match) {
+            const suffix = parseInt(match[1], 10);
+            if (!isNaN(suffix)) {
+                this.nextOrderByIdSignal.update(current => Math.max(current, suffix + 1));
+            }
+        }
+    }
+
+    /**
      * Removes an order-by row by its id.
      *
      * @param rowId - The order-by row id to remove

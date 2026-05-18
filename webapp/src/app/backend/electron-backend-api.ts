@@ -5,6 +5,7 @@ import { Workspace } from '../models/workspace.model';
 import { Document } from '../models/document.model';
 import { View } from '../models/view.model';
 import { Filter } from '../models/filter.model';
+import { OrderBy } from '../models/order-by.model';
 
 /**
  * Backend implementation that delegates 1-to-1 to the Electron preload IPC bridge
@@ -129,8 +130,14 @@ export class ElectronBackend implements Backend {
     viewGetAll(): Promise<View[]> {
         return this.api.viewGetAll();
     }
-    viewCreate(id: string, name: string, entityId: string, filters: Filter[]): Promise<View> {
-        return this.api.viewCreate(id, name, entityId, filters);
+    viewCreate(
+        id: string,
+        name: string,
+        entityId: string,
+        filters: Filter[],
+        orderBy: OrderBy[],
+    ): Promise<View> {
+        return this.api.viewCreate(id, name, entityId, filters, orderBy);
     }
     viewDelete(id: string): Promise<void> {
         return this.api.viewDelete(id);

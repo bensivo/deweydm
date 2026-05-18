@@ -51,7 +51,7 @@
         nz-button
         nzSize="large"
         (click)="onClickSaveAsView()"
-        [disabled]="getFiltersSignal()().length === 0">
+        [disabled]="getFiltersSignal()().length === 0 && getOrderByRowsSignal()().length === 0">
         <i nz-icon nzType="save" nzTheme="outline"></i>
         Save as View
       </button>

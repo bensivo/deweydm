@@ -498,7 +498,8 @@ export class EntityListPageComponent implements OnInit {
     if (!entity) return;
 
     const currentFilters = this.filterService.getFilters();
-    await this.viewService.saveView(entity.id, viewName, currentFilters);
+    const currentOrderBy = this.orderByService.getOrderByRows();
+    await this.viewService.saveView(entity.id, viewName, currentFilters, currentOrderBy);
 
     this.isViewSaveModalOpenSignal.set(false);
   }
