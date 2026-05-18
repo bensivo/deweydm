@@ -30,6 +30,13 @@
         <span class="badge">{{ getFiltersSignal()().length }}</span>
       </div>
       </button>
+      <button nz-button nzSize="large" (click)="onClickOrderByToggleButton()">
+        <i nz-icon nzType="sort-ascending" nzTheme="outline"></i>
+        Order By
+        <div class="toolbar-filters-badge" *ngIf="getOrderByRowsSignal()().length > 0">
+          <span class="badge">{{ getOrderByRowsSignal()().length }}</span>
+        </div>
+      </button>
       <!-- <button
         nz-button
         nzSize="large"
@@ -136,6 +143,43 @@
       </div>
     </div>
 
+    <!-- Order By Section -->
+    <div class="filters-section" *ngIf="isOrderByVisibleSignal()">
+      <div class="filter-rows">
+        <div *ngFor="let row of getOrderByRowsSignal()()" class="filter-row">
+          <!-- Field selector -->
+          <nz-select
+            class="filter-field-select"
+            [ngModel]="row.fieldId"
+            (ngModelChange)="onOrderByFieldChange(row.id, $event)">
+            <nz-option *ngFor="let field of getSortableFields()"
+              [nzLabel]="field.name"
+              [nzValue]="field.id">
+            </nz-option>
+          </nz-select>
+
+          <!-- Direction selector -->
+          <nz-select
+            class="filter-operator-select"
+            [ngModel]="row.order"
+            (ngModelChange)="onOrderByDirectionChange(row.id, $event)">
+            <nz-option nzLabel="Ascending" nzValue="asc"></nz-option>
+            <nz-option nzLabel="Descending" nzValue="desc"></nz-option>
+          </nz-select>
+
+          <!-- Remove button -->
+          <button nz-button nzType="text" nzDanger (click)="onClickRemoveOrderByButton(row.id)">
+            <i nz-icon nzType="close" nzTheme="outline"></i>
+          </button>
+        </div>
+      </div>
+      <div class="filters-footer">
+        <button nz-button nzType="default" (click)="onClickAddOrderByButton()">
+          {{ getOrderByRowsSignal()().length > 0 ? '+ Add Another Sort' : '+ Add Sort' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Add to List Dropdown Menu -->
     <nz-dropdown-menu #addToListMenu="nzDropdownMenu">
       <ul nz-menu>
@@ -169,15 +213,8 @@
       <thead>
         <tr>
           <th class="checkbox-col"></th>
-          <th
-            *ngFor="let field of visibleFields$()"
-            (click)="onColumnHeaderClick(field.id)"
-            class="sortable-header"
-            [class.sorted]="sortFieldIdSignal() === field.id && sortOrderSignal() !== null">
+          <th *ngFor="let field of visibleFields$()">
             <span>{{ field.name }}</span>
-            <span class="sort-indicator" *ngIf="sortFieldIdSignal() === field.id && sortOrderSignal() !== null">
-              {{ sortOrderSignal() === 'asc' ? '▲' : '▼' }}
-            </span>
           </th>
         </tr>
       </thead>

@@ -15,6 +15,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
 import { FilterService } from '../../services/filter.service';
+import { OrderByService } from '../../services/order-by.service';
 import { ListService } from '../../services/list.service';
 import { ViewService } from '../../services/view.service';
 import { ColumnVisibilityService } from '../../services/column-visibility.service';
@@ -22,6 +23,7 @@ import { EntityListPaginationStore } from '../../store/entity-list-pagination.st
 import { EntityField } from '../../models/entity.model';
 import { EntityRecord } from '../../models/entity-record.model';
 import { FilterOperator } from '../../models/filter.model';
+import { SortOrder } from '../../models/order-by.model';
 import { generateEntityKey } from '../../services/entity-key.util';
 import { EntityReferenceComponent } from '../../components/entity-reference/entity-reference.component';
 import { SaveViewModalComponent } from '../../components/save-view-modal/save-view-modal.component';
@@ -69,9 +71,8 @@ export class EntityListPageComponent implements OnInit {
   pageIndexSignal = signal<number>(1);
   pageSizeSignal = signal<number>(10);
   filterTextSignal = signal<string>('');
-  sortFieldIdSignal = signal<string>('');
-  sortOrderSignal = signal<'asc' | 'desc' | null>(null);
   isFiltersVisibleSignal = signal<boolean>(false);
+  isOrderByVisibleSignal = signal<boolean>(false);
   isViewSaveModalOpenSignal = signal<boolean>(false);
 
   // Multi-select and add-to-list
@@ -92,8 +93,6 @@ export class EntityListPageComponent implements OnInit {
     const records = this.records$();
     const filterText = this.filterTextSignal().toLowerCase();
     const entity = this.entity$();
-    const sortFieldId = this.sortFieldIdSignal();
-    const sortOrder = this.sortOrderSignal();
     const filters = this.filterService.getFilters();
 
     // Apply dynamic filters
@@ -113,22 +112,9 @@ export class EntityListPageComponent implements OnInit {
       });
     }
 
-    // Sort records
-    if (sortFieldId && sortOrder !== null) {
-      filtered = [...filtered].sort((a, b) => {
-        const aValue = a.data[sortFieldId] || '';
-        const bValue = b.data[sortFieldId] || '';
-
-        let comparison = 0;
-        if (!isNaN(Number(aValue)) && !isNaN(Number(bValue))) {
-          comparison = Number(aValue) - Number(bValue);
-        } else {
-          comparison = aValue.localeCompare(bValue);
-        }
-
-        return sortOrder === 'asc' ? comparison : -comparison;
-      });
-    }
+    // Apply multi-column order-by
+    const orderByRows = this.orderByService.getOrderByRows();
+    filtered = this.orderByService.applyOrderByToRecords(filtered, orderByRows, entity!);
 
     return filtered;
   });
@@ -139,6 +125,7 @@ export class EntityListPageComponent implements OnInit {
     private entityService: EntityService,
     private entityRecordService: EntityRecordService,
     public filterService: FilterService,
+    public orderByService: OrderByService,
     private listService: ListService,
     private viewService: ViewService,
     private columnVisibilityService: ColumnVisibilityService,
@@ -167,6 +154,13 @@ export class EntityListPageComponent implements OnInit {
           const existingFilters = this.filterService.getFilters();
           existingFilters.forEach(filter => {
             this.filterService.removeFilter(filter.id);
+          });
+
+          // Set the current entity in the order-by service and clear any leftover rows.
+          this.orderByService.setCurrentEntity(entity.id);
+          const existingOrderByRows = this.orderByService.getOrderByRows();
+          existingOrderByRows.forEach(row => {
+            this.orderByService.removeOrderByRow(row.id);
           });
         }
       }
@@ -253,33 +247,6 @@ export class EntityListPageComponent implements OnInit {
   onFilterChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.filterTextSignal.set(input.value);
-  }
-
-  onColumnHeaderClick(fieldId: string): void {
-    const currentFieldId = this.sortFieldIdSignal();
-    const currentOrder = this.sortOrderSignal();
-
-    if (currentFieldId === fieldId) {
-      // Cycle through: asc -> desc -> null
-      if (currentOrder === 'asc') {
-        this.sortOrderSignal.set('desc');
-      } else if (currentOrder === 'desc') {
-        this.sortFieldIdSignal.set('');
-        this.sortOrderSignal.set(null);
-      } else {
-        this.sortFieldIdSignal.set(fieldId);
-        this.sortOrderSignal.set('asc');
-      }
-    } else {
-      // Sort by new field in ascending order
-      this.sortFieldIdSignal.set(fieldId);
-      this.sortOrderSignal.set('asc');
-    }
-  }
-
-  getColumnSortOrder(fieldId: string): 'ascend' | 'descend' | null {
-    if (this.sortFieldIdSignal() !== fieldId) return null;
-    return this.sortOrderSignal() === 'asc' ? 'ascend' : 'descend';
   }
 
   getFieldDisplayValue(field: EntityField, record: EntityRecord): string {
@@ -541,5 +508,71 @@ export class EntityListPageComponent implements OnInit {
    */
   onCancelSaveView(): void {
     this.isViewSaveModalOpenSignal.set(false);
+  }
+
+  /**
+   * Returns the order-by rows signal for reactive binding in the template.
+   *
+   * @returns Signal containing the active order-by rows array
+   */
+  getOrderByRowsSignal() {
+    return this.orderByService.getOrderByRowsSignal();
+  }
+
+  /**
+   * Toggles the visibility of the order-by section in the UI.
+   */
+  onClickOrderByToggleButton(): void {
+    this.isOrderByVisibleSignal.update(visible => !visible);
+  }
+
+  /**
+   * Adds a new order-by row.
+   */
+  onClickAddOrderByButton(): void {
+    const entity = this.entity$();
+    if (entity) {
+      this.orderByService.addOrderByRow(entity.fields);
+    }
+  }
+
+  /**
+   * Removes an order-by row by id.
+   *
+   * @param rowId - The row id to remove
+   */
+  onClickRemoveOrderByButton(rowId: string): void {
+    this.orderByService.removeOrderByRow(rowId);
+  }
+
+  /**
+   * Updates an order-by row's field selection.
+   *
+   * @param rowId - The row id to update
+   * @param newFieldId - The newly selected field id
+   */
+  onOrderByFieldChange(rowId: string, newFieldId: string): void {
+    this.orderByService.updateOrderByRow(rowId, { fieldId: newFieldId });
+  }
+
+  /**
+   * Updates an order-by row's direction.
+   *
+   * @param rowId - The row id to update
+   * @param newOrder - The newly selected direction
+   */
+  onOrderByDirectionChange(rowId: string, newOrder: SortOrder): void {
+    this.orderByService.updateOrderByRow(rowId, { order: newOrder });
+  }
+
+  /**
+   * Returns entity fields that are valid for order-by sorting.
+   *
+   * @returns Array of sortable entity fields
+   */
+  getSortableFields(): EntityField[] {
+    const entity = this.entity$();
+    if (!entity) return [];
+    return entity.fields.filter(f => this.orderByService.isSortableFieldType(f));
   }
 }
