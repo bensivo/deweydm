@@ -1,21 +1,21 @@
 .note-detail-page {
     .page-header {
         display: flex;
+        justify-content: space-between;
         align-items: center;
         gap: 16px;
         margin-bottom: 16px;
-    }
-
-    .detail-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
 
         .page-title {
+            flex: 1;
             margin: 0;
             font-size: 24px;
             color: #262626;
+        }
+
+        .page-header-actions {
+            display: flex;
+            gap: 8px;
         }
     }
 
@@ -26,84 +26,83 @@
         margin: 0;
     }
 
-    .metadata-card {
-        max-width: 640px;
-        margin-bottom: 16px;
-
-        .metadata-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            span {
-                font-size: 13px;
-            }
-
-            .metadata-card-actions {
-                display: flex;
-                gap: 8px;
-            }
-        }
-
-        .field-row {
-            display: flex;
-            align-items: flex-start;
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
-
-            &:last-child {
-                border-bottom: none;
-            }
-
-            .field-label {
-                width: 160px;
-                flex-shrink: 0;
-                font-weight: 500;
-                font-size: 13px;
-                color: #595959;
-                padding-top: 4px;
-            }
-
-            .field-value {
-                flex: 1;
-                font-size: 13px;
-
-                textarea {
-                    width: 100%;
-                }
-            }
-        }
-    }
-
-    .no-links {
-        color: #8c8c8c;
-        font-style: italic;
-    }
-
-    .linked-record-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .add-link-row {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-
-        .entity-select,
-        .record-select {
-            min-width: 180px;
-        }
-    }
-
     .editor-section {
         .editor-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             margin-bottom: 12px;
         }
+    }
+}
+
+.metadata-card {
+    margin-bottom: 16px;
+
+    .metadata-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        span {
+            font-size: 13px;
+        }
+
+        .metadata-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+    }
+
+    .field-row {
+        display: flex;
+        align-items: flex-start;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .field-label {
+            width: 160px;
+            flex-shrink: 0;
+            font-weight: 500;
+            font-size: 13px;
+            color: #595959;
+            padding-top: 4px;
+        }
+
+        .field-value {
+            flex: 1;
+            font-size: 13px;
+
+            textarea {
+                width: 100%;
+            }
+        }
+    }
+}
+
+.no-links {
+    color: #8c8c8c;
+    font-style: italic;
+}
+
+.linked-record-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.add-link-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    .entity-select,
+    .record-select {
+        min-width: 140px;
     }
 }
 

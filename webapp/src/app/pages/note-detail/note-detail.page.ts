@@ -13,6 +13,7 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 
 import { NoteService } from '../../services/note.service';
 import { EntityService } from '../../services/entity.service';
@@ -41,6 +42,7 @@ import { NoteEditorComponent } from './note-editor/note-editor.component';
         NzCardModule,
         NzIconModule,
         NzTooltipModule,
+        NzDrawerModule,
         CardComponent,
         EntityReferenceComponent,
         NoteEditorComponent,
@@ -54,6 +56,7 @@ export class NoteDetailPageComponent implements OnInit {
     isLoading = signal(true);
 
     isEditMode = signal(false);
+    isDrawerOpen = signal(false);
     editName = '';
     editDescription = '';
 
@@ -130,6 +133,14 @@ export class NoteDetailPageComponent implements OnInit {
 
     onClickBack(): void {
         this.location.back();
+    }
+
+    onClickOpenDrawer(): void {
+        this.isDrawerOpen.set(true);
+    }
+
+    onClickCloseDrawer(): void {
+        this.isDrawerOpen.set(false);
     }
 
     onClickEdit(): void {
