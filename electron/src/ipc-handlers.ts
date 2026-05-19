@@ -6,6 +6,7 @@ import { EntityRecordService } from './service/entity-record.service';
 import { WorkspaceService } from './service/workspace.service';
 import { ColumnVisibilityService } from './service/column-visibility.service';
 import { DocumentService } from './service/document.service';
+import { NoteService } from './service/note.service';
 import { ViewService, Filter, OrderBy } from './service/view.service';
 
 // Register all IPC handlers before any window is created so they are
@@ -17,6 +18,7 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
     const columnVisibilityService = new ColumnVisibilityService(db);
     const documentService = new DocumentService(db, documentsDir);
     const viewService = new ViewService(db);
+    const noteService = new NoteService(db);
 
     ipcMain.handle('hello-world', onHelloWorld);
 
@@ -171,26 +173,13 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         return `data:${mimeType};base64,${base64}`;
     });
 
-    // Note handlers (in-memory stub — real persistence is out of scope)
-    interface NoteLinkStub { entityId: string; recordId: string; }
-    interface NoteStub {
-        id: string;
-        name: string;
-        description: string;
-        contentJson: string;
-        contentText: string;
-        createdAt: string;
-        updatedAt: string;
-        linkedRecords: NoteLinkStub[];
-    }
-    const notes = new Map<string, NoteStub>();
-
+    // Note handlers
     ipcMain.handle('note:getAll', async () => {
-        return Array.from(notes.values());
+        return noteService.getAll();
     });
 
     ipcMain.handle('note:getById', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
-        return notes.get(id) ?? null;
+        return (await noteService.getById(id)) ?? null;
     });
 
     ipcMain.handle('note:create', async (
@@ -200,19 +189,7 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         contentJson: string,
         contentText: string,
     ) => {
-        const now = new Date().toISOString();
-        const note: NoteStub = {
-            id: crypto.randomUUID(),
-            name,
-            description,
-            contentJson,
-            contentText,
-            createdAt: now,
-            updatedAt: now,
-            linkedRecords: [],
-        };
-        notes.set(note.id, note);
-        return note;
+        return noteService.create(name, description, contentJson, contentText);
     });
 
     ipcMain.handle('note:update', async (
@@ -220,18 +197,11 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         id: string,
         fields: { name?: string; description?: string; contentJson?: string; contentText?: string },
     ) => {
-        const note = notes.get(id);
-        if (note) {
-            if (fields.name !== undefined) note.name = fields.name;
-            if (fields.description !== undefined) note.description = fields.description;
-            if (fields.contentJson !== undefined) note.contentJson = fields.contentJson;
-            if (fields.contentText !== undefined) note.contentText = fields.contentText;
-            note.updatedAt = new Date().toISOString();
-        }
+        return noteService.update(id, fields);
     });
 
     ipcMain.handle('note:delete', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
-        notes.delete(id);
+        return noteService.delete(id);
     });
 
     ipcMain.handle('note:addLink', async (
@@ -240,13 +210,7 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         entityId: string,
         recordId: string,
     ) => {
-        const note = notes.get(noteId);
-        if (note) {
-            const exists = note.linkedRecords.some(l => l.entityId === entityId && l.recordId === recordId);
-            if (!exists) {
-                note.linkedRecords = [...note.linkedRecords, { entityId, recordId }];
-            }
-        }
+        return noteService.addLink(noteId, entityId, recordId);
     });
 
     ipcMain.handle('note:removeLink', async (
@@ -255,12 +219,7 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         entityId: string,
         recordId: string,
     ) => {
-        const note = notes.get(noteId);
-        if (note) {
-            note.linkedRecords = note.linkedRecords.filter(
-                l => !(l.entityId === entityId && l.recordId === recordId),
-            );
-        }
+        return noteService.removeLink(noteId, entityId, recordId);
     });
 
     // View handlers

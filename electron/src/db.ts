@@ -174,6 +174,28 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                     )
                 `);
 
+                // Notes and note links
+                await run(`
+                    CREATE TABLE IF NOT EXISTS notes (
+                        id TEXT PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        description TEXT NOT NULL DEFAULT '',
+                        content_json TEXT NOT NULL DEFAULT '',
+                        content_text TEXT NOT NULL DEFAULT '',
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                `);
+
+                await run(`
+                    CREATE TABLE IF NOT EXISTS note_links (
+                        id TEXT PRIMARY KEY,
+                        note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+                        entity_id TEXT NOT NULL,
+                        record_id TEXT NOT NULL
+                    )
+                `);
+
                 await run(`
                     CREATE TABLE IF NOT EXISTS entity_views (
                         id TEXT PRIMARY KEY,
