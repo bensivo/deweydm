@@ -8,6 +8,7 @@ import {
     ViewChild,
     input,
     output,
+    signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -19,9 +20,15 @@ import {
     createEditor,
     FORMAT_TEXT_COMMAND,
     LexicalEditor,
+    KEY_TAB_COMMAND,
+    INDENT_CONTENT_COMMAND,
+    OUTDENT_CONTENT_COMMAND,
+    SELECTION_CHANGE_COMMAND,
+    COMMAND_PRIORITY_LOW,
 } from 'lexical';
 import {
     $createHeadingNode,
+    $isHeadingNode,
     HeadingNode,
     QuoteNode,
     registerRichText,
@@ -30,7 +37,9 @@ import {
     INSERT_UNORDERED_LIST_COMMAND,
     ListItemNode,
     ListNode,
+    registerList,
 } from '@lexical/list';
+import { $getNearestNodeOfType } from '@lexical/utils';
 import { LinkNode } from '@lexical/link';
 import { CodeHighlightNode, CodeNode } from '@lexical/code';
 import { $setBlocksType } from '@lexical/selection';
@@ -61,6 +70,21 @@ export class NoteEditorComponent implements AfterViewInit, OnChanges, OnDestroy 
     private editor: LexicalEditor | null = null;
     private unregisterFns: Array<() => void> = [];
     private isInitialized = false;
+
+    private toolbarStateSignal = signal<{
+        bold: boolean;
+        italic: boolean;
+        code: boolean;
+        heading: boolean;
+        list: boolean;
+    }>({
+        bold: false,
+        italic: false,
+        code: false,
+        heading: false,
+        list: false,
+    });
+    readonly toolbarState = this.toolbarStateSignal.asReadonly();
 
     ngAfterViewInit(): void {
         this.editor = createEditor({
@@ -102,17 +126,30 @@ export class NoteEditorComponent implements AfterViewInit, OnChanges, OnDestroy 
         this.editor.setEditable(!this.readonly());
 
         this.unregisterFns.push(registerRichText(this.editor));
+        this.unregisterFns.push(registerList(this.editor));
         this.unregisterFns.push(
             registerHistory(this.editor, createEmptyHistoryState(), 300),
         );
         this.unregisterFns.push(
             registerMarkdownShortcuts(this.editor, TRANSFORMERS),
         );
+        this.unregisterFns.push(this.registerTabHandler());
+        this.unregisterFns.push(
+            this.editor.registerCommand(
+                SELECTION_CHANGE_COMMAND,
+                () => {
+                    this.updateToolbarState();
+                    return false;
+                },
+                COMMAND_PRIORITY_LOW,
+            ),
+        );
 
         this.loadInitialContent(this.initialContentJson() ?? '');
 
         this.unregisterFns.push(
             this.editor.registerUpdateListener(({ editorState }) => {
+                editorState.read(() => this.computeToolbarState());
                 if (!this.isInitialized) return;
                 const contentJson = JSON.stringify(editorState.toJSON());
                 let contentText = '';
@@ -188,5 +225,63 @@ export class NoteEditorComponent implements AfterViewInit, OnChanges, OnDestroy 
         this.editor.update(() => {
             $convertFromMarkdownString(raw, TRANSFORMERS);
         });
+    }
+
+    /**
+     * Register a Tab/Shift+Tab handler that only intercepts the key when the
+     * selection is inside a list item. Outside lists, returns false so other
+     * handlers (and the browser) can decide.
+     */
+    private registerTabHandler(): () => void {
+        return this.editor!.registerCommand(
+            KEY_TAB_COMMAND,
+            (event: KeyboardEvent) => {
+                const selection = $getSelection();
+                if (!$isRangeSelection(selection)) return false;
+                const anchorNode = selection.anchor.getNode();
+                const listItem = $getNearestNodeOfType(anchorNode, ListItemNode);
+                if (!listItem) return false;
+                event.preventDefault();
+                this.editor!.dispatchCommand(
+                    event.shiftKey ? OUTDENT_CONTENT_COMMAND : INDENT_CONTENT_COMMAND,
+                    undefined,
+                );
+                return true;
+            },
+            COMMAND_PRIORITY_LOW,
+        );
+    }
+
+    /**
+     * Recompute toolbar active flags from the current selection. Must be
+     * called inside an editorState.read() / editor.update() context.
+     */
+    private computeToolbarState(): void {
+        const selection = $getSelection();
+        if (!$isRangeSelection(selection)) {
+            this.toolbarStateSignal.set({
+                bold: false,
+                italic: false,
+                code: false,
+                heading: false,
+                list: false,
+            });
+            return;
+        }
+        const anchorNode = selection.anchor.getNode();
+        const headingAncestor =
+            $isHeadingNode(anchorNode) ? anchorNode : $getNearestNodeOfType(anchorNode, HeadingNode);
+        const listAncestor = $getNearestNodeOfType(anchorNode, ListNode);
+        this.toolbarStateSignal.set({
+            bold: selection.hasFormat('bold'),
+            italic: selection.hasFormat('italic'),
+            code: selection.hasFormat('code'),
+            heading: !!headingAncestor,
+            list: !!listAncestor,
+        });
+    }
+
+    private updateToolbarState(): void {
+        this.editor?.getEditorState().read(() => this.computeToolbarState());
     }
 }

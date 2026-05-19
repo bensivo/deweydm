@@ -4,6 +4,12 @@
         display: flex;
         gap: 8px;
         padding: 8px 0;
+
+        button.active {
+            background-color: #e6f4ff;
+            border-color: #1890ff;
+            color: #1890ff;
+        }
     }
 
     .note-editor-content {
@@ -12,7 +18,7 @@
         padding: 16px;
         font-family: inherit;
         font-size: 14px;
-        line-height: 1.6;
+        line-height: 1.5;
         border: 1px solid #d9d9d9;
         border-radius: 8px;
         outline: none;
@@ -30,35 +36,39 @@
         }
 
         .editor-paragraph {
-            margin: 0 0 8px 0;
+            margin: 0;
         }
 
         .editor-h1 {
             font-size: 24px;
             font-weight: 600;
-            margin: 16px 0 8px 0;
+            margin: 8px 0 4px 0;
         }
 
         .editor-h2 {
             font-size: 20px;
             font-weight: 600;
-            margin: 12px 0 8px 0;
+            margin: 8px 0 4px 0;
         }
 
         .editor-h3 {
             font-size: 16px;
             font-weight: 600;
-            margin: 12px 0 8px 0;
+            margin: 8px 0 4px 0;
         }
 
         .editor-ul {
             padding-left: 24px;
-            margin: 0 0 8px 0;
+            margin: 0 0 4px 0;
         }
 
         .editor-ol {
             padding-left: 24px;
-            margin: 0 0 8px 0;
+            margin: 0 0 4px 0;
+        }
+
+        .editor-li {
+            margin: 0;
         }
 
         .editor-bold {

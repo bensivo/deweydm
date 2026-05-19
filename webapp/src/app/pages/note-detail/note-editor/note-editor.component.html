@@ -1,18 +1,48 @@
 <div class="note-editor">
     <div class="note-editor-toolbar" *ngIf="!readonly()">
-        <button nz-button nzSize="small" nzType="default" (click)="onClickBold()" title="Bold">
+        <button
+            nz-button
+            nzSize="small"
+            [nzType]="toolbarState().bold ? 'primary' : 'default'"
+            [class.active]="toolbarState().bold"
+            (click)="onClickBold()"
+            title="Bold">
             <span nz-icon nzType="bold"></span>
         </button>
-        <button nz-button nzSize="small" nzType="default" (click)="onClickItalic()" title="Italic">
+        <button
+            nz-button
+            nzSize="small"
+            [nzType]="toolbarState().italic ? 'primary' : 'default'"
+            [class.active]="toolbarState().italic"
+            (click)="onClickItalic()"
+            title="Italic">
             <span nz-icon nzType="italic"></span>
         </button>
-        <button nz-button nzSize="small" nzType="default" (click)="onClickHeading()" title="Heading">
+        <button
+            nz-button
+            nzSize="small"
+            [nzType]="toolbarState().heading ? 'primary' : 'default'"
+            [class.active]="toolbarState().heading"
+            (click)="onClickHeading()"
+            title="Heading">
             <span nz-icon nzType="font-size"></span>
         </button>
-        <button nz-button nzSize="small" nzType="default" (click)="onClickList()" title="List">
+        <button
+            nz-button
+            nzSize="small"
+            [nzType]="toolbarState().list ? 'primary' : 'default'"
+            [class.active]="toolbarState().list"
+            (click)="onClickList()"
+            title="List">
             <span nz-icon nzType="unordered-list"></span>
         </button>
-        <button nz-button nzSize="small" nzType="default" (click)="onClickCode()" title="Code">
+        <button
+            nz-button
+            nzSize="small"
+            [nzType]="toolbarState().code ? 'primary' : 'default'"
+            [class.active]="toolbarState().code"
+            (click)="onClickCode()"
+            title="Code">
             <span nz-icon nzType="code"></span>
         </button>
     </div>

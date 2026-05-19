@@ -60,7 +60,22 @@
         </div>
     </nz-card>
 
+
+    <!-- Editor -->
+    <nz-divider></nz-divider>
+    <section class="editor-section">
+        <div class="editor-header">
+            <h2 class="section-title">Content</h2>
+            <button nz-button nzType="primary" (click)="onClickSaveContent()">Save</button>
+        </div>
+        <app-note-editor
+            [initialContentJson]="note()!.contentJson"
+            (contentChange)="onEditorContentChange($event)">
+        </app-note-editor>
+    </section>
+
     <!-- Linked Records Card -->
+    <nz-divider></nz-divider>
     <app-card title="Linked Records">
         <div *ngFor="let link of linkedRecordLabels()" class="linked-record-item">
             <app-entity-reference [recordId]="link.recordId"></app-entity-reference>
@@ -102,19 +117,6 @@
                     (click)="onClickAddLink()">Add link</button>
         </div>
     </app-card>
-
-    <!-- Editor -->
-    <nz-divider></nz-divider>
-    <section class="editor-section">
-        <div class="editor-header">
-            <h2 class="section-title">Content</h2>
-            <button nz-button nzType="primary" (click)="onClickSaveContent()">Save</button>
-        </div>
-        <app-note-editor
-            [initialContentJson]="note()!.contentJson"
-            (contentChange)="onEditorContentChange($event)">
-        </app-note-editor>
-    </section>
 </div>
 
 <div *ngIf="isLoading()" class="loading-state">Loading...</div>
