@@ -19,90 +19,89 @@
         }
     }
 
-    .section-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #262626;
-        margin: 0;
+    .page-body {
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
     }
 
     .editor-section {
-        .editor-header {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .details-sidebar {
+        width: 360px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .metadata-card {
+        .metadata-card-header {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-        }
-    }
-}
 
-.metadata-card {
-    margin-bottom: 16px;
+            span {
+                font-size: 13px;
+            }
 
-    .metadata-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        span {
-            font-size: 13px;
+            .metadata-card-actions {
+                display: flex;
+                gap: 8px;
+            }
         }
 
-        .metadata-card-actions {
+        .field-row {
             display: flex;
-            gap: 8px;
-        }
-    }
+            flex-direction: column;
+            gap: 4px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
 
-    .field-row {
-        display: flex;
-        align-items: flex-start;
-        padding: 10px 0;
-        border-bottom: 1px solid #f0f0f0;
+            &:last-child {
+                border-bottom: none;
+            }
 
-        &:last-child {
-            border-bottom: none;
-        }
+            .field-label {
+                font-weight: 500;
+                font-size: 12px;
+                color: #595959;
+            }
 
-        .field-label {
-            width: 160px;
-            flex-shrink: 0;
-            font-weight: 500;
-            font-size: 13px;
-            color: #595959;
-            padding-top: 4px;
-        }
+            .field-value {
+                font-size: 13px;
 
-        .field-value {
-            flex: 1;
-            font-size: 13px;
-
-            textarea {
-                width: 100%;
+                textarea {
+                    width: 100%;
+                }
             }
         }
     }
-}
 
-.no-links {
-    color: #8c8c8c;
-    font-style: italic;
-}
+    .no-links {
+        color: #8c8c8c;
+        font-style: italic;
+    }
 
-.linked-record-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+    .linked-record-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 
-.add-link-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+    .add-link-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
 
-    .entity-select,
-    .record-select {
-        min-width: 140px;
+        .entity-select,
+        .record-select {
+            width: 100%;
+        }
     }
 }
 
