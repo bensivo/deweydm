@@ -12,6 +12,8 @@ import { ListsPageComponent } from './pages/lists/lists.page';
 import { ViewPageComponent } from './pages/view/view.page';
 import { DocumentsPageComponent } from './pages/documents/documents.page';
 import { DocumentDetailPageComponent } from './pages/document-detail/document-detail.page';
+import { NotesPageComponent } from './pages/notes/notes.page';
+import { NoteDetailPageComponent } from './pages/note-detail/note-detail.page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -28,4 +30,6 @@ export const routes: Routes = [
   { path: 'lists/:id', component: ListsPageComponent },
   { path: 'documents', component: DocumentsPageComponent },
   { path: 'documents/:id', component: DocumentDetailPageComponent },
+  { path: 'notes', component: NotesPageComponent },
+  { path: 'notes/:id', component: NoteDetailPageComponent },
 ];

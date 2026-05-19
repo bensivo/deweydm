@@ -1,0 +1,120 @@
+<div class="note-detail-page" *ngIf="!isLoading() && note()">
+    <div class="page-header">
+        <button nz-button nzType="text" (click)="onClickBack()">← Back</button>
+    </div>
+
+    <div class="detail-header">
+        <h1 class="page-title">{{ note()!.name }}</h1>
+        <button nz-button nzType="text" nzDanger
+                nz-popconfirm nzPopconfirmTitle="Delete this note?"
+                (nzOnConfirm)="onClickDelete()">Delete</button>
+    </div>
+
+    <!-- Metadata Card -->
+    <nz-card class="metadata-card" [nzTitle]="metadataCardTitle">
+        <ng-template #metadataCardTitle>
+            <div class="metadata-card-header">
+                <span>Details</span>
+                <div class="metadata-card-actions">
+                    <ng-container *ngIf="!isEditMode()">
+                        <button nz-button nzType="default" nzSize="small" (click)="onClickEdit()">Edit</button>
+                    </ng-container>
+                    <ng-container *ngIf="isEditMode()">
+                        <button nz-button nzType="default" nzSize="small" (click)="onClickCancelEdit()">Cancel</button>
+                        <button nz-button nzType="primary" nzSize="small" (click)="onClickSaveMeta()">Save</button>
+                    </ng-container>
+                </div>
+            </div>
+        </ng-template>
+
+        <div class="field-row">
+            <div class="field-label">Name</div>
+            <div class="field-value">
+                <span *ngIf="!isEditMode()">{{ note()!.name || '—' }}</span>
+                <input
+                    *ngIf="isEditMode()"
+                    nz-input
+                    type="text"
+                    [(ngModel)]="editName" />
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Description</div>
+            <div class="field-value">
+                <span *ngIf="!isEditMode()">{{ note()!.description || '—' }}</span>
+                <textarea
+                    *ngIf="isEditMode()"
+                    nz-input
+                    [nzAutosize]="{ minRows: 2, maxRows: 6 }"
+                    [(ngModel)]="editDescription">
+                </textarea>
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Created At</div>
+            <div class="field-value">{{ note()!.createdAt | date:'medium' }}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Updated At</div>
+            <div class="field-value">{{ note()!.updatedAt | date:'medium' }}</div>
+        </div>
+    </nz-card>
+
+    <!-- Linked Records Card -->
+    <app-card title="Linked Records">
+        <div *ngFor="let link of linkedRecordLabels()" class="linked-record-item">
+            <app-entity-reference [recordId]="link.recordId"></app-entity-reference>
+            <button nz-button nzType="text" nzDanger nzSize="small"
+                    nz-tooltip nzTooltipTitle="Unlink record"
+                    (click)="onClickRemoveLink(link.entityId, link.recordId)">
+                <span nz-icon nzType="disconnect"></span>
+            </button>
+        </div>
+        <div *ngIf="linkedRecordLabels().length === 0" class="no-links">No linked records.</div>
+
+        <nz-divider></nz-divider>
+
+        <div class="add-link-row">
+            <nz-select
+                class="entity-select"
+                nzPlaceHolder="Select entity"
+                [(ngModel)]="selectedEntityId"
+                (ngModelChange)="selectedRecordId = ''">
+                <nz-option
+                    *ngFor="let entity of entities$()"
+                    [nzValue]="entity.id"
+                    [nzLabel]="entity.name">
+                </nz-option>
+            </nz-select>
+            <nz-select
+                class="record-select"
+                nzPlaceHolder="Select record"
+                [(ngModel)]="selectedRecordId"
+                [nzDisabled]="!selectedEntityId">
+                <nz-option
+                    *ngFor="let r of recordsForSelectedEntity"
+                    [nzValue]="r.recordId"
+                    [nzLabel]="r.recordName">
+                </nz-option>
+            </nz-select>
+            <button nz-button nzType="primary"
+                    [disabled]="!selectedEntityId || !selectedRecordId"
+                    (click)="onClickAddLink()">Add link</button>
+        </div>
+    </app-card>
+
+    <!-- Editor -->
+    <nz-divider></nz-divider>
+    <section class="editor-section">
+        <div class="editor-header">
+            <h2 class="section-title">Content</h2>
+            <button nz-button nzType="primary" (click)="onClickSaveContent()">Save</button>
+        </div>
+        <app-note-editor
+            [initialContentJson]="note()!.contentJson"
+            (contentChange)="onEditorContentChange($event)">
+        </app-note-editor>
+    </section>
+</div>
+
+<div *ngIf="isLoading()" class="loading-state">Loading...</div>

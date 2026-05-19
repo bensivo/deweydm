@@ -1,0 +1,40 @@
+<div class="notes-page">
+    <div class="page-header">
+        <h1>Notes</h1>
+        <button nz-button nzType="primary" nzSize="large" (click)="onClickNew()">+ New</button>
+    </div>
+
+    <div class="page-toolbar">
+        <input
+            nz-input
+            nzSize="large"
+            placeholder="Search by name or content..."
+            [(ngModel)]="searchQuery"
+            class="search-input" />
+    </div>
+
+    <nz-table
+        [nzData]="filteredNotes"
+        [nzShowPagination]="true"
+        [nzPageSize]="20"
+        nzSize="middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Linked Records</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let note of filteredNotes" class="table-row" (click)="onClickRow(note)">
+                <td>{{ note.name }}</td>
+                <td class="description-cell">{{ note.description }}</td>
+                <td>{{ note.linkedRecords.length }}</td>
+                <td>{{ note.createdAt | date:'medium' }}</td>
+                <td>{{ note.updatedAt | date:'medium' }}</td>
+            </tr>
+        </tbody>
+    </nz-table>
+</div>

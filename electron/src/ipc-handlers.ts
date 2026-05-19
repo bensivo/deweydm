@@ -171,6 +171,98 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         return `data:${mimeType};base64,${base64}`;
     });
 
+    // Note handlers (in-memory stub — real persistence is out of scope)
+    interface NoteLinkStub { entityId: string; recordId: string; }
+    interface NoteStub {
+        id: string;
+        name: string;
+        description: string;
+        contentJson: string;
+        contentText: string;
+        createdAt: string;
+        updatedAt: string;
+        linkedRecords: NoteLinkStub[];
+    }
+    const notes = new Map<string, NoteStub>();
+
+    ipcMain.handle('note:getAll', async () => {
+        return Array.from(notes.values());
+    });
+
+    ipcMain.handle('note:getById', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+        return notes.get(id) ?? null;
+    });
+
+    ipcMain.handle('note:create', async (
+        _event: Electron.IpcMainInvokeEvent,
+        name: string,
+        description: string,
+        contentJson: string,
+        contentText: string,
+    ) => {
+        const now = new Date().toISOString();
+        const note: NoteStub = {
+            id: crypto.randomUUID(),
+            name,
+            description,
+            contentJson,
+            contentText,
+            createdAt: now,
+            updatedAt: now,
+            linkedRecords: [],
+        };
+        notes.set(note.id, note);
+        return note;
+    });
+
+    ipcMain.handle('note:update', async (
+        _event: Electron.IpcMainInvokeEvent,
+        id: string,
+        fields: { name?: string; description?: string; contentJson?: string; contentText?: string },
+    ) => {
+        const note = notes.get(id);
+        if (note) {
+            if (fields.name !== undefined) note.name = fields.name;
+            if (fields.description !== undefined) note.description = fields.description;
+            if (fields.contentJson !== undefined) note.contentJson = fields.contentJson;
+            if (fields.contentText !== undefined) note.contentText = fields.contentText;
+            note.updatedAt = new Date().toISOString();
+        }
+    });
+
+    ipcMain.handle('note:delete', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+        notes.delete(id);
+    });
+
+    ipcMain.handle('note:addLink', async (
+        _event: Electron.IpcMainInvokeEvent,
+        noteId: string,
+        entityId: string,
+        recordId: string,
+    ) => {
+        const note = notes.get(noteId);
+        if (note) {
+            const exists = note.linkedRecords.some(l => l.entityId === entityId && l.recordId === recordId);
+            if (!exists) {
+                note.linkedRecords = [...note.linkedRecords, { entityId, recordId }];
+            }
+        }
+    });
+
+    ipcMain.handle('note:removeLink', async (
+        _event: Electron.IpcMainInvokeEvent,
+        noteId: string,
+        entityId: string,
+        recordId: string,
+    ) => {
+        const note = notes.get(noteId);
+        if (note) {
+            note.linkedRecords = note.linkedRecords.filter(
+                l => !(l.entityId === entityId && l.recordId === recordId),
+            );
+        }
+    });
+
     // View handlers
     ipcMain.handle('view:getAll', async () => {
         return viewService.getAll();

@@ -1,0 +1,26 @@
+<div class="note-editor">
+    <div class="note-editor-toolbar" *ngIf="!readonly()">
+        <button nz-button nzSize="small" nzType="default" (click)="onClickBold()" title="Bold">
+            <span nz-icon nzType="bold"></span>
+        </button>
+        <button nz-button nzSize="small" nzType="default" (click)="onClickItalic()" title="Italic">
+            <span nz-icon nzType="italic"></span>
+        </button>
+        <button nz-button nzSize="small" nzType="default" (click)="onClickHeading()" title="Heading">
+            <span nz-icon nzType="font-size"></span>
+        </button>
+        <button nz-button nzSize="small" nzType="default" (click)="onClickList()" title="List">
+            <span nz-icon nzType="unordered-list"></span>
+        </button>
+        <button nz-button nzSize="small" nzType="default" (click)="onClickCode()" title="Code">
+            <span nz-icon nzType="code"></span>
+        </button>
+    </div>
+
+    <div
+        #editorRoot
+        class="note-editor-content"
+        contenteditable="true"
+        spellcheck="true"
+        data-placeholder="Start writing your note..."></div>
+</div>

@@ -127,6 +127,37 @@ const electronApi = {
         return ipcRenderer.invoke('document:getFile', id);
     },
 
+    // Note operations
+    noteGetAll: (): Promise<any[]> => {
+        return ipcRenderer.invoke('note:getAll');
+    },
+    noteGetById: (id: string): Promise<any> => {
+        return ipcRenderer.invoke('note:getById', id);
+    },
+    noteCreate: (
+        name: string,
+        description: string,
+        contentJson: string,
+        contentText: string,
+    ): Promise<any> => {
+        return ipcRenderer.invoke('note:create', name, description, contentJson, contentText);
+    },
+    noteUpdate: (
+        id: string,
+        fields: { name?: string; description?: string; contentJson?: string; contentText?: string },
+    ): Promise<void> => {
+        return ipcRenderer.invoke('note:update', id, fields);
+    },
+    noteDelete: (id: string): Promise<void> => {
+        return ipcRenderer.invoke('note:delete', id);
+    },
+    noteAddLink: (noteId: string, entityId: string, recordId: string): Promise<void> => {
+        return ipcRenderer.invoke('note:addLink', noteId, entityId, recordId);
+    },
+    noteRemoveLink: (noteId: string, entityId: string, recordId: string): Promise<void> => {
+        return ipcRenderer.invoke('note:removeLink', noteId, entityId, recordId);
+    },
+
     // View operations
     viewGetAll: (): Promise<any[]> => {
         return ipcRenderer.invoke('view:getAll');

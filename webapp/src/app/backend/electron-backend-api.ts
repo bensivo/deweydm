@@ -3,6 +3,7 @@ import { Entity, EntityField, FieldType } from '../models/entity.model';
 import { EntityRecord } from '../models/entity-record.model';
 import { Workspace } from '../models/workspace.model';
 import { Document } from '../models/document.model';
+import { Note } from '../models/note.model';
 import { View } from '../models/view.model';
 import { Filter } from '../models/filter.model';
 import { OrderBy } from '../models/order-by.model';
@@ -125,6 +126,36 @@ export class ElectronBackend implements Backend {
     }
     documentGetFile(id: string): Promise<string> {
         return this.api.documentGetFile(id);
+    }
+
+    noteGetAll(): Promise<Note[]> {
+        return this.api.noteGetAll();
+    }
+    noteGetById(id: string): Promise<Note | null> {
+        return this.api.noteGetById(id);
+    }
+    noteCreate(
+        name: string,
+        description: string,
+        contentJson: string,
+        contentText: string,
+    ): Promise<Note> {
+        return this.api.noteCreate(name, description, contentJson, contentText);
+    }
+    noteUpdate(
+        id: string,
+        fields: { name?: string; description?: string; contentJson?: string; contentText?: string },
+    ): Promise<void> {
+        return this.api.noteUpdate(id, fields);
+    }
+    noteDelete(id: string): Promise<void> {
+        return this.api.noteDelete(id);
+    }
+    noteAddLink(noteId: string, entityId: string, recordId: string): Promise<void> {
+        return this.api.noteAddLink(noteId, entityId, recordId);
+    }
+    noteRemoveLink(noteId: string, entityId: string, recordId: string): Promise<void> {
+        return this.api.noteRemoveLink(noteId, entityId, recordId);
     }
 
     viewGetAll(): Promise<View[]> {

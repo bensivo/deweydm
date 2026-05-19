@@ -2,6 +2,7 @@ import { Entity, EntityField, FieldType } from '../models/entity.model';
 import { EntityRecord } from '../models/entity-record.model';
 import { Workspace } from '../models/workspace.model';
 import { Document } from '../models/document.model';
+import { Note } from '../models/note.model';
 import { View } from '../models/view.model';
 import { Filter } from '../models/filter.model';
 import { OrderBy } from '../models/order-by.model';
@@ -66,6 +67,23 @@ export interface Backend {
     documentAddLink(documentId: string, entityId: string, recordId: string): Promise<void>;
     documentRemoveLink(documentId: string, entityId: string, recordId: string): Promise<void>;
     documentGetFile(id: string): Promise<string>;
+
+    // Notes
+    noteGetAll(): Promise<Note[]>;
+    noteGetById(id: string): Promise<Note | null>;
+    noteCreate(
+        name: string,
+        description: string,
+        contentJson: string,
+        contentText: string,
+    ): Promise<Note>;
+    noteUpdate(
+        id: string,
+        fields: { name?: string; description?: string; contentJson?: string; contentText?: string },
+    ): Promise<void>;
+    noteDelete(id: string): Promise<void>;
+    noteAddLink(noteId: string, entityId: string, recordId: string): Promise<void>;
+    noteRemoveLink(noteId: string, entityId: string, recordId: string): Promise<void>;
 
     // Views
     viewGetAll(): Promise<View[]>;

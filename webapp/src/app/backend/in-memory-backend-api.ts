@@ -3,6 +3,7 @@ import { Entity, EntityField, FieldType } from '../models/entity.model';
 import { EntityRecord } from '../models/entity-record.model';
 import { Workspace } from '../models/workspace.model';
 import { Document, DocumentLink } from '../models/document.model';
+import { Note, NoteLink } from '../models/note.model';
 import { View } from '../models/view.model';
 import { Filter } from '../models/filter.model';
 import { OrderBy } from '../models/order-by.model';
@@ -21,6 +22,7 @@ export class InMemoryBackend implements Backend {
     private columnVisibility: Map<string, string[]> = new Map();
     private documents: Map<string, Document> = new Map();
     private documentFiles: Map<string, string> = new Map();
+    private notes: Map<string, Note> = new Map();
     private views: Map<string, View> = new Map();
 
     constructor() {
@@ -316,6 +318,88 @@ export class InMemoryBackend implements Backend {
     documentGetFile(id: string): Promise<string> {
         console.log('[InMemoryBackend] documentGetFile', { id });
         return Promise.resolve(this.documentFiles.get(id) ?? '');
+    }
+
+    // Notes
+
+    noteGetAll(): Promise<Note[]> {
+        console.log('[InMemoryBackend] noteGetAll');
+        return Promise.resolve(Array.from(this.notes.values()));
+    }
+
+    noteGetById(id: string): Promise<Note | null> {
+        console.log('[InMemoryBackend] noteGetById', { id });
+        return Promise.resolve(this.notes.get(id) ?? null);
+    }
+
+    noteCreate(
+        name: string,
+        description: string,
+        contentJson: string,
+        contentText: string,
+    ): Promise<Note> {
+        console.log('[InMemoryBackend] noteCreate', { name, description });
+        const now = new Date().toISOString();
+        const note: Note = {
+            id: crypto.randomUUID(),
+            name,
+            description,
+            contentJson,
+            contentText,
+            createdAt: now,
+            updatedAt: now,
+            linkedRecords: [],
+        };
+        this.notes.set(note.id, note);
+        return Promise.resolve(note);
+    }
+
+    noteUpdate(
+        id: string,
+        fields: { name?: string; description?: string; contentJson?: string; contentText?: string },
+    ): Promise<void> {
+        console.log('[InMemoryBackend] noteUpdate', { id, fields });
+        const note = this.notes.get(id);
+        if (note) {
+            if (fields.name !== undefined) note.name = fields.name;
+            if (fields.description !== undefined) note.description = fields.description;
+            if (fields.contentJson !== undefined) note.contentJson = fields.contentJson;
+            if (fields.contentText !== undefined) note.contentText = fields.contentText;
+            note.updatedAt = new Date().toISOString();
+        }
+        return Promise.resolve();
+    }
+
+    noteDelete(id: string): Promise<void> {
+        console.log('[InMemoryBackend] noteDelete', { id });
+        this.notes.delete(id);
+        return Promise.resolve();
+    }
+
+    noteAddLink(noteId: string, entityId: string, recordId: string): Promise<void> {
+        console.log('[InMemoryBackend] noteAddLink', { noteId, entityId, recordId });
+        const note = this.notes.get(noteId);
+        if (note) {
+            const exists = note.linkedRecords.some(
+                l => l.entityId === entityId && l.recordId === recordId,
+            );
+            if (!exists) {
+                const link: NoteLink = { entityId, recordId };
+                note.linkedRecords = [...note.linkedRecords, link];
+            }
+        }
+        return Promise.resolve();
+    }
+
+    noteRemoveLink(noteId: string, entityId: string, recordId: string): Promise<void> {
+        console.log('[InMemoryBackend] noteRemoveLink', { noteId, entityId, recordId });
+        const note = this.notes.get(noteId);
+        if (note) {
+            note.linkedRecords = note.linkedRecords.filter(
+                l => !(l.entityId === entityId && l.recordId === recordId),
+            );
+        }
+        return Promise.resolve();
     }
 
     // Views
