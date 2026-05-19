@@ -1,0 +1,35 @@
+<nz-modal
+    [nzVisible]="isOpen"
+    nzTitle="Link Existing Note"
+    (nzOnCancel)="onClickCancel()">
+    <ng-container *nzModalContent>
+        <div class="search-bar">
+            <input
+                nz-input
+                placeholder="Search by name..."
+                [(ngModel)]="searchQuery" />
+        </div>
+        <nz-table
+            [nzData]="filteredNotes"
+            [nzShowPagination]="false"
+            nzSize="small">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let note of filteredNotes">
+                    <td>{{ note.name }}</td>
+                    <td>
+                        <button nz-button nzType="primary" nzSize="small" (click)="onClickSelect(note)">Select</button>
+                    </td>
+                </tr>
+            </tbody>
+        </nz-table>
+    </ng-container>
+    <ng-container *nzModalFooter>
+        <button nz-button (click)="onClickCancel()">Cancel</button>
+    </ng-container>
+</nz-modal>

@@ -116,6 +116,31 @@
       </ng-container>
     </nz-card>
 
+    <!-- Notes Section -->
+    <nz-card class="notes-card" [nzTitle]="notesCardTitle">
+      <ng-template #notesCardTitle>
+        <div class="notes-card-header">
+          <span>Notes</span>
+          <div class="notes-card-btn-container">
+            <button nz-button nzType="default" nzSize="small" (click)="onClickCreateNote()">+ New</button>
+            <button nz-button nzType="default" nzSize="small" (click)="onClickLinkExistingNote()">+ Link Existing</button>
+          </div>
+        </div>
+      </ng-template>
+
+      <div *ngIf="linkedNotes$().length === 0" class="no-notes">No notes</div>
+
+      <div *ngFor="let note of linkedNotes$()" class="note-row">
+        <a [routerLink]="['/notes', note.id]" class="note-name">{{ note.name }}</a>
+        <button nz-button nzType="text" nzDanger nzSize="small"
+                nz-tooltip nzTooltipTitle="Unlink note"
+                (click)="onClickUnlinkNote(note.id)">
+          <span nz-icon nzType="disconnect"></span>
+        </button>
+      </div>
+    </nz-card>
+  </div>
+
     <!-- Documents Section -->
     <nz-card class="documents-card" [nzTitle]="documentCardTitle">
       <ng-template #documentCardTitle>
@@ -139,7 +164,6 @@
         </button>
       </div>
     </nz-card>
-  </div>
 
   <app-document-upload-modal
     [isOpen]="isUploadModalOpen()"
@@ -153,6 +177,19 @@
     (onSelect)="onLinkDocumentSelect($event)"
     (onCancel)="onLinkDocumentCancel()">
   </app-document-link-modal>
+
+  <app-note-create-modal
+    [isOpen]="isNoteCreateModalOpen()"
+    (onSubmit)="onCreateNoteSubmit($event)"
+    (onCancel)="onCreateNoteCancel()">
+  </app-note-create-modal>
+
+  <app-note-link-modal
+    [isOpen]="isNoteLinkModalOpen()"
+    [notes]="allNotes$()"
+    (onSelect)="onLinkNoteSelect($event)"
+    (onCancel)="onLinkNoteCancel()">
+  </app-note-link-modal>
 
   <!-- Delete Confirmation Modal -->
   <nz-modal

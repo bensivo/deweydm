@@ -23,6 +23,10 @@ import { DocumentService } from '../../services/document.service';
 import { DocumentUploadModalComponent, DocumentUploadData } from '../documents/document-upload-modal/document-upload-modal.component';
 import { DocumentLinkModalComponent } from '../documents/document-link-modal/document-link-modal.component';
 import { Document } from '../../models/document.model';
+import { NoteService } from '../../services/note.service';
+import { Note } from '../../models/note.model';
+import { NoteCreateModalComponent, NoteCreateData } from '../notes/note-create-modal/note-create-modal.component';
+import { NoteLinkModalComponent } from './note-link-modal/note-link-modal.component';
 
 @Component({
     selector: 'app-entity-detail-page',
@@ -41,6 +45,8 @@ import { Document } from '../../models/document.model';
         EntityReferenceComponent,
         DocumentUploadModalComponent,
         DocumentLinkModalComponent,
+        NoteCreateModalComponent,
+        NoteLinkModalComponent,
     ],
     templateUrl: './entity-detail.page.html',
     styleUrl: './entity-detail.page.less'
@@ -71,10 +77,23 @@ export class EntityDetailPageComponent implements OnInit {
         );
     });
 
+    allNotes$ = computed(() => this.noteService.notes$());
+
+    linkedNotes$ = computed(() => {
+        const entity = this.entity$();
+        const record = this.record$();
+        if (!entity || !record) return [];
+        return this.noteService.notes$().filter(note =>
+            note.linkedRecords.some(link => link.entityId === entity.id && link.recordId === record.id)
+        );
+    });
+
     isEditMode = signal(false);
     isDeleteConfirmModalOpen = signal(false);
     isUploadModalOpen = signal(false);
     isLinkModalOpen = signal(false);
+    isNoteCreateModalOpen = signal(false);
+    isNoteLinkModalOpen = signal(false);
 
     // Working copy of data during edit. Initialized when edit mode is entered.
     editData = signal<Record<string, string>>({});
@@ -91,6 +110,7 @@ export class EntityDetailPageComponent implements OnInit {
         public entityRecordService: EntityRecordService,
         private entityStore: EntityStore,
         private documentService: DocumentService,
+        private noteService: NoteService,
         private messageService: NzMessageService
     ) {}
 
@@ -103,6 +123,7 @@ export class EntityDetailPageComponent implements OnInit {
             }
         });
         this.documentService.loadAll();
+        this.noteService.loadAll();
     }
 
     getFieldValue(fieldId: string): string {
@@ -213,6 +234,64 @@ export class EntityDetailPageComponent implements OnInit {
             this.messageService.success('Document unlinked');
         } catch (error) {
             this.messageService.error('Failed to unlink document');
+        }
+    }
+
+    onClickCreateNote(): void {
+        this.isNoteCreateModalOpen.set(true);
+    }
+
+    async onCreateNoteSubmit(data: NoteCreateData): Promise<void> {
+        const entity = this.entity$();
+        const record = this.record$();
+        if (!entity || !record) return;
+
+        try {
+            const newNote = await this.noteService.createNote(data.name, '', '', '');
+            await this.noteService.addLink(newNote.id, entity.id, record.id);
+            this.messageService.success('Note created and linked successfully');
+        } catch (error) {
+            this.messageService.error('Failed to create note');
+        }
+
+        this.isNoteCreateModalOpen.set(false);
+    }
+
+    onCreateNoteCancel(): void {
+        this.isNoteCreateModalOpen.set(false);
+    }
+
+    onClickLinkExistingNote(): void {
+        this.isNoteLinkModalOpen.set(true);
+    }
+
+    async onLinkNoteSelect(note: Note): Promise<void> {
+        this.isNoteLinkModalOpen.set(false);
+        const entity = this.entity$();
+        const record = this.record$();
+        if (!entity || !record) return;
+        try {
+            await this.noteService.addLink(note.id, entity.id, record.id);
+            this.messageService.success('Note linked');
+        } catch (error) {
+            this.messageService.error('Failed to link note');
+        }
+    }
+
+    onLinkNoteCancel(): void {
+        this.isNoteLinkModalOpen.set(false);
+    }
+
+    async onClickUnlinkNote(noteId: string): Promise<void> {
+        const entity = this.entity$();
+        const record = this.record$();
+        if (!entity || !record) return;
+
+        try {
+            await this.noteService.removeLink(noteId, entity.id, record.id);
+            this.messageService.success('Note unlinked');
+        } catch (error) {
+            this.messageService.error('Failed to unlink note');
         }
     }
 
