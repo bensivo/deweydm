@@ -1,0 +1,17 @@
+<nz-modal
+    [nzVisible]="isOpen"
+    nzTitle="New Note"
+    (nzOnCancel)="onClickCancel()">
+    <ng-container *nzModalContent>
+        <nz-form-item>
+            <nz-form-label [nzSpan]="6" nzRequired>Name</nz-form-label>
+            <nz-form-control [nzSpan]="18">
+                <input nz-input [(ngModel)]="nameValue" placeholder="Note name" />
+            </nz-form-control>
+        </nz-form-item>
+    </ng-container>
+    <ng-container *nzModalFooter>
+        <button nz-button (click)="onClickCancel()">Cancel</button>
+        <button nz-button nzType="primary" [disabled]="isSubmitDisabled" (click)="onClickSubmit()">Create</button>
+    </ng-container>
+</nz-modal>

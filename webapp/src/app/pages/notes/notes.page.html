@@ -37,4 +37,10 @@
             </tr>
         </tbody>
     </nz-table>
+
+    <app-note-create-modal
+        [isOpen]="isCreateModalOpen"
+        (onSubmit)="onCreateSubmit($event)"
+        (onCancel)="onCreateCancel()">
+    </app-note-create-modal>
 </div>

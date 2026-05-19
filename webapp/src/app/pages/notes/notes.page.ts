@@ -10,6 +10,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { NoteService } from '../../services/note.service';
 import { Note } from '../../models/note.model';
+import { NoteCreateModalComponent, NoteCreateData } from './note-create-modal/note-create-modal.component';
 
 /**
  * Page for browsing and creating notes.
@@ -24,12 +25,14 @@ import { Note } from '../../models/note.model';
         NzInputModule,
         NzTableModule,
         NzEmptyModule,
+        NoteCreateModalComponent,
     ],
     templateUrl: './notes.page.html',
     styleUrl: './notes.page.less',
 })
 export class NotesPageComponent implements OnInit {
     searchQuery = '';
+    isCreateModalOpen = false;
 
     constructor(
         private noteService: NoteService,
@@ -56,14 +59,23 @@ export class NotesPageComponent implements OnInit {
         await this.noteService.loadAll();
     }
 
-    async onClickNew(): Promise<void> {
+    onClickNew(): void {
+        this.isCreateModalOpen = true;
+    }
+
+    async onCreateSubmit(data: NoteCreateData): Promise<void> {
         try {
-            const note = await this.noteService.createNote('Untitled', '', '', '');
+            const note = await this.noteService.createNote(data.name, '', '', '');
+            this.isCreateModalOpen = false;
             this.router.navigate(['/notes', note.id]);
         } catch (err) {
             console.error('Failed to create note:', err);
             this.nzMessageService.error('Failed to create note');
         }
+    }
+
+    onCreateCancel(): void {
+        this.isCreateModalOpen = false;
     }
 
     onClickRow(note: Note): void {
