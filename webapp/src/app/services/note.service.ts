@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 
 import { Note, NoteLink } from '../models/note.model';
 import { NoteStore } from '../store/note.store';
+import { WorkspaceStore } from '../store/workspace.store';
 import { BACKEND_API } from '../backend/backend-api.token';
 import { Backend } from '../backend/backend-api.interface';
 
@@ -12,6 +13,7 @@ import { Backend } from '../backend/backend-api.interface';
 export class NoteService {
     constructor(
         private noteStore: NoteStore,
+        private workspaceStore: WorkspaceStore,
         @Inject(BACKEND_API) private backend: Backend,
     ) {}
 
@@ -22,8 +24,9 @@ export class NoteService {
     /**
      * Loads all notes from the backend and replaces the store contents.
      */
-    async loadAll(): Promise<void> {
-        const notes: Note[] = await this.backend.noteGetAll();
+    async loadAll(workspaceId?: string): Promise<void> {
+        const effectiveWorkspaceId = workspaceId ?? this.workspaceStore.getActiveId() ?? undefined;
+        const notes: Note[] = await this.backend.noteGetAll(effectiveWorkspaceId);
         this.noteStore.setAll(notes);
     }
 
@@ -41,8 +44,10 @@ export class NoteService {
         description: string,
         contentJson: string,
         contentText: string,
+        workspaceId?: string,
     ): Promise<Note> {
-        const note: Note = await this.backend.noteCreate(name, description, contentJson, contentText);
+        const effectiveWorkspaceId = workspaceId ?? this.workspaceStore.getActiveId() ?? undefined;
+        const note: Note = await this.backend.noteCreate(name, description, contentJson, contentText, effectiveWorkspaceId);
         this.noteStore.add(note);
         return note;
     }

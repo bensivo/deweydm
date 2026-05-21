@@ -96,8 +96,8 @@ const electronApi = {
     },
 
     // Document operations
-    documentGetAll: (): Promise<any[]> => {
-        return ipcRenderer.invoke('document:getAll');
+    documentGetAll: (workspaceId?: string): Promise<any[]> => {
+        return ipcRenderer.invoke('document:getAll', workspaceId);
     },
     documentGetById: (id: string): Promise<any> => {
         return ipcRenderer.invoke('document:getById', id);
@@ -108,8 +108,9 @@ const electronApi = {
         originalFileName: string,
         mimeType: string,
         fileBuffer: ArrayBuffer,
+        workspaceId?: string,
     ): Promise<any> => {
-        return ipcRenderer.invoke('document:create', name, description, originalFileName, mimeType, Buffer.from(fileBuffer));
+        return ipcRenderer.invoke('document:create', name, description, originalFileName, mimeType, Buffer.from(fileBuffer), workspaceId);
     },
     documentDelete: (id: string): Promise<void> => {
         return ipcRenderer.invoke('document:delete', id);
@@ -128,8 +129,8 @@ const electronApi = {
     },
 
     // Note operations
-    noteGetAll: (): Promise<any[]> => {
-        return ipcRenderer.invoke('note:getAll');
+    noteGetAll: (workspaceId?: string): Promise<any[]> => {
+        return ipcRenderer.invoke('note:getAll', workspaceId);
     },
     noteGetById: (id: string): Promise<any> => {
         return ipcRenderer.invoke('note:getById', id);
@@ -139,8 +140,9 @@ const electronApi = {
         description: string,
         contentJson: string,
         contentText: string,
+        workspaceId?: string,
     ): Promise<any> => {
-        return ipcRenderer.invoke('note:create', name, description, contentJson, contentText);
+        return ipcRenderer.invoke('note:create', name, description, contentJson, contentText, workspaceId);
     },
     noteUpdate: (
         id: string,
@@ -159,11 +161,11 @@ const electronApi = {
     },
 
     // View operations
-    viewGetAll: (): Promise<any[]> => {
-        return ipcRenderer.invoke('view:getAll');
+    viewGetAll: (workspaceId?: string): Promise<any[]> => {
+        return ipcRenderer.invoke('view:getAll', workspaceId);
     },
-    viewCreate: (id: string, name: string, entityId: string, filters: any[], orderBy: any[]): Promise<any> => {
-        return ipcRenderer.invoke('view:create', id, name, entityId, filters, orderBy);
+    viewCreate: (id: string, name: string, entityId: string, filters: any[], orderBy: any[], workspaceId?: string): Promise<any> => {
+        return ipcRenderer.invoke('view:create', id, name, entityId, filters, orderBy, workspaceId);
     },
     viewDelete: (id: string): Promise<void> => {
         return ipcRenderer.invoke('view:delete', id);

@@ -24,6 +24,10 @@ export class InMemoryBackend implements Backend {
     private documentFiles: Map<string, string> = new Map();
     private notes: Map<string, Note> = new Map();
     private views: Map<string, View> = new Map();
+    // Sidecar maps tracking which workspace each scoped resource belongs to
+    private documentWorkspaceIds: Map<string, string | undefined> = new Map();
+    private noteWorkspaceIds: Map<string, string | undefined> = new Map();
+    private viewWorkspaceIds: Map<string, string | undefined> = new Map();
 
     constructor() {
         console.log('[InMemoryBackend] constructor');
@@ -228,9 +232,13 @@ export class InMemoryBackend implements Backend {
 
     // Documents
 
-    documentGetAll(): Promise<Document[]> {
-        console.log('[InMemoryBackend] documentGetAll');
-        return Promise.resolve(Array.from(this.documents.values()));
+    documentGetAll(workspaceId?: string): Promise<Document[]> {
+        console.log('[InMemoryBackend] documentGetAll', { workspaceId });
+        const docs = Array.from(this.documents.values());
+        if (!workspaceId) {
+            return Promise.resolve(docs);
+        }
+        return Promise.resolve(docs.filter(d => this.documentWorkspaceIds.get(d.id) === workspaceId));
     }
 
     documentGetById(id: string): Promise<Document | null> {
@@ -244,9 +252,10 @@ export class InMemoryBackend implements Backend {
         originalFileName: string,
         mimeType: string,
         fileBuffer: ArrayBuffer,
+        workspaceId?: string,
     ): Promise<Document> {
         console.log('[InMemoryBackend] documentCreate', {
-            name, description, originalFileName, mimeType, fileSize: fileBuffer.byteLength,
+            name, description, originalFileName, mimeType, fileSize: fileBuffer.byteLength, workspaceId,
         });
         const doc: Document = {
             id: crypto.randomUUID(),
@@ -258,6 +267,7 @@ export class InMemoryBackend implements Backend {
             linkedRecords: [],
         };
         this.documents.set(doc.id, doc);
+        this.documentWorkspaceIds.set(doc.id, workspaceId);
 
         // Convert ArrayBuffer to base64 data URL
         const bytes = new Uint8Array(fileBuffer);
@@ -276,6 +286,7 @@ export class InMemoryBackend implements Backend {
         console.log('[InMemoryBackend] documentDelete', { id });
         this.documents.delete(id);
         this.documentFiles.delete(id);
+        this.documentWorkspaceIds.delete(id);
         return Promise.resolve();
     }
 
@@ -322,9 +333,13 @@ export class InMemoryBackend implements Backend {
 
     // Notes
 
-    noteGetAll(): Promise<Note[]> {
-        console.log('[InMemoryBackend] noteGetAll');
-        return Promise.resolve(Array.from(this.notes.values()));
+    noteGetAll(workspaceId?: string): Promise<Note[]> {
+        console.log('[InMemoryBackend] noteGetAll', { workspaceId });
+        const notes = Array.from(this.notes.values());
+        if (!workspaceId) {
+            return Promise.resolve(notes);
+        }
+        return Promise.resolve(notes.filter(n => this.noteWorkspaceIds.get(n.id) === workspaceId));
     }
 
     noteGetById(id: string): Promise<Note | null> {
@@ -337,8 +352,9 @@ export class InMemoryBackend implements Backend {
         description: string,
         contentJson: string,
         contentText: string,
+        workspaceId?: string,
     ): Promise<Note> {
-        console.log('[InMemoryBackend] noteCreate', { name, description });
+        console.log('[InMemoryBackend] noteCreate', { name, description, workspaceId });
         const now = new Date().toISOString();
         const note: Note = {
             id: crypto.randomUUID(),
@@ -351,6 +367,7 @@ export class InMemoryBackend implements Backend {
             linkedRecords: [],
         };
         this.notes.set(note.id, note);
+        this.noteWorkspaceIds.set(note.id, workspaceId);
         return Promise.resolve(note);
     }
 
@@ -373,6 +390,7 @@ export class InMemoryBackend implements Backend {
     noteDelete(id: string): Promise<void> {
         console.log('[InMemoryBackend] noteDelete', { id });
         this.notes.delete(id);
+        this.noteWorkspaceIds.delete(id);
         return Promise.resolve();
     }
 
@@ -404,14 +422,16 @@ export class InMemoryBackend implements Backend {
 
     // Views
 
-    viewGetAll(): Promise<View[]> {
-        console.log('[InMemoryBackend] viewGetAll');
-        return Promise.resolve(
-            Array.from(this.views.values()).map(v => ({
-                ...v,
-                orderBy: v.orderBy ?? [],
-            })),
-        );
+    viewGetAll(workspaceId?: string): Promise<View[]> {
+        console.log('[InMemoryBackend] viewGetAll', { workspaceId });
+        const views = Array.from(this.views.values()).map(v => ({
+            ...v,
+            orderBy: v.orderBy ?? [],
+        }));
+        if (!workspaceId) {
+            return Promise.resolve(views);
+        }
+        return Promise.resolve(views.filter(v => this.viewWorkspaceIds.get(v.id) === workspaceId));
     }
 
     viewCreate(
@@ -420,8 +440,9 @@ export class InMemoryBackend implements Backend {
         entityId: string,
         filters: Filter[],
         orderBy: OrderBy[],
+        workspaceId?: string,
     ): Promise<View> {
-        console.log('[InMemoryBackend] viewCreate', { id, name, entityId, filters, orderBy });
+        console.log('[InMemoryBackend] viewCreate', { id, name, entityId, filters, orderBy, workspaceId });
         const view: View = {
             id,
             name,
@@ -430,12 +451,14 @@ export class InMemoryBackend implements Backend {
             orderBy: orderBy.map(o => ({ ...o })),
         };
         this.views.set(id, view);
+        this.viewWorkspaceIds.set(id, workspaceId);
         return Promise.resolve(view);
     }
 
     viewDelete(id: string): Promise<void> {
         console.log('[InMemoryBackend] viewDelete', { id });
         this.views.delete(id);
+        this.viewWorkspaceIds.delete(id);
         return Promise.resolve();
     }
 }

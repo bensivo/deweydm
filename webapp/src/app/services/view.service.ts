@@ -4,6 +4,7 @@ import { View } from '../models/view.model';
 import { Filter } from '../models/filter.model';
 import { OrderBy } from '../models/order-by.model';
 import { ViewStore } from '../store/view.store';
+import { WorkspaceStore } from '../store/workspace.store';
 import { BACKEND_API } from '../backend/backend-api.token';
 import { Backend } from '../backend/backend-api.interface';
 
@@ -11,6 +12,7 @@ import { Backend } from '../backend/backend-api.interface';
 export class ViewService {
     constructor(
         private viewStore: ViewStore,
+        private workspaceStore: WorkspaceStore,
         @Inject(BACKEND_API) private backend: Backend,
     ) {}
 
@@ -21,8 +23,9 @@ export class ViewService {
     /**
      * Load all views from the backend and hydrate the store.
      */
-    async loadAll(): Promise<void> {
-        const views = await this.backend.viewGetAll();
+    async loadAll(workspaceId?: string): Promise<void> {
+        const effectiveWorkspaceId = workspaceId ?? this.workspaceStore.getActiveId() ?? undefined;
+        const views = await this.backend.viewGetAll(effectiveWorkspaceId);
         this.viewStore.setAll(views);
     }
 
@@ -60,12 +63,14 @@ export class ViewService {
         viewName: string,
         filters: Filter[],
         orderBy: OrderBy[],
+        workspaceId?: string,
     ): Promise<View> {
         const viewId = this.generateViewId();
         // Deep copy the filters and order-by rows to avoid mutations
         const filtersCopy = filters.map(f => ({ ...f }));
         const orderByCopy = orderBy.map(o => ({ ...o }));
-        const view = await this.backend.viewCreate(viewId, viewName, entityId, filtersCopy, orderByCopy);
+        const effectiveWorkspaceId = workspaceId ?? this.workspaceStore.getActiveId() ?? undefined;
+        const view = await this.backend.viewCreate(viewId, viewName, entityId, filtersCopy, orderByCopy, effectiveWorkspaceId);
         this.viewStore.createView(view.id, view.name, view.entityId, view.filters, view.orderBy ?? []);
         return view;
     }

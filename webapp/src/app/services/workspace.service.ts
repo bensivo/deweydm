@@ -6,6 +6,9 @@ import { BACKEND_API } from '../backend/backend-api.token';
 import { Backend } from '../backend/backend-api.interface';
 import { EntityService } from './entity.service';
 import { EntityRecordService } from './entity-record.service';
+import { ViewService } from './view.service';
+import { DocumentService } from './document.service';
+import { NoteService } from './note.service';
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceService {
@@ -13,6 +16,9 @@ export class WorkspaceService {
         private workspaceStore: WorkspaceStore,
         private entityService: EntityService,
         private entityRecordService: EntityRecordService,
+        private viewService: ViewService,
+        private documentService: DocumentService,
+        private noteService: NoteService,
         @Inject(BACKEND_API) private backend: Backend,
     ) {}
 
@@ -66,6 +72,9 @@ export class WorkspaceService {
         this.workspaceStore.setActiveId(id);
         await this.entityService.loadAll(id);
         await this.entityRecordService.loadAll();
+        await this.viewService.loadAll(id);
+        await this.documentService.loadAll(id);
+        await this.noteService.loadAll(id);
     }
 
     /**

@@ -161,6 +161,7 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                         original_file_name TEXT NOT NULL,
                         mime_type TEXT NOT NULL,
                         file_path TEXT NOT NULL,
+                        workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     )
                 `);
@@ -182,6 +183,7 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                         description TEXT NOT NULL DEFAULT '',
                         content_json TEXT NOT NULL DEFAULT '',
                         content_text TEXT NOT NULL DEFAULT '',
+                        workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     )
@@ -203,6 +205,7 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
                         entity_id TEXT NOT NULL,
                         filters TEXT NOT NULL DEFAULT '[]',
                         order_by TEXT NOT NULL DEFAULT '[]',
+                        workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE CASCADE
                     )
@@ -226,7 +229,20 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
              SELECT 'default', 'Default', 1
              WHERE NOT EXISTS (SELECT 1 FROM workspaces)`,
             () => {
-                db.run(`UPDATE entities SET workspace_id = 'default' WHERE workspace_id IS NULL`, () => resolve());
+                db.run(`UPDATE entities SET workspace_id = 'default' WHERE workspace_id IS NULL`, () => {
+                    db.run(
+                        `UPDATE entity_views
+                         SET workspace_id = COALESCE(
+                             (SELECT workspace_id FROM entities WHERE entities.id = entity_views.entity_id),
+                             'default'
+                         )
+                         WHERE workspace_id IS NULL`,
+                    () => {
+                        db.run(`UPDATE documents SET workspace_id = 'default' WHERE workspace_id IS NULL`, () => {
+                            db.run(`UPDATE notes SET workspace_id = 'default' WHERE workspace_id IS NULL`, () => resolve());
+                        });
+                    });
+                });
             }
         );
     });
@@ -270,6 +286,47 @@ export async function runMigrations(db: sqlite3.Database): Promise<void> {
             const hasOrderBy = rows.some(r => r.name === 'order_by');
             if (hasOrderBy) { resolve(); return; }
             db.run("ALTER TABLE entity_views ADD COLUMN order_by TEXT NOT NULL DEFAULT '[]'", () => resolve());
+        });
+    });
+
+    // Add workspace_id column to entity_views if it doesn't already exist (defensive migration for existing DBs)
+    await new Promise<void>((resolve) => {
+        db.all("PRAGMA table_info(entity_views)", (err, rows: any[]) => {
+            if (err || !rows) { resolve(); return; }
+            if (rows.some(r => r.name === 'workspace_id')) { resolve(); return; }
+            db.run('ALTER TABLE entity_views ADD COLUMN workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL', () => {
+                db.run(
+                    `UPDATE entity_views
+                     SET workspace_id = COALESCE(
+                         (SELECT workspace_id FROM entities WHERE entities.id = entity_views.entity_id),
+                         'default'
+                     )
+                     WHERE workspace_id IS NULL`,
+                    () => resolve(),
+                );
+            });
+        });
+    });
+
+    // Add workspace_id column to documents if it doesn't already exist (defensive migration for existing DBs)
+    await new Promise<void>((resolve) => {
+        db.all("PRAGMA table_info(documents)", (err, rows: any[]) => {
+            if (err || !rows) { resolve(); return; }
+            if (rows.some(r => r.name === 'workspace_id')) { resolve(); return; }
+            db.run('ALTER TABLE documents ADD COLUMN workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL', () => {
+                db.run(`UPDATE documents SET workspace_id = 'default' WHERE workspace_id IS NULL`, () => resolve());
+            });
+        });
+    });
+
+    // Add workspace_id column to notes if it doesn't already exist (defensive migration for existing DBs)
+    await new Promise<void>((resolve) => {
+        db.all("PRAGMA table_info(notes)", (err, rows: any[]) => {
+            if (err || !rows) { resolve(); return; }
+            if (rows.some(r => r.name === 'workspace_id')) { resolve(); return; }
+            db.run('ALTER TABLE notes ADD COLUMN workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL', () => {
+                db.run(`UPDATE notes SET workspace_id = 'default' WHERE workspace_id IS NULL`, () => resolve());
+            });
         });
     });
 

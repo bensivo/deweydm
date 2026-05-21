@@ -42,9 +42,13 @@ export class ViewService {
      * Fetches all saved views from the database.
      * @returns A promise resolving to an array of View objects.
      */
-    async getAll(): Promise<View[]> {
+    async getAll(workspaceId?: string): Promise<View[]> {
+        const sql = workspaceId
+            ? 'SELECT id, name, entity_id, filters, order_by FROM entity_views WHERE workspace_id = ?'
+            : 'SELECT id, name, entity_id, filters, order_by FROM entity_views';
+        const params = workspaceId ? [workspaceId] : [];
         const rows = await this.allQuery<{ id: string; name: string; entity_id: string; filters: string; order_by: string | null }>(
-            'SELECT id, name, entity_id, filters, order_by FROM entity_views'
+            sql, params
         );
         return rows.map(row => ({
             id: row.id,
@@ -86,12 +90,12 @@ export class ViewService {
      * @param orderBy - The order-by rows to persist.
      * @returns A promise resolving to the created View.
      */
-    async create(id: string, name: string, entityId: string, filters: Filter[], orderBy: OrderBy[]): Promise<View> {
+    async create(id: string, name: string, entityId: string, filters: Filter[], orderBy: OrderBy[], workspaceId?: string): Promise<View> {
         const filtersJson = JSON.stringify(filters);
         const orderByJson = JSON.stringify(orderBy ?? []);
         await this.runQuery(
-            'INSERT INTO entity_views (id, name, entity_id, filters, order_by) VALUES (?, ?, ?, ?, ?)',
-            [id, name, entityId, filtersJson, orderByJson]
+            'INSERT INTO entity_views (id, name, entity_id, filters, order_by, workspace_id) VALUES (?, ?, ?, ?, ?, ?)',
+            [id, name, entityId, filtersJson, orderByJson, workspaceId ?? null]
         );
         return { id, name, entityId, filters, orderBy: orderBy ?? [] };
     }

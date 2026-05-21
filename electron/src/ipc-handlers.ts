@@ -116,8 +116,8 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
     });
 
     // Document handlers
-    ipcMain.handle('document:getAll', async () => {
-        return documentService.getAll();
+    ipcMain.handle('document:getAll', async (_event: Electron.IpcMainInvokeEvent, workspaceId?: string) => {
+        return documentService.getAll(workspaceId);
     });
 
     ipcMain.handle('document:getById', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
@@ -131,8 +131,9 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         originalFileName: string,
         mimeType: string,
         fileBuffer: Buffer,
+        workspaceId?: string,
     ) => {
-        return documentService.create(name, description, originalFileName, mimeType, fileBuffer);
+        return documentService.create(name, description, originalFileName, mimeType, fileBuffer, workspaceId);
     });
 
     ipcMain.handle('document:delete', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
@@ -174,8 +175,8 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
     });
 
     // Note handlers
-    ipcMain.handle('note:getAll', async () => {
-        return noteService.getAll();
+    ipcMain.handle('note:getAll', async (_event: Electron.IpcMainInvokeEvent, workspaceId?: string) => {
+        return noteService.getAll(workspaceId);
     });
 
     ipcMain.handle('note:getById', async (_event: Electron.IpcMainInvokeEvent, id: string) => {
@@ -188,8 +189,9 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
         description: string,
         contentJson: string,
         contentText: string,
+        workspaceId?: string,
     ) => {
-        return noteService.create(name, description, contentJson, contentText);
+        return noteService.create(name, description, contentJson, contentText, workspaceId);
     });
 
     ipcMain.handle('note:update', async (
@@ -223,12 +225,12 @@ export function registerIpcHandlers(ipcMain: Electron.IpcMain, db: sqlite3.Datab
     });
 
     // View handlers
-    ipcMain.handle('view:getAll', async () => {
-        return viewService.getAll();
+    ipcMain.handle('view:getAll', async (_event: Electron.IpcMainInvokeEvent, workspaceId?: string) => {
+        return viewService.getAll(workspaceId);
     });
 
-    ipcMain.handle('view:create', async (_event: Electron.IpcMainInvokeEvent, id: string, name: string, entityId: string, filters: Filter[], orderBy: OrderBy[]) => {
-        return viewService.create(id, name, entityId, filters, orderBy);
+    ipcMain.handle('view:create', async (_event: Electron.IpcMainInvokeEvent, id: string, name: string, entityId: string, filters: Filter[], orderBy: OrderBy[], workspaceId?: string) => {
+        return viewService.create(id, name, entityId, filters, orderBy, workspaceId);
     });
 
     ipcMain.handle('view:delete', async (_event: Electron.IpcMainInvokeEvent, id: string) => {

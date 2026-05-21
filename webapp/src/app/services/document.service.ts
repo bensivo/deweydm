@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 
 import { Document, DocumentLink } from '../models/document.model';
 import { DocumentStore } from '../store/document.store';
+import { WorkspaceStore } from '../store/workspace.store';
 import { BACKEND_API } from '../backend/backend-api.token';
 import { Backend } from '../backend/backend-api.interface';
 
@@ -12,6 +13,7 @@ import { Backend } from '../backend/backend-api.interface';
 export class DocumentService {
     constructor(
         private documentStore: DocumentStore,
+        private workspaceStore: WorkspaceStore,
         @Inject(BACKEND_API) private backend: Backend,
     ) {}
 
@@ -22,8 +24,9 @@ export class DocumentService {
     /**
      * Loads all documents from the backend and replaces the store contents.
      */
-    async loadAll(): Promise<void> {
-        const documents: Document[] = await this.backend.documentGetAll();
+    async loadAll(workspaceId?: string): Promise<void> {
+        const effectiveWorkspaceId = workspaceId ?? this.workspaceStore.getActiveId() ?? undefined;
+        const documents: Document[] = await this.backend.documentGetAll(effectiveWorkspaceId);
         this.documentStore.setAll(documents);
     }
 
@@ -35,14 +38,16 @@ export class DocumentService {
      * @param file - The File object from a file input element
      * @returns The newly created Document
      */
-    async createDocument(name: string, description: string, file: File): Promise<Document> {
+    async createDocument(name: string, description: string, file: File, workspaceId?: string): Promise<Document> {
         const arrayBuffer = await file.arrayBuffer();
+        const effectiveWorkspaceId = workspaceId ?? this.workspaceStore.getActiveId() ?? undefined;
         const document: Document = await this.backend.documentCreate(
             name,
             description,
             file.name,
             file.type,
-            arrayBuffer
+            arrayBuffer,
+            effectiveWorkspaceId,
         );
         this.documentStore.add(document);
         return document;

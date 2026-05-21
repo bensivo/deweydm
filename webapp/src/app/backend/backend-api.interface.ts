@@ -53,7 +53,7 @@ export interface Backend {
     columnVisibilitySet(contextType: string, contextId: string, fieldIds: string[]): Promise<void>;
 
     // Documents
-    documentGetAll(): Promise<Document[]>;
+    documentGetAll(workspaceId?: string): Promise<Document[]>;
     documentGetById(id: string): Promise<Document | null>;
     documentCreate(
         name: string,
@@ -61,6 +61,7 @@ export interface Backend {
         originalFileName: string,
         mimeType: string,
         fileBuffer: ArrayBuffer,
+        workspaceId?: string,
     ): Promise<Document>;
     documentDelete(id: string): Promise<void>;
     documentUpdate(id: string, fields: { name?: string; description?: string }): Promise<void>;
@@ -69,13 +70,14 @@ export interface Backend {
     documentGetFile(id: string): Promise<string>;
 
     // Notes
-    noteGetAll(): Promise<Note[]>;
+    noteGetAll(workspaceId?: string): Promise<Note[]>;
     noteGetById(id: string): Promise<Note | null>;
     noteCreate(
         name: string,
         description: string,
         contentJson: string,
         contentText: string,
+        workspaceId?: string,
     ): Promise<Note>;
     noteUpdate(
         id: string,
@@ -86,13 +88,14 @@ export interface Backend {
     noteRemoveLink(noteId: string, entityId: string, recordId: string): Promise<void>;
 
     // Views
-    viewGetAll(): Promise<View[]>;
+    viewGetAll(workspaceId?: string): Promise<View[]>;
     viewCreate(
         id: string,
         name: string,
         entityId: string,
         filters: Filter[],
         orderBy: OrderBy[],
+        workspaceId?: string,
     ): Promise<View>;
     viewDelete(id: string): Promise<void>;
 }

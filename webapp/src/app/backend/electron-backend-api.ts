@@ -97,8 +97,8 @@ export class ElectronBackend implements Backend {
         return this.api.columnVisibilitySet(contextType, contextId, fieldIds);
     }
 
-    documentGetAll(): Promise<Document[]> {
-        return this.api.documentGetAll();
+    documentGetAll(workspaceId?: string): Promise<Document[]> {
+        return this.api.documentGetAll(workspaceId);
     }
     documentGetById(id: string): Promise<Document | null> {
         return this.api.documentGetById(id);
@@ -109,8 +109,9 @@ export class ElectronBackend implements Backend {
         originalFileName: string,
         mimeType: string,
         fileBuffer: ArrayBuffer,
+        workspaceId?: string,
     ): Promise<Document> {
-        return this.api.documentCreate(name, description, originalFileName, mimeType, fileBuffer);
+        return this.api.documentCreate(name, description, originalFileName, mimeType, fileBuffer, workspaceId);
     }
     documentDelete(id: string): Promise<void> {
         return this.api.documentDelete(id);
@@ -128,8 +129,8 @@ export class ElectronBackend implements Backend {
         return this.api.documentGetFile(id);
     }
 
-    noteGetAll(): Promise<Note[]> {
-        return this.api.noteGetAll();
+    noteGetAll(workspaceId?: string): Promise<Note[]> {
+        return this.api.noteGetAll(workspaceId);
     }
     noteGetById(id: string): Promise<Note | null> {
         return this.api.noteGetById(id);
@@ -139,8 +140,9 @@ export class ElectronBackend implements Backend {
         description: string,
         contentJson: string,
         contentText: string,
+        workspaceId?: string,
     ): Promise<Note> {
-        return this.api.noteCreate(name, description, contentJson, contentText);
+        return this.api.noteCreate(name, description, contentJson, contentText, workspaceId);
     }
     noteUpdate(
         id: string,
@@ -158,8 +160,8 @@ export class ElectronBackend implements Backend {
         return this.api.noteRemoveLink(noteId, entityId, recordId);
     }
 
-    viewGetAll(): Promise<View[]> {
-        return this.api.viewGetAll();
+    viewGetAll(workspaceId?: string): Promise<View[]> {
+        return this.api.viewGetAll(workspaceId);
     }
     viewCreate(
         id: string,
@@ -167,8 +169,9 @@ export class ElectronBackend implements Backend {
         entityId: string,
         filters: Filter[],
         orderBy: OrderBy[],
+        workspaceId?: string,
     ): Promise<View> {
-        return this.api.viewCreate(id, name, entityId, filters, orderBy);
+        return this.api.viewCreate(id, name, entityId, filters, orderBy, workspaceId);
     }
     viewDelete(id: string): Promise<void> {
         return this.api.viewDelete(id);

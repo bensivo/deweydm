@@ -34,10 +34,12 @@ export class NoteService {
      * Fetches all notes with their linked records, ordered by most recently updated.
      * @returns A promise resolving to an array of Note objects.
      */
-    async getAll(): Promise<Note[]> {
-        const rows = await this.allQuery<NoteRow>(
-            'SELECT id, name, description, content_json, content_text, created_at, updated_at FROM notes ORDER BY updated_at DESC'
-        );
+    async getAll(workspaceId?: string): Promise<Note[]> {
+        const sql = workspaceId
+            ? 'SELECT id, name, description, content_json, content_text, created_at, updated_at FROM notes WHERE workspace_id = ? ORDER BY updated_at DESC'
+            : 'SELECT id, name, description, content_json, content_text, created_at, updated_at FROM notes ORDER BY updated_at DESC';
+        const params = workspaceId ? [workspaceId] : [];
+        const rows = await this.allQuery<NoteRow>(sql, params);
 
         const notes: Note[] = [];
         for (const row of rows) {
@@ -76,11 +78,12 @@ export class NoteService {
         description: string,
         contentJson: string,
         contentText: string,
+        workspaceId?: string,
     ): Promise<Note> {
         const id = this.generateId();
         await this.runQuery(
-            'INSERT INTO notes (id, name, description, content_json, content_text) VALUES (?, ?, ?, ?, ?)',
-            [id, name, description, contentJson, contentText]
+            'INSERT INTO notes (id, name, description, content_json, content_text, workspace_id) VALUES (?, ?, ?, ?, ?, ?)',
+            [id, name, description, contentJson, contentText, workspaceId ?? null]
         );
         const note = await this.getById(id);
         if (!note) {

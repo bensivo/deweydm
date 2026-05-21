@@ -37,7 +37,11 @@ export class DocumentService {
      * Fetches all documents with their linked records.
      * @returns A promise resolving to an array of Document objects.
      */
-    async getAll(): Promise<Document[]> {
+    async getAll(workspaceId?: string): Promise<Document[]> {
+        const sql = workspaceId
+            ? 'SELECT id, name, description, original_file_name, mime_type, file_path, created_at FROM documents WHERE workspace_id = ? ORDER BY created_at DESC'
+            : 'SELECT id, name, description, original_file_name, mime_type, file_path, created_at FROM documents ORDER BY created_at DESC';
+        const params = workspaceId ? [workspaceId] : [];
         const rows = await this.allQuery<{
             id: string;
             name: string;
@@ -46,7 +50,7 @@ export class DocumentService {
             mime_type: string;
             file_path: string;
             created_at: string;
-        }>('SELECT id, name, description, original_file_name, mime_type, file_path, created_at FROM documents ORDER BY created_at DESC');
+        }>(sql, params);
 
         const documents: Document[] = [];
         for (const row of rows) {
@@ -93,6 +97,7 @@ export class DocumentService {
         originalFileName: string,
         mimeType: string,
         fileBuffer: Buffer,
+        workspaceId?: string,
     ): Promise<Document> {
         const id = this.generateId();
         const safeFileName = originalFileName.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -102,8 +107,8 @@ export class DocumentService {
         fs.writeFileSync(absoluteFilePath, fileBuffer);
 
         await this.runQuery(
-            'INSERT INTO documents (id, name, description, original_file_name, mime_type, file_path) VALUES (?, ?, ?, ?, ?, ?)',
-            [id, name, description, originalFileName, mimeType, relativeFilePath]
+            'INSERT INTO documents (id, name, description, original_file_name, mime_type, file_path, workspace_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [id, name, description, originalFileName, mimeType, relativeFilePath, workspaceId ?? null]
         );
 
         return {

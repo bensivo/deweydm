@@ -18,6 +18,10 @@ export class WorkspaceStore {
         return this.workspacesSignal();
     }
 
+    getActiveId(): string | null {
+        return this.activeWorkspaceIdSignal();
+    }
+
     getActive(): Workspace | undefined {
         const activeId = this.activeWorkspaceIdSignal();
         return this.workspacesSignal().find(w => w.id === activeId);
