@@ -25,7 +25,7 @@
         </div>
       </ng-template>
       <ng-container *ngFor="let field of entity$()!.fields">
-        <div class="field-row" *ngIf="!isEditMode() || field.type !== 'backlink'">
+        <div class="field-row">
           <div class="field-label">{{ field.name }}</div>
         <div class="field-value">
           <!-- View mode -->
@@ -79,6 +79,10 @@
               [nzLabel]="opt.recordName">
             </nz-option>
           </nz-select>
+          <div *ngIf="isEditMode() && field.type === 'reference'">
+            <button nz-button nzType="default" nzSize="small" class="inline-create-btn"
+                    (click)="onClickInlineCreate(field)">+ New {{ getInlineCreateTargetEntityName(field) }}</button>
+          </div>
 
           <!-- Edit mode: option fields get select -->
           <nz-select *ngIf="isEditMode() && field.type === 'option'"
@@ -102,6 +106,27 @@
               [nzLabel]="opt.recordName">
             </nz-option>
           </nz-select>
+          <div *ngIf="isEditMode() && field.type === 'reference-list'">
+            <button nz-button nzType="default" nzSize="small" class="inline-create-btn"
+                    (click)="onClickInlineCreate(field)">+ New {{ getInlineCreateTargetEntityName(field) }}</button>
+          </div>
+
+          <!-- Edit mode: backlink shows read-only list with create button -->
+          <ng-container *ngIf="isEditMode() && field.type === 'backlink'">
+            <div class="backlink-list">
+              <div *ngIf="getBacklinkedRecords(field).length === 0" class="empty-backlinks">No linked records</div>
+              <app-entity-reference *ngFor="let backlinkRecord of getBacklinkedRecords(field)"
+                [recordId]="backlinkRecord.id"
+                class="backlink-item">
+              </app-entity-reference>
+            </div>
+            <div class="inline-create-actions">
+              <button nz-button nzType="default" nzSize="small" class="inline-create-btn"
+                      (click)="onClickInlineCreate(field)">+ New {{ getInlineCreateTargetEntityName(field) }}</button>
+              <button nz-button nzType="default" nzSize="small" class="inline-create-btn"
+                      (click)="onClickLinkExistingBacklink(field)">+ Link Existing</button>
+            </div>
+          </ng-container>
 
           <!-- Edit mode: all other types get a standard input -->
           <input
@@ -190,6 +215,38 @@
     (onSelect)="onLinkNoteSelect($event)"
     (onCancel)="onLinkNoteCancel()">
   </app-note-link-modal>
+
+  <app-global-create-form
+    [isOpen]="isInlineCreateModalOpen()"
+    [entity]="inlineCreateEntity()"
+    [formData]="inlineCreateFormData()"
+    (onSubmit)="onInlineCreateSubmit($event)"
+    (onCancel)="onInlineCreateCancel()">
+  </app-global-create-form>
+
+  <!-- Link Existing Backlink Modal -->
+  <nz-modal
+    [nzVisible]="isBacklinkLinkModalOpen()"
+    nzTitle="Link Existing Record"
+    nzOkText="Link"
+    nzCancelText="Cancel"
+    [nzOkDisabled]="!backlinkLinkSelectedRecordId()"
+    (nzOnOk)="onBacklinkLinkConfirm()"
+    (nzOnCancel)="onBacklinkLinkCancel()">
+    <ng-container *nzModalContent>
+      <nz-select
+        style="width: 100%;"
+        nzShowSearch
+        nzPlaceHolder="Select a record..."
+        [ngModel]="backlinkLinkSelectedRecordId()"
+        (ngModelChange)="backlinkLinkSelectedRecordId.set($event)">
+        <nz-option *ngFor="let opt of backlinkLinkOptions()"
+          [nzValue]="opt.id"
+          [nzLabel]="opt.label">
+        </nz-option>
+      </nz-select>
+    </ng-container>
+  </nz-modal>
 
   <!-- Delete Confirmation Modal -->
   <nz-modal

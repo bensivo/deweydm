@@ -15,7 +15,8 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { EntityService } from '../../services/entity.service';
 import { EntityRecordService } from '../../services/entity-record.service';
 import { EntityStore } from '../../store/entity.store';
-import { EntityField } from '../../models/entity.model';
+import { Entity, EntityField } from '../../models/entity.model';
+import { FormModalComponent } from '../../components/global-create/form-modal.component';
 import { EntityRecord } from '../../models/entity-record.model';
 import { generateEntityKey } from '../../services/entity-key.util';
 import { EntityReferenceComponent } from '../../components/entity-reference/entity-reference.component';
@@ -47,6 +48,7 @@ import { NoteLinkModalComponent } from './note-link-modal/note-link-modal.compon
         DocumentLinkModalComponent,
         NoteCreateModalComponent,
         NoteLinkModalComponent,
+        FormModalComponent,
     ],
     templateUrl: './entity-detail.page.html',
     styleUrl: './entity-detail.page.less'
@@ -94,6 +96,42 @@ export class EntityDetailPageComponent implements OnInit {
     isLinkModalOpen = signal(false);
     isNoteCreateModalOpen = signal(false);
     isNoteLinkModalOpen = signal(false);
+
+    // Inline-create modal state for reference / reference-list / backlink fields
+    isInlineCreateModalOpen = signal(false);
+    inlineCreateEntity = signal<Entity | null>(null);
+    inlineCreateFormData = signal<Record<string, string>>({});
+    private inlineCreateTriggerField = signal<EntityField | null>(null);
+
+    // Link-existing modal state for backlink fields
+    isBacklinkLinkModalOpen = signal(false);
+    private backlinkLinkTriggerField = signal<EntityField | null>(null);
+    backlinkLinkSelectedRecordId = signal<string | null>(null);
+    backlinkLinkOptions = computed<{ id: string; label: string }[]>(() => {
+        const field = this.backlinkLinkTriggerField();
+        const currentRecord = this.record$();
+        if (!field || !currentRecord || !field.backlinkSourceEntityId || !field.backlinkSourceFieldId) {
+            return [];
+        }
+        const sourceEntityId = field.backlinkSourceEntityId;
+        const sourceFieldId = field.backlinkSourceFieldId;
+        const sourceEntity = this.entityStore.getById(sourceEntityId);
+        const sourceField = sourceEntity?.fields.find(f => f.id === sourceFieldId);
+        const candidates = this.entityRecordService.getByEntityId(sourceEntityId);
+        // Filter out records already linked to the current record
+        const filtered = candidates.filter(r => {
+            const value = r.data[sourceFieldId] ?? '';
+            if (!value) return true;
+            if (sourceField?.type === 'reference-list') {
+                return !value.split(',').includes(currentRecord.id);
+            }
+            return value !== currentRecord.id;
+        });
+        return filtered.map(r => ({
+            id: r.id,
+            label: this.entityRecordService.getRecordDisplayName(sourceEntityId, r.id),
+        }));
+    });
 
     // Working copy of data during edit. Initialized when edit mode is entered.
     editData = signal<Record<string, string>>({});
@@ -342,6 +380,140 @@ export class EntityDetailPageComponent implements OnInit {
             field.backlinkSourceFieldId,
             record.id
         );
+    }
+
+    getInlineCreateTargetEntityName(field: EntityField): string {
+        let targetEntityId: string | null = null;
+        if (field.type === 'reference' || field.type === 'reference-list') {
+            targetEntityId = field.referenceEntityId ?? null;
+        } else if (field.type === 'backlink') {
+            targetEntityId = field.backlinkSourceEntityId ?? null;
+        }
+        if (!targetEntityId) return '';
+        return this.entityStore.getById(targetEntityId)?.name ?? '';
+    }
+
+    onClickInlineCreate(field: EntityField): void {
+        const currentRecord = this.record$();
+        const currentEntity = this.entity$();
+        if (!currentRecord || !currentEntity) return;
+
+        let targetEntityId: string | null = null;
+        const initialFormData: Record<string, string> = {};
+
+        if (field.type === 'reference' || field.type === 'reference-list') {
+            targetEntityId = field.referenceEntityId ?? null;
+        } else if (field.type === 'backlink') {
+            targetEntityId = field.backlinkSourceEntityId ?? null;
+            if (field.backlinkSourceFieldId) {
+                initialFormData[field.backlinkSourceFieldId] = currentRecord.id;
+            }
+        }
+
+        if (!targetEntityId) return;
+        const targetEntity = this.entityStore.getById(targetEntityId);
+        if (!targetEntity) return;
+
+        this.inlineCreateTriggerField.set(field);
+        this.inlineCreateEntity.set(targetEntity);
+        this.inlineCreateFormData.set(initialFormData);
+        this.isInlineCreateModalOpen.set(true);
+    }
+
+    async onInlineCreateSubmit(data: Record<string, string>): Promise<void> {
+        const triggerField = this.inlineCreateTriggerField();
+        const targetEntity = this.inlineCreateEntity();
+        const currentRecord = this.record$();
+        if (!triggerField || !targetEntity || !currentRecord) return;
+
+        try {
+            const newRecord = await this.entityRecordService.createRecord(targetEntity.id, data);
+
+            if (triggerField.type === 'reference') {
+                const newData = { ...currentRecord.data, [triggerField.id]: newRecord.id };
+                await this.entityRecordService.updateRecord(currentRecord.id, newData);
+            } else if (triggerField.type === 'reference-list') {
+                const existing = currentRecord.data[triggerField.id] ?? '';
+                const ids = existing ? existing.split(',') : [];
+                ids.push(newRecord.id);
+                const newData = { ...currentRecord.data, [triggerField.id]: ids.join(',') };
+                await this.entityRecordService.updateRecord(currentRecord.id, newData);
+            }
+
+            // If in edit mode, reflect the change in editData so the user sees the new id immediately.
+            if (this.isEditMode() && (triggerField.type === 'reference' || triggerField.type === 'reference-list')) {
+                const updatedRecord = this.record$();
+                if (updatedRecord) {
+                    this.editData.set({ ...updatedRecord.data });
+                }
+            }
+
+            this.messageService.success(`${targetEntity.name} created and linked`);
+        } catch (error) {
+            this.messageService.error(`Failed to create ${targetEntity.name}`);
+        }
+
+        this.isInlineCreateModalOpen.set(false);
+        this.inlineCreateTriggerField.set(null);
+        this.inlineCreateEntity.set(null);
+        this.inlineCreateFormData.set({});
+    }
+
+    onClickLinkExistingBacklink(field: EntityField): void {
+        this.backlinkLinkTriggerField.set(field);
+        this.backlinkLinkSelectedRecordId.set(null);
+        this.isBacklinkLinkModalOpen.set(true);
+    }
+
+    async onBacklinkLinkConfirm(): Promise<void> {
+        const field = this.backlinkLinkTriggerField();
+        const currentRecord = this.record$();
+        const selectedId = this.backlinkLinkSelectedRecordId();
+        if (!field || !currentRecord || !selectedId || !field.backlinkSourceFieldId) {
+            this.onBacklinkLinkCancel();
+            return;
+        }
+
+        const sourceField = field.backlinkSourceEntityId
+            ? this.entityStore.getById(field.backlinkSourceEntityId)?.fields.find(f => f.id === field.backlinkSourceFieldId)
+            : undefined;
+        const sourceRecord = this.entityRecordService.getById(selectedId);
+        if (!sourceRecord || !sourceField) {
+            this.onBacklinkLinkCancel();
+            return;
+        }
+
+        try {
+            let newValue: string;
+            if (sourceField.type === 'reference-list') {
+                const existing = sourceRecord.data[sourceField.id] ?? '';
+                const ids = existing ? existing.split(',') : [];
+                if (!ids.includes(currentRecord.id)) ids.push(currentRecord.id);
+                newValue = ids.join(',');
+            } else {
+                newValue = currentRecord.id;
+            }
+            const newData = { ...sourceRecord.data, [sourceField.id]: newValue };
+            await this.entityRecordService.updateRecord(sourceRecord.id, newData);
+            this.messageService.success('Linked successfully');
+        } catch (error) {
+            this.messageService.error('Failed to link record');
+        }
+
+        this.onBacklinkLinkCancel();
+    }
+
+    onBacklinkLinkCancel(): void {
+        this.isBacklinkLinkModalOpen.set(false);
+        this.backlinkLinkTriggerField.set(null);
+        this.backlinkLinkSelectedRecordId.set(null);
+    }
+
+    onInlineCreateCancel(): void {
+        this.isInlineCreateModalOpen.set(false);
+        this.inlineCreateTriggerField.set(null);
+        this.inlineCreateEntity.set(null);
+        this.inlineCreateFormData.set({});
     }
 
     getBacklinkSourceEntityRouteKey(field: EntityField): string | null {
